@@ -82,13 +82,11 @@ app.get('/logout', (req, res, next) => {
 });
 
 // --- 5. SERVE STATIC ASSETS IN PRODUCTION ---
-// This block is essential for the single-dyno Heroku deployment
+// Serve React frontend in production
 if (process.env.NODE_ENV === 'production') {
-  // Set the static folder where the built React app is
   app.use(express.static(path.join(__dirname, '..', 'frontend', 'build')));
 
-  // For any request that doesn't match an API route, send back the React app's index.html file
-  app.get('/*', (req, res) => {
+  app.get('/:path(*)', (req, res) => {
     res.sendFile(path.resolve(__dirname, '..', 'frontend', 'build', 'index.html'));
   });
 }
