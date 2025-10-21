@@ -4,7 +4,7 @@
   "description": "Full-stack UniEats application",
   "main": "backend/server.js",
   "scripts": {
-    "start": "node backend/server.js",
+    "start": "cd backend && node server.js",
     "heroku-postbuild": "cd backend && npm install && cd ../frontend && npm install && npm run build"
   },
   "cacheDirectories": ["frontend/node_modules"],
