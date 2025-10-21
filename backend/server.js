@@ -12,6 +12,8 @@ const path = require('path'); // --- FIX: Added for serving static files
 // --- 1. INITIAL SETUP ---
 dotenv.config();
 // connectDB(); // Still disabled for now
+console.log("CLIENT_ID:", process.env.CLIENT_ID);
+console.log("CLIENT_SECRET:", process.env.CLIENT_SECRET ? "Loaded" : "Missing");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -32,15 +34,15 @@ app.use(passport.session());
 
 // --- 3. PASSPORT STRATEGY CONFIGURATION ---
 const oidcConfig = {
-    identityMetadata: `https://login.microsoftonline.com/${process.env.TENANT_ID}/v2.0/.well-known/openid-configuration`,
-    clientID: process.env.CLIENT_ID,
-    clientSecret: process.env.CLIENT_SECRET,
-    responseType: 'code id_token',
-    responseMode: 'form_post',
-    redirectUrl: process.env.REDIRECT_URL,
-    allowHttpForRedirectUrl: false, // Should be false for production
-    scope: ['profile', 'email'],
-    passReqToCallback: false
+  identityMetadata: `https://login.microsoftonline.com/${process.env.TENANT_ID}/v2.0/.well-known/openid-configuration`,
+  clientID: process.env.CLIENT_ID,
+  clientSecret: process.env.CLIENT_SECRET,
+  responseType: 'code id_token',
+  responseMode: 'form_post',
+  redirectUrl: process.env.REDIRECT_URL,
+  allowHttpForRedirectUrl: process.env.NODE_ENV !== "production", // ✅ allow HTTP in dev
+  scope: ['profile', 'email'],
+  passReqToCallback: false
 };
 
 passport.use(new OIDCStrategy(oidcConfig,

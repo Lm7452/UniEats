@@ -2,9 +2,10 @@
 
 import React from 'react';
 
+
 function LoginPage() {
   // The backend URL. Use an environment variable for this in a real app.
-  const BACKEND_URL = 'http://localhost:5000'; 
+  const BACKEND_URL = process.env.REACT_APP_API_URL;
 
   return (
     <div>
