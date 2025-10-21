@@ -1,0 +1,13 @@
+{
+  "name": "unieats-fullstack",
+  "version": "1.0.0",
+  "description": "Full-stack UniEats application",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "heroku-postbuild": "cd frontend && npm install && npm run build"
+  },
+  "cacheDirectories": ["frontend/node_modules"],
+  "author": "Lynn Morris",
+  "license": "ISC"
+}
