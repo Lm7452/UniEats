@@ -1,29 +1,31 @@
 {
-  "name": "unieats",
+  "name": "unieats-fullstack",
   "version": "1.0.0",
-  "private": true,
+  "description": "UniEats - Full-stack campus food delivery app",
+  "main": "server/server.js",
   "scripts": {
-    "start": "node backend/server.js",
-    "heroku-postbuild": "cd frontend && npm install && npm run build",
+    "start": "node server/server.js",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm start",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "server": "node backend/server.js",
-    "client": "npm start --prefix frontend"
-  },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "express": "^5.1.0",
-    "express-session": "^1.18.2",
-    "mongodb": "^6.20.0",
-    "mongoose": "^8.18.3",
-    "passport": "^0.7.0",
-    "passport-azure-ad": "^4.3.5",
-    "session": "^0.1.0"
-  },
-  "devDependencies": {
-    "concurrently": "^9.1.0"
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
+    "build": "cd client && npm run build",
+    "heroku-postbuild": "cd client && npm install && npm run build"
   },
   "engines": {
-    "node": "18.x"
+    "node": "18.x",
+    "npm": "9.x"
+  },
+  "keywords": [
+    "food-delivery",
+    "campus",
+    "react",
+    "express",
+    "mongodb"
+  ],
+  "author": "Lynn Morris III",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^8.2.2"
   }
 }
