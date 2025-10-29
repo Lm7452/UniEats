@@ -2,11 +2,28 @@
   "name": "client",
   "version": "1.0.0",
   "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-scripts": "5.0.1"
+  },
   "scripts": {
-    "start": "echo \"This will be your frontend dev script (e.g., react-scripts start)\"",
-    "build": "mkdir -p build && echo '<html><body>Placeholder</body></html>' > build/index.html",
-    "test": "echo \"Run test script\""
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
 

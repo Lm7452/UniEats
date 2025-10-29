@@ -20,9 +20,6 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build/index.html'));
 });
 
-// This is the command that
-// 1. Starts the server
-// 2. Keeps it running (to avoid the H10 crash)
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });

@@ -1,23 +1,22 @@
 {
-  "name": "unieats-fullstack",
+  "name": "fullstack-heroku-app",
   "version": "1.0.0",
-  "description": "Full-stack project for Heroku deployment",
+  "description": "Root config for Heroku",
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
     "install-server": "cd server && npm install",
     "install-client": "cd client && npm install",
+    "install-all": "npm install && npm run install-server && npm run install-client",
     "heroku-postbuild": "cd client && npm install && npm run build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
   },
   "engines": {
     "node": "18.x"
-  },
-  "keywords": [
-    "heroku",
-    "full-stack",
-    "react",
-    "express"
-  ],
-  "author": "",
-  "license": "ISC"
+  }
 }
