@@ -6,8 +6,8 @@ const passport = require('passport');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const OIDCStrategy = require('passport-azure-ad').OIDCStrategy;
-const cors = require('cors');
-const path = require('path'); // <-- ADDED
+// const cors = require('cors'); // <-- REMOVED
+const path = require('path');
 const db = require('./db'); 
 
 // --- 1. INITIAL SETUP ---
@@ -33,12 +33,14 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+/*
 // CORS is not strictly needed in production if frontend/backend are same origin
 // but it doesn't hurt and is useful for local dev.
 app.use(cors({
     origin: process.env.FRONTEND_URL, // This is for local dev
     credentials: true
 }));
+*/ // <-- REMOVED THIS ENTIRE BLOCK
 
 // --- 3. PASSPORT STRATEGY CONFIGURATION ---
 // (Your existing Passport config)
@@ -55,7 +57,7 @@ const oidcConfig = {
     
     passReqToCallback: false
 };
-
+// ... (rest of the file is identical) ...
 console.log('--- Initializing Passport with this OIDC Config ---');
 console.log(oidcConfig);
 
