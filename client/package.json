@@ -5,7 +5,8 @@
   "dependencies": {},
   "scripts": {
     "start": "echo \"This will be your frontend dev script (e.g., react-scripts start)\"",
-    "build": "echo \"Building static assets... (This script is run by Heroku)\" && mkdir -p build",
+    "build": "mkdir -p build && echo '<html><body>Placeholder</body></html>' > build/index.html",
     "test": "echo \"Run test script\""
   }
 }
+
