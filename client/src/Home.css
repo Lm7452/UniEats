@@ -1,0 +1,162 @@
+/* src/components/Home.css */
+
+:root {
+  --princeton-orange: #E77500;
+  --princeton-black: #000000;
+  --dark-grey: #333333;
+  --medium-grey: #606060;
+  --light-text: #FFFFFF;
+  --off-white: #CCCCCC;
+}
+
+body {
+  margin: 0;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.home-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Ensures the container takes at least full viewport height */
+  background-color: var(--dark-grey); /* Overall dark grey background */
+  color: var(--light-text);
+}
+
+/* --- Navigation Bar --- */
+.navbar {
+  background-color: var(--princeton-black); /* Black nav bar */
+  padding: 15px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.navbar-logo {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--princeton-orange); /* Orange logo */
+}
+
+.navbar-logo span {
+  margin-right: 8px; /* Space between emoji and text */
+}
+
+.login-button-nav {
+  background-color: var(--princeton-orange); /* Orange login button */
+  color: var(--princeton-black);
+  font-weight: bold;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  text-decoration: none; /* Remove underline from link */
+  transition: background-color 0.2s ease-in-out;
+}
+
+.login-button-nav:hover {
+  background-color: #CC6600; /* Slightly darker orange on hover */
+}
+
+/* --- Hero Section --- */
+.hero-section {
+  flex-grow: 1; /* Allows this section to take up available space */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  /* background-image: url('path-to-your-blurred-campus-image.jpg'); /* Optional: Add a background image here */
+  background-size: cover;
+  background-position: center;
+  /* background-blend-mode: darken; /* For image, to keep dark theme */
+  /* background-color: rgba(0, 0, 0, 0.4); /* Overlay for readability */
+}
+
+.hero-title {
+  font-size: 4em; /* Adjust as needed for screen size */
+  font-weight: 800; /* Extra bold */
+  color: var(--light-text);
+  margin-bottom: 15px;
+  max-width: 900px; /* Constrain width for readability */
+  line-height: 1.1;
+}
+
+.hero-subtitle {
+  font-size: 1.5em;
+  color: var(--off-white);
+  margin-bottom: 40px;
+  max-width: 700px;
+}
+
+.how-it-works-button {
+  background-color: transparent;
+  color: var(--princeton-orange);
+  border: 2px solid var(--princeton-orange);
+  padding: 12px 30px;
+  border-radius: 6px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.how-it-works-button:hover {
+  background-color: var(--princeton-orange);
+  color: var(--princeton-black);
+}
+
+/* --- Value Propositions Section (Placeholder) --- */
+.value-props-section {
+    padding: 40px 20px;
+    background-color: #2a2a2a; /* Slightly different dark background */
+    display: flex;
+    justify-content: center; /* Center cards if they are added */
+    gap: 20px; /* Space between cards */
+}
+
+/* --- Footer --- */
+.footer {
+  background-color: var(--princeton-black);
+  padding: 20px;
+  text-align: center;
+  font-size: 0.9em;
+  color: var(--medium-grey);
+  margin-top: auto; /* Pushes the footer to the bottom */
+}
+
+/* --- Media Queries for Responsiveness --- */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 10px 20px;
+  }
+  .navbar-logo {
+    font-size: 22px;
+  }
+  .hero-title {
+    font-size: 2.5em;
+  }
+  .hero-subtitle {
+    font-size: 1.2em;
+  }
+  .login-button-nav {
+    padding: 8px 15px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .hero-title {
+    font-size: 2em;
+  }
+  .hero-subtitle {
+    font-size: 1em;
+  }
+}

@@ -1,22 +1,22 @@
+// frontend/src/App.js
 import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Home from './Home';
+import Dashboard from './Dashboard';
+import LoginPage from './LoginPage'; // Assuming you might add this route later
 
 function App() {
-  const [message, setMessage] = React.useState('Loading...');
-
-  React.useEffect(() => {
-    // Fetch the message from our API endpoint
-    fetch('/api/hello')
-      .then((res) => res.json())
-      .then((data) => setMessage(data.message))
-      .catch((err) => setMessage('Failed to fetch from API'));
-  }, []);
-
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
-      <h1>Hello from the React Frontend!</h1>
-      <p>Message from backend: <strong>{message}</strong></p>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        {/* You can add a specific login page route if you don't redirect immediately */}
+        <Route path="/loginpage" element={<LoginPage />} /> 
+      </Routes>
+    </BrowserRouter>
   );
 }
 
 export default App;
+
