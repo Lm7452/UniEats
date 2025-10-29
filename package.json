@@ -1,34 +1,23 @@
 {
   "name": "unieats-fullstack",
   "version": "1.0.0",
-  "description": "UniEats - Full-stack campus food delivery app",
+  "description": "Full-stack project for Heroku deployment",
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
-    "server": "cd server && npm run dev",
-    "client": "cd client && npm start",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
-    "build": "cd client && npm run build",
+    "install-server": "cd server && npm install",
+    "install-client": "cd client && npm install",
     "heroku-postbuild": "cd client && npm install && npm run build"
   },
   "engines": {
-    "node": "18.x",
-    "npm": "9.x"
+    "node": "18.x"
   },
   "keywords": [
-    "food-delivery",
-    "campus",
+    "heroku",
+    "full-stack",
     "react",
-    "express",
-    "mongodb"
+    "express"
   ],
-  "author": "Lynn Morris III",
-  "license": "ISC",
-  "dependencies": {
-    "concurrently": "^8.2.2",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "express": "^5.1.0"
-  }
+  "author": "",
+  "license": "ISC"
 }
