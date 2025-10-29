@@ -1,15 +1,30 @@
 // frontend/src/Dashboard.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './Dashboard.css'; // Import a CSS file for styling
 
 function Dashboard() {
-  // const BACKEND_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000'; // <-- REMOVED THIS
+  // State to hold the user's name
+  const [userName, setUserName] = useState("Student"); // Default placeholder
 
-  // Placeholder user data - replace with fetched data later
-  const placeholderUser = {
-    name: "Tiger Student",
-    // profilePictureUrl: 'path/to/default/avatar.png' // Add later if needed
-  };
+  useEffect(() => {
+    // Fetch the user's profile data from the backend
+    fetch('/profile')
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Not authenticated');
+        }
+        return res.json();
+      })
+      .then(user => {
+        // 'user.name' should match the 'name' column from your database
+        setUserName(user.name); 
+      })
+      .catch(error => {
+        console.error("Error fetching profile:", error);
+        // You could redirect to login here if not authenticated
+        // window.location.href = '/login'; 
+      });
+  }, []); // The empty array [] means this effect runs once when the component mounts
 
   return (
     <div className="dashboard-container">
@@ -25,8 +40,8 @@ function Dashboard() {
         <div className="user-profile">
           {/* Placeholder for profile picture */}
           {/* <img src={placeholderUser.profilePictureUrl} alt="Profile" className="profile-pic-placeholder" /> */}
-          <span className="user-name">Welcome, {placeholderUser.name}!</span>
-          <a href="/logout" className="logout-button-link"> {/* <-- CHANGED THIS */}
+          <span className="user-name">Welcome, {userName}!</span>
+          <a href="/logout" className="logout-button-link">
             <button className="logout-button">Logout</button>
           </a>
         </div>
