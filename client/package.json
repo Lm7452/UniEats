@@ -2,11 +2,10 @@
   "name": "client",
   "version": "1.0.0",
   "private": true,
-  "dependencies": {
-  },
+  "dependencies": {},
   "scripts": {
     "start": "echo \"This will be your frontend dev script (e.g., react-scripts start)\"",
-    "build": "echo \"Building static assets... (This script is run by Heroku)\"",
+    "build": "echo \"Building static assets... (This script is run by Heroku)\" && mkdir -p build",
     "test": "echo \"Run test script\""
   }
 }
