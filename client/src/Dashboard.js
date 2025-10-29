@@ -3,7 +3,7 @@ import React from 'react';
 import './Dashboard.css'; // Import a CSS file for styling
 
 function Dashboard() {
-  const BACKEND_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000'; // Fallback for local dev
+  // const BACKEND_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000'; // <-- REMOVED THIS
 
   // Placeholder user data - replace with fetched data later
   const placeholderUser = {
@@ -26,7 +26,7 @@ function Dashboard() {
           {/* Placeholder for profile picture */}
           {/* <img src={placeholderUser.profilePictureUrl} alt="Profile" className="profile-pic-placeholder" /> */}
           <span className="user-name">Welcome, {placeholderUser.name}!</span>
-          <a href={`${BACKEND_URL}/logout`} className="logout-button-link">
+          <a href="/logout" className="logout-button-link"> {/* <-- CHANGED THIS */}
             <button className="logout-button">Logout</button>
           </a>
         </div>
@@ -68,3 +68,4 @@ function Dashboard() {
 }
 
 export default Dashboard;
+

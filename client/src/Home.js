@@ -5,8 +5,7 @@ import './Home.css'; // Import the CSS file
 
 function Home() {
   // Use the environment variable for the backend URL
-  // Note: For Heroku, this will be empty, so requests go to the same origin.
-  const BACKEND_URL = process.env.REACT_APP_API_URL || ''; 
+  // const BACKEND_URL = process.env.REACT_APP_API_URL; // <-- REMOVED THIS
 
   // Function to handle "How it works" button click (for future implementation)
   const handleHowItWorksClick = () => {
@@ -23,7 +22,7 @@ function Home() {
           {/* Using an emoji for the fork/spoon for now, or you can add an image */}
           <span role="img" aria-label="utensils">🍴</span> UniEats
         </div>
-        <a href={`${BACKEND_URL}/login`} className="login-button-nav">
+        <a href="/login" className="login-button-nav"> {/* <-- CHANGED THIS */}
           Login
         </a>
       </nav>
