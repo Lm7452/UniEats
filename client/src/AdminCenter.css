@@ -1,0 +1,177 @@
+/* client/src/AdminCenter.css */
+
+:root {
+  --princeton-orange: #E77500;
+  --princeton-black: #000000;
+  --dark-grey: #333333;
+  --medium-grey: #606060;
+  --light-grey-bg: #f4f4f4;
+  --card-bg: #ffffff;
+  --card-text: #333;
+  --border-color: #ddd;
+  --error-bg: #fff0f0;
+  --error-border: #ffc9c9;
+  --error-text: #d90429;
+}
+
+body {
+  background-color: var(--light-grey-bg);
+}
+
+.admin-container {
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 20px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: var(--card-text);
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+.admin-header h1 {
+  margin: 0;
+  color: var(--princeton-black);
+}
+
+.back-link {
+  text-decoration: none;
+  color: var(--princeton-orange);
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: var(--princeton-black);
+}
+
+.error-message {
+  background-color: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error-text);
+  padding: 15px;
+  border-radius: 8px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.status-message {
+  display: block;
+  background-color: #f0f7ff;
+  border: 1px solid #cce1ff;
+  color: #004085;
+  padding: 10px 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.admin-section {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 25px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.admin-section h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: var(--princeton-orange);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.user-table-container {
+  overflow-x: auto;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+.user-table th,
+.user-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.user-table th {
+  background-color: var(--light-grey-bg);
+  color: var(--medium-grey);
+  font-size: 0.9em;
+  text-transform: uppercase;
+}
+
+.user-table tr:last-child td {
+  border-bottom: none;
+}
+
+.user-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.role-tag {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.9em;
+  text-transform: capitalize;
+}
+
+.role-tag.role-student {
+  background-color: #e0e0e0;
+  color: #333;
+}
+.role-tag.role-driver {
+  background-color: #fef3e6;
+  color: #b95000;
+  border: 1px solid #fbe6c7;
+}
+.role-tag.role-admin {
+  background-color: #ffe0e6;
+  color: #d90429;
+  border: 1px solid #ffc9c9;
+}
+
+.actions-cell {
+  text-align: center;
+}
+
+/* Re-using dashboard button styles */
+.action-button,
+.action-button-secondary {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.9em;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.action-button {
+  background-color: var(--princeton-orange);
+  color: var(--princeton-black);
+}
+.action-button:hover {
+  background-color: #cc6600;
+}
+
+.action-button-secondary {
+  background-color: #e0e0e0;
+  color: #333;
+  border: 1px solid #ccc;
+}
+.action-button-secondary:hover {
+  background-color: #d4d4d4;
+}

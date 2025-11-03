@@ -96,11 +96,9 @@ function isAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   }
-  // If not authenticated, and it's an API request, send 401 JSON
   if (req.path.startsWith('/api/')) {
     return res.status(401).json({ error: 'User not authenticated' });
   }
-  // Otherwise, it's a page load, redirect to login
   res.redirect('/');
 }
 
@@ -108,7 +106,7 @@ function isAuthenticated(req, res, next) {
 app.get('/api/buildings', async (req, res) => {
   try {
     const result = await db.query('SELECT name FROM buildings ORDER BY name ASC');
-    res.json(result.rows.map(row => row.name));
+    res.json(result.rows.map(row => row..name));
   } catch (err) {
     console.error('Error fetching buildings:', err);
     res.status(500).json({ error: 'Failed to fetch buildings' });
@@ -133,9 +131,13 @@ app.get('/logout', (req, res, next) => {
     });
   });
 });
+
+// GET profile route (sends ALL user data, including role)
 app.get('/profile', isAuthenticated, (req, res) => {
+  // req.user is populated by Passport. Send the whole thing.
   res.json(req.user); 
 });
+
 app.put('/profile', isAuthenticated, async (req, res) => {
   const {
     name,
@@ -146,7 +148,6 @@ app.put('/profile', isAuthenticated, async (req, res) => {
     notify_email_promotions
   } = req.body;
   const userId = req.user.id;
-  console.log(`Updating profile for user ${userId}:`, req.body);
   try {
     const result = await db.query(
       `UPDATE users SET
@@ -179,16 +180,13 @@ app.put('/profile', isAuthenticated, async (req, res) => {
   }
 });
 
-// *** NEW API ENDPOINT FOR CREATING ORDERS ***
+// POST a new order
 app.post('/api/orders', isAuthenticated, async (req, res) => {
   const { princeton_order_number, delivery_building, delivery_room, tip_amount } = req.body;
-  const customer_id = req.user.id; // Get the logged-in user's ID
-
-  // Basic validation
+  const customer_id = req.user.id;
   if (!princeton_order_number || !delivery_building || !delivery_room) {
     return res.status(400).json({ error: 'Missing required order details' });
   }
-
   try {
     const result = await db.query(
       `INSERT INTO orders 
@@ -198,30 +196,78 @@ app.post('/api/orders', isAuthenticated, async (req, res) => {
        RETURNING *`,
       [princeton_order_number, customer_id, delivery_building, delivery_room, tip_amount || 0]
     );
-
     const newOrder = result.rows[0];
     console.log(`New order created: ID ${newOrder.id} by user ${customer_id}`);
     res.status(201).json(newOrder); // 201 Created
-
   } catch (err) {
     console.error('Error creating new order:', err);
     res.status(500).json({ error: 'Failed to create order' });
   }
 });
-// *** END OF NEW ENDPOINT ***
 
 app.get('/login-failed', (req, res) => {
   res.status(401).send('<h1>Login Failed</h1><p>There was an error authenticating.</p><a href="/">Home</a>');
 });
 
-// --- 5. SERVE REACT APP ---
+
+// --- 5. ADMIN ROUTES ---
+
+// Middleware to check if user is an admin
+function isAdmin(req, res, next) {
+  if (req.isAuthenticated() && req.user.role === 'admin') {
+    return next();
+  }
+  res.status(403).json({ error: 'Forbidden: Requires admin privileges' });
+}
+
+// GET all users (Admin only)
+app.get('/api/admin/users', isAdmin, async (req, res) => {
+  try {
+    // Select all users, order by name
+    const result = await db.query('SELECT id, name, email, role, created_at FROM users ORDER BY name ASC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Admin error fetching users:', err);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+// PUT to update a user's role (Admin only)
+app.put('/api/admin/users/:userId/role', isAdmin, async (req, res) => {
+  const { userId } = req.params;
+  const { role } = req.body; // e.g., "driver" or "student"
+
+  if (!['student', 'driver', 'admin'].includes(role)) {
+    return res.status(400).json({ error: 'Invalid role specified' });
+  }
+
+  try {
+    const result = await db.query(
+      'UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2 RETURNING id, name, email, role',
+      [role, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    console.log(`Admin ${req.user.id} set user ${userId} role to ${role}`);
+    res.status(200).json(result.rows[0]); // Send back the updated user
+  } catch (err) {
+    console.error('Admin error updating role:', err);
+    res.status(500).json({ error: 'Failed to update role' });
+  }
+});
+
+
+// --- 6. SERVE REACT APP ---
 // This must come AFTER all your API routes
 app.use(express.static(path.join(__dirname, '../client/build')));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build/index.html'));
 });
 
-// --- 6. SERVER START ---
+// --- 7. SERVER START ---
 app.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
 });

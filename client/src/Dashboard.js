@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 import './Dashboard.css'; // Import a CSS file for styling
 
 function Dashboard() {
-  // State to hold the user's name
-  const [userName, setUserName] = useState("Student"); // Default placeholder
+  // State to hold the user's name AND role
+  const [user, setUser] = useState({ name: "Student", role: "student" });
 
   useEffect(() => {
     // Fetch the user's profile data from the backend
@@ -16,9 +16,9 @@ function Dashboard() {
         }
         return res.json();
       })
-      .then(user => {
-        // 'user.name' should match the 'name' column from your database
-        setUserName(user.name); 
+      .then(userData => {
+        // 'userData' is the full user object from the database
+        setUser(userData); 
       })
       .catch(error => {
         console.error("Error fetching profile:", error);
@@ -37,7 +37,7 @@ function Dashboard() {
           {/* Add navigation links here if needed later */}
         </nav>
         <div className="user-profile">
-          <span className="user-name">Welcome, {userName}!</span>
+          <span className="user-name">Welcome, {user.name}!</span>
           <a href="/logout" className="logout-button-link">
             <button className="logout-button">Logout</button>
           </a>
@@ -52,11 +52,9 @@ function Dashboard() {
           <h2>Quick Actions</h2>
           <div className="action-buttons">
           
-            {/* --- UPDATED THIS BUTTON --- */}
             <Link to="/new-order" className="action-button-link">
               <button className="action-button">Order Food Now!</button>
             </Link>
-            {/* --- END OF UPDATE --- */}
 
             <button className="action-button">View Order History</button>
             
@@ -65,6 +63,16 @@ function Dashboard() {
                 Profile & Settings
               </button>
             </Link>
+            
+            {/* --- CONDITIONAL ADMIN BUTTON --- */}
+            {user.role === 'admin' && (
+              <Link to="/admin" className="action-button-link">
+                <button className="action-button action-button-admin">
+                  Admin Center
+                </button>
+              </Link>
+            )}
+            {/* --- END OF CONDITIONAL BUTTON --- */}
 
           </div>
         </section>
@@ -88,4 +96,3 @@ function Dashboard() {
 }
 
 export default Dashboard;
-

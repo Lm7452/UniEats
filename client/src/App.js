@@ -5,7 +5,8 @@ import Home from './Home';
 import Dashboard from './Dashboard';
 import LoginPage from './LoginPage';
 import Settings from './Settings';
-import NewOrder from './NewOrder'; // <-- 1. IMPORT NEW COMPONENT
+import NewOrder from './NewOrder';
+import AdminCenter from './AdminCenter'; // <-- 1. IMPORT ADMIN COMPONENT
 
 function App() {
   return (
@@ -15,11 +16,11 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/loginpage" element={<LoginPage />} /> 
         <Route path="/settings" element={<Settings />} />
-        <Route path="/new-order" element={<NewOrder />} /> {/* <-- 2. ADD NEW ROUTE */}
+        <Route path="/new-order" element={<NewOrder />} />
+        <Route path="/admin" element={<AdminCenter />} /> {/* <-- 2. ADD ADMIN ROUTE */}
       </Routes>
     </BrowserRouter>
   );
 }
 
 export default App;
-
