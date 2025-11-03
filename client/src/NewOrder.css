@@ -1,0 +1,223 @@
+/* client/src/NewOrder.css */
+
+:root {
+  --princeton-orange: #E77500;
+  --princeton-black: #000000;
+  --dark-grey: #333333;
+  --medium-grey: #606060;
+  --light-grey-bg: #f4f4f4;
+  --card-bg: #ffffff;
+  --card-text: #333;
+  --border-color: #ddd;
+  --instruction-bg: #fef3e6;
+  --instruction-border: #fbe6c7;
+}
+
+body {
+  background-color: var(--light-grey-bg);
+}
+
+.new-order-container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: var(--card-text);
+}
+
+.new-order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+.new-order-header h1 {
+  margin: 0;
+  color: var(--princeton-black);
+}
+
+.back-link {
+  text-decoration: none;
+  color: var(--princeton-orange);
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: var(--princeton-black);
+}
+
+/* --- Instruction Box --- */
+.instruction-box {
+  background-color: var(--instruction-bg);
+  border: 1px solid var(--instruction-border);
+  border-radius: 8px;
+  padding: 15px 25px;
+  margin-bottom: 25px;
+}
+.instruction-box h3 {
+  margin-top: 0;
+  color: var(--princeton-orange);
+}
+.instruction-box p {
+  margin: 5px 0;
+  line-height: 1.5;
+}
+.instruction-box code {
+  background-color: #f0f0f0;
+  padding: 2px 5px;
+  border-radius: 4px;
+  color: var(--dark-grey);
+}
+
+/* --- Form Styles --- */
+.new-order-form {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.order-section {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 25px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.order-section h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: var(--princeton-orange);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+/* --- Form Groups (Copied from Settings.css) --- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+.form-group label {
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 0.9em;
+  color: var(--medium-grey);
+}
+.form-group input[type="text"],
+.form-group input[type="tel"] {
+  padding: 10px 12px;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  font-size: 1em;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  height: 42px;
+  box-sizing: border-box;
+}
+.form-group input:focus {
+  outline: none;
+  border-color: var(--princeton-orange);
+  box-shadow: 0 0 0 2px rgba(231, 117, 0, 0.2);
+}
+
+/* --- Tip Buttons --- */
+.tip-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.tip-button {
+  padding: 10px 20px;
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+  color: var(--princeton-orange);
+  border-radius: 5px;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.tip-button:hover {
+  border-color: var(--princeton-orange);
+  background-color: #fef3e6;
+}
+.tip-button.selected {
+  background-color: var(--princeton-orange);
+  color: var(--princeton-black);
+  border-color: var(--princeton-orange);
+}
+
+/* --- Payment Summary --- */
+.payment-summary p {
+  display: flex;
+  justify-content: space-between;
+  margin: 8px 0;
+  font-size: 1.1em;
+}
+.payment-summary span {
+  color: var(--medium-grey);
+  font-weight: 500;
+}
+.payment-summary p.total strong {
+  color: var(--princeton-black);
+}
+.payment-summary p.total span {
+  color: var(--princeton-black);
+  font-weight: bold;
+}
+.payment-summary hr {
+  border: 0;
+  border-top: 1px dashed var(--border-color);
+  margin: 15px 0;
+}
+
+/* --- Form Actions (Copied from Settings.css) --- */
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+.save-button {
+  background-color: var(--princeton-orange);
+  color: var(--princeton-black);
+  padding: 12px 25px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1.1em;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+.save-button:hover {
+  background-color: #cc6600;
+}
+.status-message {
+  font-weight: 500;
+}
+
+/* --- React-Select Styles (Copied from Settings.css) --- */
+.react-select__control {
+  min-height: 42px;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 5px !important;
+  box-shadow: none !important;
+}
+.react-select__control:hover {
+  border-color: var(--princeton-orange) !important;
+}
+.react-select__control--is-focused {
+  border-color: var(--princeton-orange) !important;
+  box-shadow: 0 0 0 2px rgba(231, 117, 0, 0.2) !important;
+}
+.react-select__option--is-focused {
+  background-color: #fef3e6 !important;
+  color: var(--princeton-black) !important;
+}
+.react-select__option--is-selected {
+  background-color: var(--princeton-orange) !important;
+  color: var(--princeton-black) !important;
+}

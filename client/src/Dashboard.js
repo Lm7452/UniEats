@@ -1,6 +1,6 @@
 // frontend/src/Dashboard.js
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // <-- ADDED THIS
+import { Link } from 'react-router-dom';
 import './Dashboard.css'; // Import a CSS file for styling
 
 function Dashboard() {
@@ -22,8 +22,6 @@ function Dashboard() {
       })
       .catch(error => {
         console.error("Error fetching profile:", error);
-        // You could redirect to login here if not authenticated
-        // window.location.href = '/login'; 
       });
   }, []); // The empty array [] means this effect runs once when the component mounts
 
@@ -53,16 +51,20 @@ function Dashboard() {
         <section className="dashboard-section">
           <h2>Quick Actions</h2>
           <div className="action-buttons">
-            <button className="action-button">Order Food Now!</button>
+          
+            {/* --- UPDATED THIS BUTTON --- */}
+            <Link to="/new-order" className="action-button-link">
+              <button className="action-button">Order Food Now!</button>
+            </Link>
+            {/* --- END OF UPDATE --- */}
+
             <button className="action-button">View Order History</button>
             
-            {/* --- ADDED THIS LINK --- */}
             <Link to="/settings" className="action-button-link">
               <button className="action-button action-button-secondary">
                 Profile & Settings
               </button>
             </Link>
-            {/* --- END OF ADDITION --- */}
 
           </div>
         </section>
@@ -86,3 +88,4 @@ function Dashboard() {
 }
 
 export default Dashboard;
+
