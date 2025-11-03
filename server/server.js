@@ -96,22 +96,24 @@ function isAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.status(401).json({ error: 'User not authenticated' });
+  // If not authenticated, and it's an API request, send 401 JSON
+  if (req.path.startsWith('/api/')) {
+    return res.status(401).json({ error: 'User not authenticated' });
+  }
+  // Otherwise, it's a page load, redirect to login
+  res.redirect('/');
 }
 
-// *** NEW API ENDPOINT ***
 // GET all buildings
 app.get('/api/buildings', async (req, res) => {
   try {
     const result = await db.query('SELECT name FROM buildings ORDER BY name ASC');
-    // Send back an array of just the names
     res.json(result.rows.map(row => row.name));
   } catch (err) {
     console.error('Error fetching buildings:', err);
     res.status(500).json({ error: 'Failed to fetch buildings' });
   }
 });
-// *** END OF NEW ENDPOINT ***
 
 app.get('/login',
   passport.authenticate('azuread-openidconnect', { failureRedirect: '/login-failed' })
@@ -176,11 +178,44 @@ app.put('/profile', isAuthenticated, async (req, res) => {
     res.status(500).json({ error: 'Failed to update profile' });
   }
 });
+
+// *** NEW API ENDPOINT FOR CREATING ORDERS ***
+app.post('/api/orders', isAuthenticated, async (req, res) => {
+  const { princeton_order_number, delivery_building, delivery_room, tip_amount } = req.body;
+  const customer_id = req.user.id; // Get the logged-in user's ID
+
+  // Basic validation
+  if (!princeton_order_number || !delivery_building || !delivery_room) {
+    return res.status(400).json({ error: 'Missing required order details' });
+  }
+
+  try {
+    const result = await db.query(
+      `INSERT INTO orders 
+        (princeton_order_number, customer_id, delivery_building, delivery_room, tip_amount, status)
+       VALUES 
+        ($1, $2, $3, $4, $5, 'pending')
+       RETURNING *`,
+      [princeton_order_number, customer_id, delivery_building, delivery_room, tip_amount || 0]
+    );
+
+    const newOrder = result.rows[0];
+    console.log(`New order created: ID ${newOrder.id} by user ${customer_id}`);
+    res.status(201).json(newOrder); // 201 Created
+
+  } catch (err) {
+    console.error('Error creating new order:', err);
+    res.status(500).json({ error: 'Failed to create order' });
+  }
+});
+// *** END OF NEW ENDPOINT ***
+
 app.get('/login-failed', (req, res) => {
   res.status(401).send('<h1>Login Failed</h1><p>There was an error authenticating.</p><a href="/">Home</a>');
 });
 
 // --- 5. SERVE REACT APP ---
+// This must come AFTER all your API routes
 app.use(express.static(path.join(__dirname, '../client/build')));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build/index.html'));

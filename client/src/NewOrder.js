@@ -15,6 +15,7 @@ function NewOrder() {
   const [buildingOptions, setBuildingOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false); // Prevent double-submit
   const navigate = useNavigate();
 
   // Fetch profile (for default address) and building list (for dropdown)
@@ -63,28 +64,53 @@ function NewOrder() {
 
   }, [navigate]);
 
-  // Handle form submission (MOCKED)
+  // Handle form submission (NOW REAL)
   const handleSubmit = (e) => {
     e.preventDefault();
-    setStatusMessage('Submitting order... (This is a mock-up)');
+    if (isSubmitting) return; // Don't submit twice
+
+    setIsSubmitting(true);
+    setStatusMessage('Placing your order...');
     
     const orderData = {
-      orderNumber,
-      deliveryBuilding: building,
-      deliveryRoom: room,
-      tipAmount: tip,
-      total: `(Mock Total) + ${tip} + $0.50 Fee`
+      princeton_order_number: orderNumber,
+      delivery_building: building,
+      delivery_room: room,
+      tip_amount: tip
     };
 
-    console.log('Mock Order Submitted:', orderData);
-
-    // Simulate a successful submission
-    setTimeout(() => {
-      setStatusMessage('Order placed successfully! (Mock-up)');
-      // In a real app, you would redirect to an "order status" page
-      // navigate(`/order/${newOrderId}`);
-    }, 1500);
+    // Send the data to the new backend endpoint
+    fetch('/api/orders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(orderData)
+    })
+    .then(res => {
+      if (!res.ok) {
+        // Handle server errors
+        return res.json().then(err => { throw new Error(err.error || 'Server error') });
+      }
+      return res.json();
+    })
+    .then(newOrder => {
+      console.log('Order created:', newOrder);
+      setStatusMessage('Order placed successfully!');
+      
+      // Redirect to dashboard after a short delay
+      setTimeout(() => {
+        navigate('/dashboard'); 
+        // In the future, we can navigate to: navigate(`/orders/${newOrder.id}`);
+      }, 1500);
+    })
+    .catch(err => {
+      console.error('Error placing order:', err);
+      setStatusMessage(`Error: ${err.message}. Please try again.`);
+      setIsSubmitting(false);
+    });
   };
+
 
   if (isLoading) {
     return <div className="new-order-container">Loading...</div>;
@@ -162,7 +188,7 @@ function NewOrder() {
         </section>
 
         <section className="order-section">
-          <h2>3. Tip Your Deliverer (Mock-up)</h2>
+          <h2>3. Tip Your Deliverer</h2>
           <div className="tip-buttons">
             {[1, 2, 3, 5].map((amount) => (
               <button
@@ -194,8 +220,8 @@ function NewOrder() {
             <p className="total"><strong>Total:</strong> <span>(Mock Total)</span></p>
           </div>
           <div className="form-actions">
-            <button type="submit" className="save-button">
-              Place Delivery Order (Mock)
+            <button type="submit" className="save-button" disabled={isSubmitting}>
+              {isSubmitting ? 'Placing Order...' : 'Place Delivery Order'}
             </button>
             {statusMessage && <span className="status-message">{statusMessage}</span>}
           </div>
