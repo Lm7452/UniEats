@@ -1,0 +1,149 @@
+/* client/src/Settings.css */
+
+:root {
+  --princeton-orange: #E77500;
+  --princeton-black: #000000;
+  --dark-grey: #333333;
+  --medium-grey: #606060;
+  --light-grey-bg: #f4f4f4;
+  --card-bg: #ffffff;
+  --card-text: #333;
+  --border-color: #ddd;
+}
+
+body {
+  background-color: var(--light-grey-bg);
+}
+
+.settings-container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: var(--card-text);
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+.settings-header h1 {
+  margin: 0;
+  color: var(--princeton-black);
+}
+
+.back-link {
+  text-decoration: none;
+  color: var(--princeton-orange);
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: var(--princeton-black);
+}
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.settings-section {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 25px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.settings-section h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: var(--princeton-orange);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 0.9em;
+  color: var(--medium-grey);
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="tel"] {
+  padding: 10px 12px;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  font-size: 1em;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--princeton-orange);
+  box-shadow: 0 0 0 2px rgba(231, 117, 0, 0.2);
+}
+
+.form-group input:disabled {
+  background-color: var(--light-grey-bg);
+  cursor: not-allowed;
+}
+
+.form-group-checkbox {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.form-group-checkbox input[type="checkbox"] {
+  margin-right: 10px;
+  /* Simple styling for checkbox */
+  width: 16px;
+  height: 16px;
+}
+
+.form-group-checkbox label {
+  font-weight: normal;
+  color: var(--card-text);
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.save-button {
+  background-color: var(--princeton-orange);
+  color: var(--princeton-black);
+  padding: 12px 25px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1em;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.save-button:hover {
+  background-color: #cc6600; /* Darker orange */
+}
+
+.status-message {
+  font-weight: 500;
+}

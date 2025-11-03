@@ -1,5 +1,6 @@
 // frontend/src/Dashboard.js
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; // <-- ADDED THIS
 import './Dashboard.css'; // Import a CSS file for styling
 
 function Dashboard() {
@@ -38,8 +39,6 @@ function Dashboard() {
           {/* Add navigation links here if needed later */}
         </nav>
         <div className="user-profile">
-          {/* Placeholder for profile picture */}
-          {/* <img src={placeholderUser.profilePictureUrl} alt="Profile" className="profile-pic-placeholder" /> */}
           <span className="user-name">Welcome, {userName}!</span>
           <a href="/logout" className="logout-button-link">
             <button className="logout-button">Logout</button>
@@ -54,9 +53,17 @@ function Dashboard() {
         <section className="dashboard-section">
           <h2>Quick Actions</h2>
           <div className="action-buttons">
-            <button className="action-button">Place New Order</button>
+            <button className="action-button">Order Food Now!</button>
             <button className="action-button">View Order History</button>
-            {/* Add more actions as needed */}
+            
+            {/* --- ADDED THIS LINK --- */}
+            <Link to="/settings" className="action-button-link">
+              <button className="action-button action-button-secondary">
+                Profile & Settings
+              </button>
+            </Link>
+            {/* --- END OF ADDITION --- */}
+
           </div>
         </section>
 
@@ -64,14 +71,10 @@ function Dashboard() {
           <h2>Recent Orders (Placeholder)</h2>
           <div className="order-list-placeholder">
             <p>Your recent orders will appear here.</p>
-            {/* You could add placeholder elements for individual orders */}
             <div className="placeholder-order-item">Order #1234 - Frist Grill - Delivered</div>
             <div className="placeholder-order-item">Order #1230 - Frist Grill - Picked Up</div>
           </div>
         </section>
-
-        {/* Add more sections like Settings, Favorites, etc. later */}
-
       </main>
 
       {/* --- Footer (Optional) --- */}
@@ -83,4 +86,3 @@ function Dashboard() {
 }
 
 export default Dashboard;
-

@@ -3,7 +3,8 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './Home';
 import Dashboard from './Dashboard';
-import LoginPage from './LoginPage'; // Assuming you might add this route later
+import LoginPage from './LoginPage';
+import Settings from './Settings'; // <-- ADDED THIS
 
 function App() {
   return (
@@ -11,12 +12,11 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        {/* You can add a specific login page route if you don't redirect immediately */}
         <Route path="/loginpage" element={<LoginPage />} /> 
+        <Route path="/settings" element={<Settings />} /> {/* <-- ADDED THIS */}
       </Routes>
     </BrowserRouter>
   );
 }
 
 export default App;
-
