@@ -6,7 +6,6 @@ const passport = require('passport');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const OIDCStrategy = require('passport-azure-ad').OIDCStrategy;
-// const cors = require('cors'); // <-- No longer needed
 const path = require('path');
 const db = require('./db'); 
 
@@ -16,19 +15,13 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // --- 2. MIDDLEWARE SETUP ---
-// Parse URL-encoded bodies (from forms)
 app.use(bodyParser.urlencoded({ extended: true }));
-// Parse JSON bodies (from our new settings page)
-app.use(express.json()); // <-- ADDED THIS
-
-// Session middleware
+app.use(express.json()); // Parse JSON bodies
 app.use(session({
   secret: process.env.SESSION_SECRET || 'a-default-secret-for-dev', 
   resave: false,
   saveUninitialized: true,
 }));
-
-// Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -44,17 +37,14 @@ const oidcConfig = {
     scope: ['profile', 'email'],
     passReqToCallback: false
 };
-
 console.log('--- Initializing Passport with this OIDC Config ---');
 console.log(oidcConfig);
-
 passport.use(new OIDCStrategy(oidcConfig,
   async (iss, sub, profile, done) => { 
     console.log('--- OIDC CALLBACK TRIGGERED ---');
     const azureOid = profile.oid;
     const email = profile.upn || profile._json?.email || profile.emails?.[0]?.value;
     const name = profile.displayName || 'UniEats User';
-
     if (!azureOid || !email) {
        console.error('Azure profile object missing oid or email:', profile);
        return done(new Error('Authentication profile is missing required identifiers.'), null);
@@ -86,11 +76,9 @@ passport.use(new OIDCStrategy(oidcConfig,
     }
   }
 ));
-
 passport.serializeUser((user, done) => {
   done(null, user.id); 
 });
-
 passport.deserializeUser(async (id, done) => {
   try {
     const userResult = await db.query('SELECT * FROM users WHERE id = $1', [id]);
@@ -111,10 +99,23 @@ function isAuthenticated(req, res, next) {
   res.status(401).json({ error: 'User not authenticated' });
 }
 
+// *** NEW API ENDPOINT ***
+// GET all buildings
+app.get('/api/buildings', async (req, res) => {
+  try {
+    const result = await db.query('SELECT name FROM buildings ORDER BY name ASC');
+    // Send back an array of just the names
+    res.json(result.rows.map(row => row.name));
+  } catch (err) {
+    console.error('Error fetching buildings:', err);
+    res.status(500).json({ error: 'Failed to fetch buildings' });
+  }
+});
+// *** END OF NEW ENDPOINT ***
+
 app.get('/login',
   passport.authenticate('azuread-openidconnect', { failureRedirect: '/login-failed' })
 );
-
 app.post('/auth/openid/return',
   passport.authenticate('azuread-openidconnect', { failureRedirect: '/login-failed' }),
   (req, res) => {
@@ -122,7 +123,6 @@ app.post('/auth/openid/return',
     res.redirect(`/dashboard`);
   }
 );
-
 app.get('/logout', (req, res, next) => {
   req.logout(function(err) {
     if (err) { return next(err); }
@@ -131,14 +131,9 @@ app.get('/logout', (req, res, next) => {
     });
   });
 });
-
-// GET profile route (sends user data)
 app.get('/profile', isAuthenticated, (req, res) => {
-  // req.user is populated by Passport from the session
   res.json(req.user); 
 });
-
-// PUT profile route (updates user data)
 app.put('/profile', isAuthenticated, async (req, res) => {
   const {
     name,
@@ -148,11 +143,8 @@ app.put('/profile', isAuthenticated, async (req, res) => {
     notify_email_order_status,
     notify_email_promotions
   } = req.body;
-  
   const userId = req.user.id;
-
   console.log(`Updating profile for user ${userId}:`, req.body);
-
   try {
     const result = await db.query(
       `UPDATE users SET
@@ -174,7 +166,6 @@ app.put('/profile', isAuthenticated, async (req, res) => {
         userId
       ]
     );
-    
     if (result.rows.length > 0) {
       res.status(200).json(result.rows[0]);
     } else {
@@ -185,12 +176,9 @@ app.put('/profile', isAuthenticated, async (req, res) => {
     res.status(500).json({ error: 'Failed to update profile' });
   }
 });
-
-
 app.get('/login-failed', (req, res) => {
   res.status(401).send('<h1>Login Failed</h1><p>There was an error authenticating.</p><a href="/">Home</a>');
 });
-
 
 // --- 5. SERVE REACT APP ---
 app.use(express.static(path.join(__dirname, '../client/build')));

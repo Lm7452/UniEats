@@ -90,6 +90,8 @@ body {
   border: 1px solid var(--border-color);
   font-size: 1em;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  height: 42px; /* Set height for consistency */
+  box-sizing: border-box; /* Include padding in height */
 }
 
 .form-group input:focus {
@@ -111,7 +113,6 @@ body {
 
 .form-group-checkbox input[type="checkbox"] {
   margin-right: 10px;
-  /* Simple styling for checkbox */
   width: 16px;
   height: 16px;
 }
@@ -147,3 +148,31 @@ body {
 .status-message {
   font-weight: 500;
 }
+
+/* --- React-Select Styles --- */
+.react-select__control {
+  min-height: 42px; /* Match our input height */
+  border: 1px solid var(--border-color) !important;
+  border-radius: 5px !important;
+  box-shadow: none !important;
+}
+
+.react-select__control:hover {
+  border-color: var(--princeton-orange) !important;
+}
+
+.react-select__control--is-focused {
+  border-color: var(--princeton-orange) !important;
+  box-shadow: 0 0 0 2px rgba(231, 117, 0, 0.2) !important;
+}
+
+.react-select__option--is-focused {
+  background-color: #fef3e6 !important;
+  color: var(--princeton-black) !important;
+}
+
+.react-select__option--is-selected {
+  background-color: var(--princeton-orange) !important;
+  color: var(--princeton-black) !important;
+}
+/* --- End of React-Select Styles --- */
