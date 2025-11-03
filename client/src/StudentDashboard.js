@@ -1,40 +1,35 @@
-// frontend/src/Dashboard.js
+// client/src/StudentDashboard.js
+// This is the (renamed) original Dashboard.js file
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import './Dashboard.css'; // Import a CSS file for styling
+import './Dashboard.css'; // We'll keep using the same CSS file
 
-function Dashboard() {
-  // State to hold the user's name AND role
+function StudentDashboard() {
   const [user, setUser] = useState({ name: "Student", role: "student" });
 
   useEffect(() => {
-    // Fetch the user's profile data from the backend
     fetch('/profile')
       .then(res => {
-        if (!res.ok) {
-          throw new Error('Not authenticated');
-        }
+        if (!res.ok) throw new Error('Not authenticated');
         return res.json();
       })
       .then(userData => {
-        // 'userData' is the full user object from the database
         setUser(userData); 
       })
       .catch(error => {
         console.error("Error fetching profile:", error);
       });
-  }, []); // The empty array [] means this effect runs once when the component mounts
+  }, []); 
 
   return (
     <div className="dashboard-container">
-      {/* --- Top Navigation / Header --- */}
       <header className="dashboard-header">
         <div className="logo">
           <span role="img" aria-label="utensils" style={{ marginRight: '8px' }}>🍴</span>
           UniEats
         </div>
         <nav className="dashboard-nav">
-          {/* Add navigation links here if needed later */}
         </nav>
         <div className="user-profile">
           <span className="user-name">Welcome, {user.name}!</span>
@@ -44,7 +39,6 @@ function Dashboard() {
         </div>
       </header>
 
-      {/* --- Main Content Area --- */}
       <main className="dashboard-main">
         <h1 className="dashboard-title">Your Dashboard</h1>
 
@@ -58,16 +52,12 @@ function Dashboard() {
 
             <button className="action-button">View Order History</button>
             
-            {/* --- THIS IS THE FIX --- */}
             <Link to="/settings" className="action-button-link">
-              {/* I removed "action-button-secondary" to make it orange again */}
               <button className="action-button">
                 Profile & Settings
               </button>
             </Link>
-            {/* --- END OF FIX --- */}
             
-            {/* --- CONDITIONAL ADMIN BUTTON --- */}
             {user.role === 'admin' && (
               <Link to="/admin" className="action-button-link">
                 <button className="action-button action-button-admin">
@@ -75,7 +65,6 @@ function Dashboard() {
                 </button>
               </Link>
             )}
-            {/* --- END OF CONDITIONAL BUTTON --- */}
 
           </div>
         </section>
@@ -90,7 +79,6 @@ function Dashboard() {
         </section>
       </main>
 
-      {/* --- Footer (Optional) --- */}
       <footer className="dashboard-footer">
         UniEats &copy; 2025
       </footer>
@@ -98,4 +86,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default StudentDashboard;

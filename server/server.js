@@ -1,4 +1,4 @@
-// server.js (Corrected Version)
+// server.js (Updated Login Redirect)
 
 const express = require('express');
 const dotenv = require('dotenv');
@@ -56,17 +56,14 @@ passport.use(new OIDCStrategy(oidcConfig,
         // User not found, create a new one with the name from Microsoft
         console.log(`User not found with OID ${azureOid}, creating new user...`);
         const insertResult = await db.query(
-          'INSERT INTO users (azure_oid, email, name) VALUES ($1, $2, $3) RETURNING *',
+          'INSERT INTO users (azure_oid, email, name) VALUES ($1, 2, $3) RETURNING *',
           [azureOid, email, name]
         );
         user = insertResult.rows[0];
       } else {
         // User WAS found.
         console.log('Existing user found:', user);
-
-        // --- THIS IS THE NAME OVERRIDE FIX ---
         // Only update their email if it's different.
-        // We no longer update their name, preserving their custom setting.
         if (user.email !== email) {
            console.log('Updating user email from Azure AD...');
            await db.query(
@@ -74,7 +71,6 @@ passport.use(new OIDCStrategy(oidcConfig,
              [email, user.id]
            );
         }
-        // --- END OF FIX ---
       }
       return done(null, user);
     } catch (err) {
@@ -126,6 +122,9 @@ app.get('/login',
 app.post('/auth/openid/return',
   passport.authenticate('azuread-openidconnect', { failureRedirect: '/login-failed' }),
   (req, res) => {
+    // --- THIS IS THE CHANGE ---
+    // Send all users to the generic /dashboard landing page.
+    // This page will then handle redirecting them based on role.
     console.log(`--- SUCCESS! Redirecting to: /dashboard ---`);
     res.redirect(`/dashboard`);
   }
@@ -141,7 +140,6 @@ app.get('/logout', (req, res, next) => {
 
 // GET profile route (sends ALL user data, including role)
 app.get('/profile', isAuthenticated, (req, res) => {
-  // req.user is populated by Passport. Send the whole thing.
   res.json(req.user); 
 });
 
@@ -224,14 +222,12 @@ function isAdmin(req, res, next) {
   if (req.isAuthenticated() && req.user.role === 'admin') {
     return next();
   }
-  // --- THIS IS THE TYPO FIX ---
   res.status(403).json({ error: 'Forbidden: Requires admin privileges' });
 }
 
 // GET all users (Admin only)
 app.get('/api/admin/users', isAdmin, async (req, res) => {
   try {
-    // Select all users, order by name
     const result = await db.query('SELECT id, name, email, role, created_at FROM users ORDER BY name ASC');
     res.json(result.rows);
   } catch (err) {
@@ -243,24 +239,21 @@ app.get('/api/admin/users', isAdmin, async (req, res) => {
 // PUT to update a user's role (Admin only)
 app.put('/api/admin/users/:userId/role', isAdmin, async (req, res) => {
   const { userId } = req.params;
-  const { role } = req.body; // e.g., "driver" or "student"
+  const { role } = req.body; 
 
   if (!['student', 'driver', 'admin'].includes(role)) {
     return res.status(400).json({ error: 'Invalid role specified' });
   }
-
   try {
     const result = await db.query(
       'UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2 RETURNING id, name, email, role',
       [role, userId]
     );
-
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
-
     console.log(`Admin ${req.user.id} set user ${userId} role to ${role}`);
-    res.status(200).json(result.rows[0]); // Send back the updated user
+    res.status(200).json(result.rows[0]); 
   } catch (err) {
     console.error('Admin error updating role:', err);
     res.status(500).json({ error: 'Failed to update role' });
@@ -269,7 +262,6 @@ app.put('/api/admin/users/:userId/role', isAdmin, async (req, res) => {
 
 
 // --- 6. SERVE REACT APP ---
-// This must come AFTER all your API routes
 app.use(express.static(path.join(__dirname, '../client/build')));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build/index.html'));
