@@ -1,4 +1,5 @@
 /* src/Dashboard.css */
+
 :root {
   --princeton-orange: #E77500;
   --princeton-black: #000000;
@@ -8,6 +9,8 @@
   --off-white: #f4f4f4;
   --card-bg: #ffffff;
   --card-text: #333;
+  --admin-color: #d90429; /* Added for Admin Button */
+  --admin-bg: #ffe0e6; /* Added for Admin Button */
 }
 
 body {
@@ -15,11 +18,13 @@ body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   background-color: var(--off-white); /* Light background for the page */
 }
+
 .dashboard-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
+
 /* --- Header --- */
 .dashboard-header {
   background-color: var(--princeton-black);
@@ -30,19 +35,23 @@ body {
   align-items: center;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
+
 .dashboard-header .logo {
   font-size: 1.6em;
   font-weight: bold;
   color: var(--princeton-orange);
 }
+
 .user-profile {
   display: flex;
   align-items: center;
 }
+
 .user-name {
   margin-right: 15px;
   font-weight: 500;
 }
+
 .profile-pic-placeholder { /* Style if you add an image */
   width: 35px;
   height: 35px;
@@ -50,9 +59,11 @@ body {
   background-color: var(--medium-grey); /* Placeholder color */
   margin-right: 10px;
 }
+
 .logout-button-link {
   text-decoration: none;
 }
+
 .logout-button {
   background-color: var(--princeton-orange);
   color: var(--princeton-black);
@@ -64,9 +75,11 @@ body {
   font-size: 0.9em;
   transition: background-color 0.2s ease;
 }
+
 .logout-button:hover {
   background-color: #cc6600; /* Darker orange */
 }
+
 /* --- Main Content --- */
 .dashboard-main {
   flex-grow: 1; /* Takes up remaining vertical space */
@@ -75,12 +88,14 @@ body {
   margin: 20px auto; /* Center content area with some margin */
   width: 90%;
 }
+
 .dashboard-title {
   color: var(--dark-grey);
   margin-bottom: 30px;
   border-bottom: 1px solid #ddd;
   padding-bottom: 10px;
 }
+
 .dashboard-section {
   background-color: var(--card-bg);
   color: var(--card-text);
@@ -89,6 +104,7 @@ body {
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
+
 .dashboard-section h2 {
   margin-top: 0;
   color: var(--princeton-orange);
@@ -96,10 +112,15 @@ body {
   padding-bottom: 10px;
   margin-bottom: 15px;
 }
+
 .action-buttons {
   display: flex;
   gap: 15px; /* Space between buttons */
   flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+}
+
+.action-button-link {
+  text-decoration: none; /* Remove underline from links */
 }
 
 .action-button {
@@ -113,13 +134,37 @@ body {
   font-weight: 500;
   transition: background-color 0.2s ease;
 }
+
 .action-button:hover {
   background-color: #cc6600;
 }
 
+/* New secondary button style */
+.action-button-secondary {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+}
+.action-button-secondary:hover {
+  background-color: #e0e0e0;
+}
+
+/* New Admin button style */
+.action-button-admin {
+  background-color: var(--admin-bg);
+  color: var(--admin-color);
+  border: 1px solid var(--admin-color);
+}
+.action-button-admin:hover {
+  background-color: var(--admin-color);
+  color: white;
+}
+
+
 .order-list-placeholder {
   color: var(--medium-grey);
 }
+
 .placeholder-order-item {
   padding: 10px 0;
   border-bottom: 1px dashed #eee;
@@ -127,6 +172,8 @@ body {
 .placeholder-order-item:last-child {
   border-bottom: none;
 }
+
+
 /* --- Footer --- */
 .dashboard-footer {
   text-align: center;
@@ -136,6 +183,7 @@ body {
   color: var(--medium-grey);
   border-top: 1px solid #ddd;
 }
+
 /* --- Basic Responsiveness --- */
 @media (max-width: 768px) {
   .dashboard-header {
@@ -151,6 +199,7 @@ body {
       align-items: flex-start;
   }
 }
+
 @media (max-width: 480px) {
     .dashboard-header {
         flex-direction: column;
@@ -170,3 +219,4 @@ body {
         text-align: center;
     }
 }
+
