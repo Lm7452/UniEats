@@ -9,6 +9,8 @@
   --off-white: #f4f4f4;
   --card-bg: #ffffff;
   --card-text: #333;
+  --admin-color: #d90429; /* Added for Admin Button */
+  --admin-bg: #ffe0e6; /* Added for Admin Button */
 }
 
 body {
@@ -117,6 +119,10 @@ body {
   flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
 }
 
+.action-button-link {
+  text-decoration: none; /* Remove underline from links */
+}
+
 .action-button {
   background-color: var(--princeton-orange);
   color: var(--princeton-black);
@@ -132,6 +138,28 @@ body {
 .action-button:hover {
   background-color: #cc6600;
 }
+
+/* New secondary button style */
+.action-button-secondary {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+}
+.action-button-secondary:hover {
+  background-color: #e0e0e0;
+}
+
+/* New Admin button style */
+.action-button-admin {
+  background-color: var(--admin-bg);
+  color: var(--admin-color);
+  border: 1px solid var(--admin-color);
+}
+.action-button-admin:hover {
+  background-color: var(--admin-color);
+  color: white;
+}
+
 
 .order-list-placeholder {
   color: var(--medium-grey);
@@ -191,3 +219,4 @@ body {
         text-align: center;
     }
 }
+
