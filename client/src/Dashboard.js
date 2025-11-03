@@ -58,11 +58,14 @@ function Dashboard() {
 
             <button className="action-button">View Order History</button>
             
+            {/* --- THIS IS THE FIX --- */}
             <Link to="/settings" className="action-button-link">
-              <button className="action-button action-button-secondary">
+              {/* I removed "action-button-secondary" to make it orange again */}
+              <button className="action-button">
                 Profile & Settings
               </button>
             </Link>
+            {/* --- END OF FIX --- */}
             
             {/* --- CONDITIONAL ADMIN BUTTON --- */}
             {user.role === 'admin' && (

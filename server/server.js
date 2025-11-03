@@ -1,4 +1,4 @@
-// server.js (Integrated Version)
+// server.js (Corrected Version)
 
 const express = require('express');
 const dotenv = require('dotenv');
@@ -53,6 +53,7 @@ passport.use(new OIDCStrategy(oidcConfig,
       let userResult = await db.query('SELECT * FROM users WHERE azure_oid = $1', [azureOid]);
       let user = userResult.rows[0];
       if (!user) {
+        // User not found, create a new one with the name from Microsoft
         console.log(`User not found with OID ${azureOid}, creating new user...`);
         const insertResult = await db.query(
           'INSERT INTO users (azure_oid, email, name) VALUES ($1, $2, $3) RETURNING *',
@@ -60,14 +61,20 @@ passport.use(new OIDCStrategy(oidcConfig,
         );
         user = insertResult.rows[0];
       } else {
+        // User WAS found.
         console.log('Existing user found:', user);
-        if (user.name !== name || user.email !== email) {
-           console.log('Updating user information...');
+
+        // --- THIS IS THE NAME OVERRIDE FIX ---
+        // Only update their email if it's different.
+        // We no longer update their name, preserving their custom setting.
+        if (user.email !== email) {
+           console.log('Updating user email from Azure AD...');
            await db.query(
-             'UPDATE users SET name = $1, email = $2, updated_at = NOW() WHERE id = $3',
-             [name, email, user.id]
+             'UPDATE users SET email = $1, updated_at = NOW() WHERE id = $2',
+             [email, user.id]
            );
         }
+        // --- END OF FIX ---
       }
       return done(null, user);
     } catch (err) {
@@ -217,6 +224,7 @@ function isAdmin(req, res, next) {
   if (req.isAuthenticated() && req.user.role === 'admin') {
     return next();
   }
+  // --- THIS IS THE TYPO FIX ---
   res.status(403).json({ error: 'Forbidden: Requires admin privileges' });
 }
 
