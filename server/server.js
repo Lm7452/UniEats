@@ -106,7 +106,7 @@ function isAuthenticated(req, res, next) {
 app.get('/api/buildings', async (req, res) => {
   try {
     const result = await db.query('SELECT name FROM buildings ORDER BY name ASC');
-    res.json(result.rows.map(row => row..name));
+    res.json(result.rows.map(row => row.name));
   } catch (err) {
     console.error('Error fetching buildings:', err);
     res.status(500).json({ error: 'Failed to fetch buildings' });
