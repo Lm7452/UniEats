@@ -18,6 +18,7 @@ body {
   background-color: var(--light-grey-bg);
 }
 
+/* Added top margin */
 .admin-container {
   max-width: 1000px;
   margin: 20px auto;
@@ -26,33 +27,9 @@ body {
   color: var(--card-text);
 }
 
-.admin-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 2px solid var(--border-color);
-  padding-bottom: 15px;
-  margin-bottom: 25px;
-}
-
-.admin-header h1 {
-  margin: 0;
-  color: var(--princeton-black);
-}
-
-.back-link {
-  text-decoration: none;
-  color: var(--princeton-orange);
-  font-weight: 500;
-  padding: 6px 12px; 
-  border-radius: 5px; 
-  transition: background-color 0.2s ease, color 0.2s ease; 
-}
-
-.back-link:hover {
-  color: var(--princeton-orange); 
-  background-color: #fef3e6; 
-}
+/* --- HEADER STYLES REMOVED --- */
+/* .admin-header, .back-link ... all removed */
+/* --- END OF REMOVAL --- */
 
 .error-message {
   background-color: var(--error-bg);
@@ -183,5 +160,3 @@ body {
   background-color: #d4d4d4;
   color: #333;
 }
-
-/* --- "ADMIN TOOLS" STYLES REMOVED --- */

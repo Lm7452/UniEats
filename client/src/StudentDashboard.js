@@ -1,10 +1,11 @@
 // client/src/StudentDashboard.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import Header from './Header'; // <-- 1. IMPORT HEADER
 import './Dashboard.css'; 
 
 function StudentDashboard() {
-  const [user, setUser] = useState({ name: "Student", role: "student" });
+  // const [user, setUser] = useState({ name: "Student", role: "student" }); <-- 2. REMOVED USER STATE
   const [recentOrders, setRecentOrders] = useState([]); 
   const [isLoading, setIsLoading] = useState(true); 
 
@@ -18,22 +19,17 @@ function StudentDashboard() {
   };
 
   useEffect(() => {
-    Promise.all([
-      fetch('/profile'),
-      fetch('/api/orders/my-history')
-    ])
-    .then(async ([profileRes, ordersRes]) => {
-      if (!profileRes.ok) throw new Error('Not authenticated');
-      const userData = await profileRes.json();
-      setUser(userData);
-      
-      if (ordersRes.ok) {
-        const orderData = await ordersRes.json();
+    // 3. REMOVED PROFILE FETCH (Header does it now)
+    fetch('/api/orders/my-history')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch order history');
+        return res.json();
+      })
+      .then(orderData => {
         setRecentOrders(orderData.slice(0, 3)); 
-      }
-    })
-    .catch(error => console.error("Error fetching dashboard data:", error))
-    .finally(() => setIsLoading(false));
+      })
+      .catch(error => console.error("Error fetching dashboard data:", error))
+      .finally(() => setIsLoading(false));
   }, []); 
 
   const renderStatus = (status) => {
@@ -41,33 +37,12 @@ function StudentDashboard() {
   };
 
   return (
+    // 4. Note: .dashboard-container is still used for the page body
     <div className="dashboard-container">
-      <header className="dashboard-header">
-        <div className="logo">
-          <span role="img" aria-label="utensils" style={{ marginRight: '8px' }}>🍴</span>
-          UniEats
-        </div>
-        
-        {/* --- NAVIGATION LINKS ADDED BACK --- */}
-        <nav className="dashboard-nav">
-          {/* A Driver or Admin can see the Driver Dashboard */}
-          {(user.role === 'driver' || user.role === 'admin') && (
-            <Link to="/driver-dashboard" className="header-nav-link">Driver Dashboard</Link>
-          )}
-          {/* Only an Admin can see the Admin Center */}
-          {user.role === 'admin' && (
-            <Link to="/admin" className="header-nav-link">Admin Center</Link>
-          )}
-        </nav>
-        {/* --- END OF NAVIGATION LINKS --- */}
-
-        <div className="user-profile">
-          <span className="user-name">Welcome, {user.name}!</span>
-          <a href="/logout" className="logout-button-link">
-            <button className="logout-button">Logout</button>
-          </a>
-        </div>
-      </header>
+      
+      {/* --- 5. REPLACED HEADER --- */}
+      <Header />
+      {/* --- END OF REPLACEMENT --- */}
 
       <main className="dashboard-main">
         <h1 className="dashboard-title">Student Dashboard</h1>
@@ -90,7 +65,10 @@ function StudentDashboard() {
               </button>
             </Link>
             
-            {/* --- ADMIN BUTTON REMOVED FROM QUICK ACTIONS --- */}
+            {/* This button is now gone, as it's handled by the Header.
+              But the CSS for .action-button-admin is still in Dashboard.css
+              for the Admin Center to use.
+            */}
 
           </div>
         </section>

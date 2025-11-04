@@ -1,6 +1,7 @@
 // client/src/DriverDashboard.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import Header from './Header'; // <-- 1. IMPORT HEADER
 import './DriverDashboard.css'; 
 
 function DriverDashboard() {
@@ -8,7 +9,7 @@ function DriverDashboard() {
   const [myOrders, setMyOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [user, setUser] = useState(null); 
+  // const [user, setUser] = useState(null); <-- 2. REMOVED USER STATE
   const navigate = useNavigate();
 
   const formatTime = (isoString) => {
@@ -24,25 +25,22 @@ function DriverDashboard() {
     if(isInitialLoad) setIsLoading(true);
     setError('');
 
+    // 3. REMOVED PROFILE FETCH
     Promise.all([
-      fetch('/profile'), 
       fetch('/api/driver/orders/available'),
       fetch('/api/driver/orders/mine')
     ])
-    .then(async ([profileRes, availableRes, mineRes]) => {
-      if (profileRes.status === 401) throw new Error('Not authenticated');
+    .then(async ([availableRes, mineRes]) => {
       if (availableRes.status === 403 || mineRes.status === 403) {
         throw new Error('You are not authorized to view this page.');
       }
-      if (!profileRes.ok || !availableRes.ok || !mineRes.ok) {
+      if (!availableRes.ok || !mineRes.ok) {
         throw new Error('Failed to fetch data.');
       }
       
-      const userData = await profileRes.json();
       const available = await availableRes.json();
       const mine = await mineRes.json();
       
-      setUser(userData);
       setAvailableOrders(available);
       setMyOrders(mine);
     })
@@ -105,25 +103,21 @@ function DriverDashboard() {
   };
 
   if (isLoading) {
-    return <div className="driver-container">Loading driver data...</div>;
+    return (
+      <>
+        <Header /> {/* Show header even while loading */}
+        <div className="driver-container">Loading driver data...</div>
+      </>
+    );
   }
 
   return (
     <div className="driver-container">
-      <header className="driver-header">
-        <h1>Driver Dashboard</h1>
-        <div>
-          {/* --- THIS IS THE "BRIDGE" LINK --- */}
-          <Link to="/student-dashboard" className="back-link" style={{marginRight: '20px'}}>Go to Student Dashboard</Link>
-          {user && user.role === 'admin' && (
-             <Link to="/admin" className="back-link">Admin Center</Link>
-          )}
-        </div>
-      </header>
+      {/* --- 4. REPLACED HEADER --- */}
+      <Header />
+      {/* --- END OF REPLACEMENT --- */}
 
       {error && <div className="driver-error-message">{error}</div>}
-
-      {/* --- QUICK ACTIONS SECTION REMOVED --- */}
 
       <section className="driver-section">
         <h2>My Claimed Orders ({myOrders.length})</h2>

@@ -1,6 +1,7 @@
 // client/src/AdminCenter.js
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import Header from './Header'; // <-- 1. IMPORT HEADER
 import './AdminCenter.css'; 
 
 function AdminCenter() {
@@ -58,32 +59,30 @@ function AdminCenter() {
   };
 
   if (isLoading) {
-    return <div className="admin-container">Loading...</div>;
+    return (
+      <>
+        <Header /> {/* Show header even while loading */}
+        <div className="admin-container">Loading...</div>
+      </>
+    );
   }
 
   if (error) {
-    return <div className="admin-container error-message">{error}</div>;
+    return (
+      <>
+        <Header /> {/* Show header even on error */}
+        <div className="admin-container error-message">{error}</div>
+      </>
+    );
   }
 
   return (
     <div className="admin-container">
-      <header className="admin-header">
-        <h1>Admin Center</h1>
-        {/* --- MOVED LINKS HERE --- */}
-        <div>
-          <Link to="/student-dashboard" className="back-link" state={{ from: '/admin' }}>
-            View Student Dashboard
-          </Link>
-          <Link to="/driver-dashboard" className="back-link" state={{ from: '/admin' }} style={{marginLeft: '15px'}}>
-            View Driver Dashboard
-          </Link>
-        </div>
-        {/* --- END OF MOVE --- */}
-      </header>
+      {/* --- 2. REPLACED HEADER --- */}
+      <Header />
+      {/* --- END OF REPLACEMENT --- */}
       
       {statusMessage && <div className="status-message">{statusMessage}</div>}
-
-      {/* --- "ADMIN TOOLS" SECTION REMOVED --- */}
 
       <section className="admin-section">
         <h2>Manage User Roles</h2>

@@ -1,0 +1,113 @@
+/* client/src/Header.css */
+
+:root {
+  --princeton-orange: #E77500;
+  --princeton-black: #000000;
+  --dark-grey: #333333;
+  --light-text: #FFFFFF;
+}
+
+.app-header {
+  background-color: var(--princeton-black);
+  color: var(--light-text);
+  padding: 10px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo-container {
+  flex: 1;
+}
+
+.logo-link {
+  font-size: 1.6em;
+  font-weight: bold;
+  color: var(--princeton-orange);
+  text-decoration: none;
+}
+
+.header-nav {
+  flex: 2; /* Give nav more space */
+  display: flex;
+  justify-content: flex-start; /* Align to the left of its container */
+  gap: 10px; 
+  margin-left: 40px;
+}
+
+.header-nav-link {
+  color: var(--light-text);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9em;
+  padding: 6px 12px; 
+  border-radius: 5px; 
+  transition: background-color 0.2s ease, color 0.2s ease; 
+}
+
+.header-nav-link:hover {
+  background-color: var(--dark-grey); 
+  color: var(--light-text); 
+}
+
+.user-profile {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* Push to the far right */
+}
+
+.user-name {
+  margin-right: 15px;
+  font-weight: 500;
+  font-size: 0.9em;
+}
+
+.logout-button-link {
+  text-decoration: none;
+}
+
+.logout-button {
+  background-color: var(--princeton-orange);
+  color: var(--princeton-black);
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9em;
+  transition: background-color 0.2s ease;
+}
+
+.logout-button:hover {
+  background-color: #cc6600;
+}
+
+/* --- Basic Responsiveness --- */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 10px 15px;
+  }
+  .header-nav {
+    display: none; /* Hide header nav on small screens */
+  }
+}
+
+@media (max-width: 480px) {
+    .app-header {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px;
+    }
+    .logo-container {
+      text-align: center;
+    }
+    .user-profile {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .user-name {
+      font-size: 0.85em;
+    }
+}

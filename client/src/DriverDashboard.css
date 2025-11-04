@@ -12,8 +12,8 @@
   --error-bg: #fff0f0;
   --error-border: #ffc9c9;
   --error-text: #d90429;
-  --claimed-bg: #f5f5f5; /* Background for claimed orders */
-  --complete-color: #006421; /* Green color for complete button */
+  --claimed-bg: #f5f5f5;
+  --complete-color: #006421;
   --complete-bg: #e6f7ec;
   --complete-border: #c3e6cb;
 }
@@ -22,6 +22,7 @@ body {
   background-color: var(--light-grey-bg);
 }
 
+/* Added top margin */
 .driver-container {
   max-width: 1000px;
   margin: 20px auto;
@@ -30,35 +31,9 @@ body {
   color: var(--card-text);
 }
 
-.driver-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 2px solid var(--border-color);
-  padding-bottom: 15px;
-  margin-bottom: 25px;
-}
-
-.driver-header h1 {
-  margin: 0;
-  color: var(--princeton-black);
-}
-
-/* --- UPDATED STYLES HERE --- */
-.back-link {
-  text-decoration: none;
-  color: var(--princeton-orange);
-  font-weight: 500;
-  padding: 6px 12px; 
-  border-radius: 5px; 
-  transition: background-color 0.2s ease, color 0.2s ease; 
-}
-
-.back-link:hover {
-  color: var(--princeton-orange); 
-  background-color: #fef3e6; 
-}
-/* --- END OF UPDATE --- */
+/* --- HEADER STYLES REMOVED --- */
+/* .driver-header, .back-link ... all removed */
+/* --- END OF REMOVAL --- */
 
 .driver-error-message {
   background-color: var(--error-bg);
