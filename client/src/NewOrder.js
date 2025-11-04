@@ -1,6 +1,7 @@
 // client/src/NewOrder.js
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom'; 
+import Header from './Header'; // <-- THIS IS THE FIX
 import Select from 'react-select';
 import './NewOrder.css'; 
 
@@ -13,13 +14,12 @@ function NewOrder() {
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false); 
-  const [availableDriverCount, setAvailableDriverCount] = useState(0); // <-- NEW STATE
+  const [availableDriverCount, setAvailableDriverCount] = useState(0); 
   const navigate = useNavigate();
   const location = useLocation(); 
 
   const backUrl = location.state?.from || '/student-dashboard';
 
-  // --- REWORKED useEffect LOGIC ---
   useEffect(() => {
     // 1. First, check if the app is "online"
     fetch('/api/app-status')
@@ -63,7 +63,6 @@ function NewOrder() {
       });
 
   }, [navigate]);
-  // --- END OF REWORKED LOGIC ---
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -109,6 +108,7 @@ function NewOrder() {
     });
   };
 
+
   if (isLoading) {
     return (
       <div className="page-container">
@@ -120,17 +120,14 @@ function NewOrder() {
   }
 
   return (
-    // --- USING GLOBAL LAYOUT CLASSES ---
     <div className="page-container">
       <Header />
       <main className="page-main">
-    {/* --- END OF UPDATE --- */}
         <header className="new-order-header" style={{border: 'none', padding: 0, marginBottom: '25px'}}>
           <h1>Place New Order</h1>
           <Link to={backUrl} className="back-link">&larr; Back</Link>
         </header>
 
-        {/* --- CONDITIONAL RENDERING LOGIC --- */}
         {availableDriverCount > 0 ? (
           <>
             <div className="instruction-box">
@@ -233,14 +230,12 @@ function NewOrder() {
             </form>
           </>
         ) : (
-          // --- THIS IS THE "OFFLINE" MESSAGE ---
           <div className="app-offline-box">
             <h2>Ordering is Currently Offline</h2>
             <p>We're sorry, but there are no drivers available at the moment.</p>
             <p>Please check back again soon!</p>
           </div>
         )}
-        {/* --- END OF CONDITIONAL RENDERING --- */}
       </main>
       <footer className="page-footer">
         UniEats &copy; 2025
