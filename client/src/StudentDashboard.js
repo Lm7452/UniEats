@@ -48,7 +48,18 @@ function StudentDashboard() {
           UniEats
         </div>
         
-        {/* --- NAVBAR REMOVED FROM HERE --- */}
+        {/* --- NAVIGATION LINKS ADDED BACK --- */}
+        <nav className="dashboard-nav">
+          {/* A Driver or Admin can see the Driver Dashboard */}
+          {(user.role === 'driver' || user.role === 'admin') && (
+            <Link to="/driver-dashboard" className="header-nav-link">Driver Dashboard</Link>
+          )}
+          {/* Only an Admin can see the Admin Center */}
+          {user.role === 'admin' && (
+            <Link to="/admin" className="header-nav-link">Admin Center</Link>
+          )}
+        </nav>
+        {/* --- END OF NAVIGATION LINKS --- */}
 
         <div className="user-profile">
           <span className="user-name">Welcome, {user.name}!</span>
@@ -79,14 +90,7 @@ function StudentDashboard() {
               </button>
             </Link>
             
-            {/* This is the correct, secure location for the admin button */}
-            {user.role === 'admin' && (
-              <Link to="/admin" className="action-button-link" state={{ from: '/student-dashboard' }}>
-                <button className="action-button action-button-admin">
-                  Admin Center
-                </button>
-              </Link>
-            )}
+            {/* --- ADMIN BUTTON REMOVED FROM QUICK ACTIONS --- */}
 
           </div>
         </section>

@@ -43,8 +43,11 @@ body {
   color: var(--princeton-orange);
 }
 
-/* --- UPDATED STYLES HERE --- */
+/* --- STYLES ADDED BACK --- */
 .dashboard-nav {
+  /* This will push the nav to the center-left */
+  margin-right: auto;
+  margin-left: 40px; 
   display: flex;
   gap: 10px; 
 }
@@ -61,7 +64,7 @@ body {
   background-color: var(--dark-grey); 
   color: var(--light-text); 
 }
-/* --- END OF UPDATE --- */
+/* --- END OF STYLES --- */
 
 .user-profile {
   display: flex;
@@ -71,14 +74,6 @@ body {
 .user-name {
   margin-right: 15px;
   font-weight: 500;
-}
-
-.profile-pic-placeholder { 
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  background-color: var(--medium-grey); 
-  margin-right: 10px;
 }
 
 .logout-button-link {
@@ -169,6 +164,7 @@ body {
   background-color: #e0e0e0;
 }
 
+/* Admin button is no longer here, but style is harmless to keep */
 .action-button-admin {
   background-color: var(--admin-bg);
   color: var(--admin-color);
@@ -189,7 +185,6 @@ body {
   background-color: #f0f0f0;
   color: #999;
 }
-
 
 .recent-orders-list {
   display: flex;
@@ -276,6 +271,9 @@ body {
   .action-buttons {
       flex-direction: column;
       align-items: flex-start;
+  }
+  .dashboard-nav {
+    display: none; /* Hide header nav on small screens */
   }
 }
 

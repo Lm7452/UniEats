@@ -69,24 +69,21 @@ function AdminCenter() {
     <div className="admin-container">
       <header className="admin-header">
         <h1>Admin Center</h1>
-        {/* --- LINK REMOVED FROM HERE --- */}
+        {/* --- MOVED LINKS HERE --- */}
+        <div>
+          <Link to="/student-dashboard" className="back-link" state={{ from: '/admin' }}>
+            View Student Dashboard
+          </Link>
+          <Link to="/driver-dashboard" className="back-link" state={{ from: '/admin' }} style={{marginLeft: '15px'}}>
+            View Driver Dashboard
+          </Link>
+        </div>
+        {/* --- END OF MOVE --- */}
       </header>
       
       {statusMessage && <div className="status-message">{statusMessage}</div>}
 
-      <section className="admin-section admin-tools">
-        <h2>Admin Tools</h2>
-        <p>Use these links to test other parts of the site.</p>
-        <div className="test-links">
-          <Link to="/student-dashboard" className="action-button" state={{ from: '/admin' }}>
-            View Student Dashboard
-          </Link>
-          <Link to="/driver-dashboard" className="action-button-secondary" state={{ from: '/admin' }}>
-            View Driver Dashboard
-          </Link>
-          {/* --- "MY SETTINGS" BUTTON REMOVED --- */}
-        </div>
-      </section>
+      {/* --- "ADMIN TOOLS" SECTION REMOVED --- */}
 
       <section className="admin-section">
         <h2>Manage User Roles</h2>

@@ -40,7 +40,6 @@ body {
   color: var(--princeton-black);
 }
 
-/* --- UPDATED STYLES HERE --- */
 .back-link {
   text-decoration: none;
   color: var(--princeton-orange);
@@ -54,7 +53,6 @@ body {
   color: var(--princeton-orange); 
   background-color: #fef3e6; 
 }
-/* --- END OF UPDATE --- */
 
 .error-message {
   background-color: var(--error-bg);
@@ -186,12 +184,4 @@ body {
   color: #333;
 }
 
-/* --- New styles for Admin Tools section --- */
-.admin-tools p {
-  margin-top: -10px;
-  font-size: 0.95em;
-  color: var(--medium-grey);
-}
-.test-links {
-  gap: 15px;
-}
+/* --- "ADMIN TOOLS" STYLES REMOVED --- */
