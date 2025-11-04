@@ -113,7 +113,7 @@ function NewOrder() {
       <header className="new-order-header">
         <h1>Place New Order</h1>
         {/* 4. Use the dynamic backUrl */}
-        <Link to={backUrl} className="back-link">&larr; Back to Dashboard</Link>
+        <Link to={backUrl} className="back-link">&larr; Back</Link>
       </header>
 
       <div className="instruction-box">

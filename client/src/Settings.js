@@ -21,7 +21,7 @@ function Settings() {
   const navigate = useNavigate();
   const location = useLocation(); // 2. Get location info
 
-  // 3. Set the 'back' URL
+  // 3. Set the 'back' URL based on the state passed from the previous page
   const backUrl = location.state?.from || '/student-dashboard';
 
   useEffect(() => {
@@ -121,7 +121,7 @@ function Settings() {
       <header className="settings-header">
         <h1>Profile & Settings</h1>
         {/* 4. Use the dynamic backUrl */}
-        <Link to={backUrl} className="back-link">&larr; Back to Dashboard</Link>
+        <Link to={backUrl} className="back-link">&larr; Back</Link>
       </header>
 
       <form onSubmit={handleSubmit} className="settings-form">

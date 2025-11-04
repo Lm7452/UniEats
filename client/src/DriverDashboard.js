@@ -8,10 +8,9 @@ function DriverDashboard() {
   const [myOrders, setMyOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [user, setUser] = useState(null); // <-- Store user for Admin link
+  const [user, setUser] = useState(null); 
   const navigate = useNavigate();
 
-  // Function to format time nicely
   const formatTime = (isoString) => {
     return new Date(isoString).toLocaleString('en-US', {
       month: 'short',
@@ -26,14 +25,12 @@ function DriverDashboard() {
     setError('');
 
     Promise.all([
-      fetch('/profile'), // <-- Fetch profile for user role
+      fetch('/profile'), 
       fetch('/api/driver/orders/available'),
       fetch('/api/driver/orders/mine')
     ])
     .then(async ([profileRes, availableRes, mineRes]) => {
-      if (profileRes.status === 401) {
-        throw new Error('Not authenticated');
-      }
+      if (profileRes.status === 401) throw new Error('Not authenticated');
       if (availableRes.status === 403 || mineRes.status === 403) {
         throw new Error('You are not authorized to view this page.');
       }
@@ -115,34 +112,19 @@ function DriverDashboard() {
     <div className="driver-container">
       <header className="driver-header">
         <h1>Driver Dashboard</h1>
-        {/* Show Admin Center link if user is an admin */}
-        {user && user.role === 'admin' && (
-           <Link to="/admin" className="back-link">Admin Center</Link>
-        )}
+        <div>
+          {/* --- THIS IS THE "BRIDGE" LINK --- */}
+          <Link to="/student-dashboard" className="back-link" style={{marginRight: '20px'}}>Go to Student Dashboard</Link>
+          {user && user.role === 'admin' && (
+             <Link to="/admin" className="back-link">Admin Center</Link>
+          )}
+        </div>
       </header>
 
       {error && <div className="driver-error-message">{error}</div>}
 
-      {/* --- ADDED QUICK ACTIONS FOR DRIVERS --- */}
-      <section className="driver-section">
-        <h2>Quick Actions</h2>
-        <div className="action-buttons">
-          <Link to="/new-order" className="action-button-link" state={{ from: '/driver-dashboard' }}>
-            <button className="action-button">Order Food Now!</button>
-          </Link>
-          <Link to="/order-history" className="action-button-link" state={{ from: '/driver-dashboard' }}>
-            <button className="action-button">View Order History</button>
-          </Link>
-          <Link to="/settings" className="action-button-link" state={{ from: '/driver-dashboard' }}>
-            <button className="action-button">
-              Profile & Settings
-            </button>
-          </Link>
-        </div>
-      </section>
-      {/* --- END OF NEW SECTION --- */}
+      {/* --- QUICK ACTIONS SECTION REMOVED --- */}
 
-      {/* --- MY CLAIMED ORDERS SECTION --- */}
       <section className="driver-section">
         <h2>My Claimed Orders ({myOrders.length})</h2>
         <div className="order-list">
@@ -173,7 +155,6 @@ function DriverDashboard() {
         </div>
       </section>
 
-      {/* --- AVAILABLE ORDERS SECTION --- */}
       <section className="driver-section">
         <h2>Available Orders ({availableOrders.length})</h2>
         <div className="order-list">

@@ -36,9 +36,7 @@ function AdminCenter() {
     
     fetch(`/api/admin/users/${userId}/role`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ role: newRole }),
     })
     .then(res => {
@@ -71,40 +69,29 @@ function AdminCenter() {
     <div className="admin-container">
       <header className="admin-header">
         <h1>Admin Center</h1>
-        <Link to="/student-dashboard" className="back-link">&larr; Back to Student Dashboard</Link>
+        {/* This link now correctly "tags" its navigation */}
+        <Link to="/student-dashboard" className="back-link" state={{ from: '/admin' }}>&larr; Go to Student Dashboard</Link>
       </header>
       
       {statusMessage && <div className="status-message">{statusMessage}</div>}
 
-      {/* --- ADDED QUICK ACTIONS FOR ADMIN --- */}
-      <section className="admin-section">
-        <h2>Quick Actions</h2>
-        <div className="action-buttons">
-          <Link to="/new-order" className="action-button-link" state={{ from: '/admin' }}>
-            <button className="action-button">Order Food Now!</button>
-          </Link>
-          <Link to="/order-history" className="action-button-link" state={{ from: '/admin' }}>
-            <button className="action-button">View My Order History</button>
-          </Link>
-          <Link to="/settings" className="action-button-link" state={{ from: '/admin' }}>
-            <button className="action-button">
-              Profile & Settings
-            </button>
-          </Link>
-        </div>
-      </section>
-      {/* --- END OF NEW SECTION --- */}
+      {/* --- QUICK ACTIONS SECTION REMOVED --- */}
 
       <section className="admin-section admin-tools">
         <h2>Admin Tools</h2>
         <p>Use these links to test other parts of the site.</p>
         <div className="test-links">
+          {/* --- ADDED 'state' PROP TO LINKS --- */}
           <Link to="/student-dashboard" className="action-button" state={{ from: '/admin' }}>
             View Student Dashboard
           </Link>
           <Link to="/driver-dashboard" className="action-button-secondary" state={{ from: '/admin' }}>
             View Driver Dashboard
           </Link>
+          <Link to="/settings" className="action-button" state={{ from: '/admin' }}>
+            My Settings
+          </Link>
+          {/* --- END OF 'state' PROP ADDITION --- */}
         </div>
       </section>
 

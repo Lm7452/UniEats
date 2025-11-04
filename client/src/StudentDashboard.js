@@ -1,14 +1,13 @@
 // client/src/StudentDashboard.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import './Dashboard.css'; // We'll keep using the same CSS file
+import './Dashboard.css'; 
 
 function StudentDashboard() {
   const [user, setUser] = useState({ name: "Student", role: "student" });
   const [recentOrders, setRecentOrders] = useState([]); 
   const [isLoading, setIsLoading] = useState(true); 
 
-  // Function to format time nicely
   const formatTime = (isoString) => {
     return new Date(isoString).toLocaleString('en-US', {
       month: 'short',
@@ -24,9 +23,7 @@ function StudentDashboard() {
       fetch('/api/orders/my-history')
     ])
     .then(async ([profileRes, ordersRes]) => {
-      if (!profileRes.ok) {
-        throw new Error('Not authenticated');
-      }
+      if (!profileRes.ok) throw new Error('Not authenticated');
       const userData = await profileRes.json();
       setUser(userData);
       
@@ -35,15 +32,10 @@ function StudentDashboard() {
         setRecentOrders(orderData.slice(0, 3)); 
       }
     })
-    .catch(error => {
-      console.error("Error fetching dashboard data:", error);
-    })
-    .finally(() => {
-      setIsLoading(false); 
-    });
+    .catch(error => console.error("Error fetching dashboard data:", error))
+    .finally(() => setIsLoading(false));
   }, []); 
 
-  // Helper to render the status tag
   const renderStatus = (status) => {
     return <span className={`status-tag status-${status}`}>{status}</span>;
   };
@@ -56,6 +48,14 @@ function StudentDashboard() {
           UniEats
         </div>
         <nav className="dashboard-nav">
+          {/* --- ADDED LINKS TO ROLE DASHBOARDS --- */}
+          {user.role === 'admin' && (
+            <Link to="/admin" className="header-nav-link">Admin Center</Link>
+          )}
+          {user.role === 'driver' && (
+            <Link to="/driver-dashboard" className="header-nav-link">Driver Dashboard</Link>
+          )}
+          {/* --- END OF ADDITION --- */}
         </nav>
         <div className="user-profile">
           <span className="user-name">Welcome, {user.name}!</span>
@@ -66,12 +66,13 @@ function StudentDashboard() {
       </header>
 
       <main className="dashboard-main">
-        <h1 className="dashboard-title">Your Dashboard</h1>
+        <h1 className="dashboard-title">Student Dashboard</h1>
 
         <section className="dashboard-section">
           <h2>Quick Actions</h2>
           <div className="action-buttons">
           
+            {/* --- ADDED 'state' PROP TO ALL LINKS --- */}
             <Link to="/new-order" className="action-button-link" state={{ from: '/student-dashboard' }}>
               <button className="action-button">Order Food Now!</button>
             </Link>
@@ -85,14 +86,7 @@ function StudentDashboard() {
                 Profile & Settings
               </button>
             </Link>
-            
-            {user.role === 'admin' && (
-              <Link to="/admin" className="action-button-link" state={{ from: '/student-dashboard' }}>
-                <button className="action-button action-button-admin">
-                  Admin Center
-                </button>
-              </Link>
-            )}
+            {/* --- END OF 'state' PROP ADDITION --- */}
 
           </div>
         </section>

@@ -10,10 +10,9 @@ function OrderHistory() {
   const navigate = useNavigate();
   const location = useLocation(); // 2. Get location info
 
-  // 3. Set the 'back' URL based on the state passed from the previous page
+  // 3. Set the 'back' URL
   const backUrl = location.state?.from || '/student-dashboard';
 
-  // Function to format time nicely
   const formatTime = (isoString) => {
     return new Date(isoString).toLocaleString('en-US', {
       month: 'short',
@@ -61,7 +60,7 @@ function OrderHistory() {
       <header className="history-header">
         <h1>My Order History</h1>
         {/* 4. Use the dynamic backUrl */}
-        <Link to={backUrl} className="back-link">&larr; Back to Dashboard</Link>
+        <Link to={backUrl} className="back-link">&larr; Back</Link>
       </header>
       
       <section className="history-section">

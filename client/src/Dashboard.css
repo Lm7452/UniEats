@@ -43,6 +43,25 @@ body {
   color: var(--princeton-orange);
 }
 
+/* --- ADDED THIS SECTION --- */
+.dashboard-nav {
+  display: flex;
+  gap: 20px;
+}
+.header-nav-link {
+  color: var(--light-text);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9em;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+.header-nav-link:hover {
+  background-color: var(--dark-grey);
+}
+/* --- END OF ADDITION --- */
+
 .user-profile {
   display: flex;
   align-items: center;
@@ -51,14 +70,6 @@ body {
 .user-name {
   margin-right: 15px;
   font-weight: 500;
-}
-
-.profile-pic-placeholder { 
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  background-color: var(--medium-grey); 
-  margin-right: 10px;
 }
 
 .logout-button-link {
@@ -170,8 +181,6 @@ body {
   color: #999;
 }
 
-
-/* --- NEW STYLES FOR RECENT ORDERS --- */
 .recent-orders-list {
   display: flex;
   flex-direction: column;
@@ -204,11 +213,6 @@ body {
   margin-top: 2px;
 }
 
-/* --- THIS CLASS WAS REMOVED --- */
-/* .order-status { } */
-/* --- END OF REMOVAL --- */
-
-
 /* --- Status Tag Styles (Copied from OrderHistory.css) --- */
 .status-tag {
   padding: 4px 8px;
@@ -237,7 +241,6 @@ body {
   color: #d90429;
   border: 1px solid #ffc9c9;
 }
-
 
 /* --- Footer --- */
 .dashboard-footer {

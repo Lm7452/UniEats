@@ -193,18 +193,4 @@ body {
   flex-wrap: wrap;
 }
 
-/* --- ADDED QUICK ACTION STYLES --- */
-.action-buttons {
-  display: flex;
-  gap: 15px; 
-  flex-wrap: wrap;
-}
-.action-button-link {
-  text-decoration: none; 
-}
-/* Re-use action-button, but reset width */
-.action-buttons .action-button {
-  width: auto;
-  padding: 10px 20px;
-}
-/* --- END OF NEW STYLES --- */
+/* --- QUICK ACTION STYLES REMOVED --- */
