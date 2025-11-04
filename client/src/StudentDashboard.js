@@ -5,8 +5,8 @@ import './Dashboard.css'; // We'll keep using the same CSS file
 
 function StudentDashboard() {
   const [user, setUser] = useState({ name: "Student", role: "student" });
-  const [recentOrders, setRecentOrders] = useState([]); // <-- 1. ADD NEW STATE
-  const [isLoading, setIsLoading] = useState(true); // <-- 2. ADD LOADING STATE
+  const [recentOrders, setRecentOrders] = useState([]); 
+  const [isLoading, setIsLoading] = useState(true); 
 
   // Function to format time nicely
   const formatTime = (isoString) => {
@@ -33,7 +33,6 @@ function StudentDashboard() {
       
       if (ordersRes.ok) {
         const orderData = await ordersRes.json();
-        // 3. Get the first 3 orders
         setRecentOrders(orderData.slice(0, 3)); 
       }
     })
@@ -41,7 +40,7 @@ function StudentDashboard() {
       console.error("Error fetching dashboard data:", error);
     })
     .finally(() => {
-      setIsLoading(false); // 4. Set loading to false
+      setIsLoading(false); 
     });
   }, []); 
 
@@ -99,7 +98,6 @@ function StudentDashboard() {
           </div>
         </section>
 
-        {/* --- 5. UPDATED THIS SECTION --- */}
         <section className="dashboard-section">
           <h2>Recent Orders</h2>
           {isLoading ? (
@@ -114,15 +112,15 @@ function StudentDashboard() {
                     <strong>{order.delivery_building}, {order.delivery_room}</strong>
                     <span className="order-time">{formatTime(order.created_at)}</span>
                   </div>
-                  <div className="order-status">
-                    {renderStatus(order.status)}
-                  </div>
+                  {/* --- THIS IS THE FIX --- */}
+                  {/* The span is now the direct child */}
+                  {renderStatus(order.status)}
+                  {/* --- END OF FIX --- */}
                 </div>
               ))}
             </div>
           )}
         </section>
-        {/* --- END OF UPDATE --- */}
       </main>
 
       <footer className="dashboard-footer">

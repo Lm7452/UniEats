@@ -204,10 +204,9 @@ body {
   margin-top: 2px;
 }
 
-.order-status {
-  /* Status tags will be styled below */
-}
-/* --- END OF NEW STYLES --- */
+/* --- THIS CLASS WAS REMOVED --- */
+/* .order-status { } */
+/* --- END OF REMOVAL --- */
 
 
 /* --- Status Tag Styles (Copied from OrderHistory.css) --- */
