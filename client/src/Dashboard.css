@@ -220,3 +220,14 @@ body {
     }
 }
 
+/* --- ADDED THIS NEW STYLE --- */
+.action-button-disabled {
+  background-color: #f0f0f0;
+  color: #999;
+  border: 1px solid #ccc;
+  cursor: not-allowed;
+}
+.action-button-disabled:hover {
+  background-color: #f0f0f0;
+  color: #999;
+}

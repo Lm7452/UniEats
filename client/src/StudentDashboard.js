@@ -50,7 +50,12 @@ function StudentDashboard() {
               <button className="action-button">Order Food Now!</button>
             </Link>
 
-            <button className="action-button">View Order History</button>
+            {/* --- THIS IS THE FIX --- */}
+            {/* Wrapped in a Link tag to match its siblings */}
+            <Link to="#" className="action-button-link" onClick={(e) => e.preventDefault()}>
+              <button className="action-button action-button-disabled">View Order History</button>
+            </Link>
+            {/* --- END OF FIX --- */}
             
             <Link to="/settings" className="action-button-link">
               <button className="action-button">
