@@ -47,16 +47,9 @@ function StudentDashboard() {
           <span role="img" aria-label="utensils" style={{ marginRight: '8px' }}>🍴</span>
           UniEats
         </div>
-        <nav className="dashboard-nav">
-          {/* --- ADDED LINKS TO ROLE DASHBOARDS --- */}
-          {user.role === 'admin' && (
-            <Link to="/admin" className="header-nav-link">Admin Center</Link>
-          )}
-          {user.role === 'driver' && (
-            <Link to="/driver-dashboard" className="header-nav-link">Driver Dashboard</Link>
-          )}
-          {/* --- END OF ADDITION --- */}
-        </nav>
+        
+        {/* --- NAVBAR REMOVED FROM HERE --- */}
+
         <div className="user-profile">
           <span className="user-name">Welcome, {user.name}!</span>
           <a href="/logout" className="logout-button-link">
@@ -72,7 +65,6 @@ function StudentDashboard() {
           <h2>Quick Actions</h2>
           <div className="action-buttons">
           
-            {/* --- ADDED 'state' PROP TO ALL LINKS --- */}
             <Link to="/new-order" className="action-button-link" state={{ from: '/student-dashboard' }}>
               <button className="action-button">Order Food Now!</button>
             </Link>
@@ -86,7 +78,15 @@ function StudentDashboard() {
                 Profile & Settings
               </button>
             </Link>
-            {/* --- END OF 'state' PROP ADDITION --- */}
+            
+            {/* This is the correct, secure location for the admin button */}
+            {user.role === 'admin' && (
+              <Link to="/admin" className="action-button-link" state={{ from: '/student-dashboard' }}>
+                <button className="action-button action-button-admin">
+                  Admin Center
+                </button>
+              </Link>
+            )}
 
           </div>
         </section>

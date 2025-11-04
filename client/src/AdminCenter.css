@@ -188,9 +188,6 @@ body {
   color: var(--medium-grey);
 }
 .test-links {
-  display: flex;
+  /* --- REMOVED 'display: flex' --- */
   gap: 15px;
-  flex-wrap: wrap;
 }
-
-/* --- QUICK ACTION STYLES REMOVED --- */

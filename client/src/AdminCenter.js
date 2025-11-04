@@ -69,29 +69,22 @@ function AdminCenter() {
     <div className="admin-container">
       <header className="admin-header">
         <h1>Admin Center</h1>
-        {/* This link now correctly "tags" its navigation */}
-        <Link to="/student-dashboard" className="back-link" state={{ from: '/admin' }}>&larr; Go to Student Dashboard</Link>
+        {/* --- LINK REMOVED FROM HERE --- */}
       </header>
       
       {statusMessage && <div className="status-message">{statusMessage}</div>}
-
-      {/* --- QUICK ACTIONS SECTION REMOVED --- */}
 
       <section className="admin-section admin-tools">
         <h2>Admin Tools</h2>
         <p>Use these links to test other parts of the site.</p>
         <div className="test-links">
-          {/* --- ADDED 'state' PROP TO LINKS --- */}
           <Link to="/student-dashboard" className="action-button" state={{ from: '/admin' }}>
             View Student Dashboard
           </Link>
           <Link to="/driver-dashboard" className="action-button-secondary" state={{ from: '/admin' }}>
             View Driver Dashboard
           </Link>
-          <Link to="/settings" className="action-button" state={{ from: '/admin' }}>
-            My Settings
-          </Link>
-          {/* --- END OF 'state' PROP ADDITION --- */}
+          {/* --- "MY SETTINGS" BUTTON REMOVED --- */}
         </div>
       </section>
 

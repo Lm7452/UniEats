@@ -43,24 +43,7 @@ body {
   color: var(--princeton-orange);
 }
 
-/* --- ADDED THIS SECTION --- */
-.dashboard-nav {
-  display: flex;
-  gap: 20px;
-}
-.header-nav-link {
-  color: var(--light-text);
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.9em;
-  padding: 5px 10px;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-}
-.header-nav-link:hover {
-  background-color: var(--dark-grey);
-}
-/* --- END OF ADDITION --- */
+/* --- NAV STYLES REMOVED FROM HERE --- */
 
 .user-profile {
   display: flex;
