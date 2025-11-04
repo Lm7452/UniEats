@@ -1,4 +1,4 @@
-// server.js (Now with Order Completion route)
+// server.js (Now with customer phone numbers for drivers)
 
 const express = require('express');
 const dotenv = require('dotenv');
@@ -297,7 +297,8 @@ app.get('/api/driver/orders/available', isDriver, async (req, res) => {
     const result = await db.query(
       `SELECT 
          o.id, o.princeton_order_number, o.delivery_building, o.delivery_room, o.tip_amount, o.created_at,
-         u.name AS customer_name
+         u.name AS customer_name,
+         u.phone_number AS customer_phone  -- <-- ADDED THIS
        FROM orders o
        JOIN users u ON o.customer_id = u.id
        WHERE o.status = 'pending'
@@ -317,7 +318,8 @@ app.get('/api/driver/orders/mine', isDriver, async (req, res) => {
     const result = await db.query(
       `SELECT 
          o.id, o.princeton_order_number, o.delivery_building, o.delivery_room, o.tip_amount, o.status, o.created_at,
-         u.name AS customer_name
+         u.name AS customer_name,
+         u.phone_number AS customer_phone  -- <-- ADDED THIS
        FROM orders o
        JOIN users u ON o.customer_id = u.id
        WHERE o.driver_id = $1 AND o.status = 'claimed'
@@ -352,17 +354,16 @@ app.put('/api/driver/orders/:orderId/claim', isDriver, async (req, res) => {
     const claimedOrder = result.rows[0];
     console.log(`Driver ${driverId} claimed order ${orderId}`);
     res.status(200).json(claimedOrder);
-  } catch (err){
+  } catch (err) {
     console.error('Driver error claiming order:', err);
     res.status(500).json({ error: 'Failed to claim order' });
   }
 });
 
-// *** NEW API ENDPOINT FOR COMPLETING ORDERS ***
+// PUT to complete a claimed order
 app.put('/api/driver/orders/:orderId/complete', isDriver, async (req, res) => {
   const { orderId } = req.params;
   const driverId = req.user.id;
-
   try {
     const result = await db.query(
       `UPDATE orders 
@@ -373,23 +374,17 @@ app.put('/api/driver/orders/:orderId/complete', isDriver, async (req, res) => {
        RETURNING *`,
       [orderId, driverId]
     );
-
-    // Check if the update was successful
     if (result.rows.length === 0) {
-      // This means the order wasn't claimed by this driver or was already completed
       return res.status(404).json({ error: 'Order not found or not claimed by you.' });
     }
-    
     const completedOrder = result.rows[0];
     console.log(`Driver ${driverId} completed order ${orderId}`);
     res.status(200).json(completedOrder);
-
   } catch (err) {
     console.error('Driver error completing order:', err);
     res.status(500).json({ error: 'Failed to complete order' });
   }
 });
-// *** END OF NEW ENDPOINT ***
 
 
 // --- 7. SERVE REACT APP ---

@@ -1,7 +1,7 @@
 // client/src/DriverDashboard.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import './DriverDashboard.css'; // We'll create this next
+import './DriverDashboard.css'; 
 
 function DriverDashboard() {
   const [availableOrders, setAvailableOrders] = useState([]);
@@ -21,8 +21,8 @@ function DriverDashboard() {
   };
 
   // We use useCallback to memoize this function
-  const fetchData = useCallback(() => {
-    setIsLoading(true);
+  const fetchData = useCallback((isInitialLoad = false) => {
+    if(isInitialLoad) setIsLoading(true);
     setError('');
 
     // Fetch both sets of orders simultaneously
@@ -39,6 +39,8 @@ function DriverDashboard() {
       }
       const available = await availableRes.json();
       const mine = await mineRes.json();
+      
+      // Update state
       setAvailableOrders(available);
       setMyOrders(mine);
     })
@@ -50,14 +52,24 @@ function DriverDashboard() {
       }
     })
     .finally(() => {
-      setIsLoading(false);
+      if(isInitialLoad) setIsLoading(false);
     });
-  }, [navigate]);
+  }, [navigate]); // navigate is a dependency
 
-  // Fetch data on initial load
+  // Fetch data on initial load and set up auto-refresh
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    // 1. Fetch data immediately on load
+    fetchData(true); 
+    
+    // 2. Set up an interval to refresh data every 30 seconds
+    const intervalId = setInterval(() => {
+      console.log("Auto-refreshing driver orders...");
+      fetchData(false); // Pass false to not show loading spinner
+    }, 30000); // 30,000 milliseconds = 30 seconds
+
+    // 3. Clear the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, [fetchData]); // Use fetchData as the dependency
 
   // Handle claiming an order
   const handleClaimOrder = (orderId) => {
@@ -78,6 +90,8 @@ function DriverDashboard() {
       return res.json();
     })
     .then(claimedOrder => {
+      // Manually add the phone number from the original object, as the claim response might not have it
+      claimedOrder.customer_phone = orderToClaim.customer_phone;
       setMyOrders(prev => [claimedOrder, ...prev]);
       setError(''); 
     })
@@ -88,11 +102,9 @@ function DriverDashboard() {
     });
   };
   
-  // *** NEW FUNCTION TO COMPLETE AN ORDER ***
+  // Handle completing an order
   const handleCompleteOrder = (orderId) => {
-    // Optimistically remove the order from "My Orders"
     setMyOrders(prev => prev.filter(o => o.id !== orderId));
-
     fetch(`/api/driver/orders/${orderId}/complete`, {
       method: 'PUT'
     })
@@ -104,16 +116,14 @@ function DriverDashboard() {
     })
     .then(completedOrder => {
       console.log('Order completed:', completedOrder.id);
-      setError(''); // Clear any errors
+      setError(''); 
     })
     .catch(err => {
       console.error(err);
       setError(err.message);
-      // Rollback: Re-fetch data if the completion failed
-      fetchData(); 
+      fetchData(false); // Re-fetch all data on error
     });
   };
-  // *** END OF NEW FUNCTION ***
 
   if (isLoading) {
     return <div className="driver-container">Loading driver data...</div>;
@@ -140,17 +150,19 @@ function DriverDashboard() {
                 <h3>Order for {order.customer_name}</h3>
                 <p><strong>Order #:</strong> {order.princeton_order_number}</p>
                 <p><strong>Deliver To:</strong> {order.delivery_building} - Room {order.delivery_room}</p>
+                {/* --- ADDED CUSTOMER PHONE --- */}
+                <p><strong>Contact:</strong> 
+                  <a href={`tel:${order.customer_phone}`}>{order.customer_phone || 'Not Provided'}</a>
+                </p>
                 <p className="order-tip">Tip: ${parseFloat(order.tip_amount).toFixed(2)}</p>
                 <p className="order-time">Placed at: {formatTime(order.created_at)}</p>
                 <div className="order-actions">
-                  {/* --- UPDATED THIS BUTTON --- */}
                   <button 
                     className="action-button-complete"
                     onClick={() => handleCompleteOrder(order.id)}
                   >
                     Mark as Complete
                   </button>
-                  {/* --- END OF UPDATE --- */}
                 </div>
               </div>
             ))
@@ -170,6 +182,8 @@ function DriverDashboard() {
                 <h3>Order for {order.customer_name}</h3>
                 <p><strong>Order #:</strong> {order.princeton_order_number}</p>
                 <p><strong>Deliver To:</strong> {order.delivery_building} - Room {order.delivery_room}</p>
+                {/* --- ADDED CUSTOMER PHONE --- */}
+                <p><strong>Contact:</strong> {order.customer_phone || 'Not Provided'}</p>
                 <p className="order-tip">Tip: ${parseFloat(order.tip_amount).toFixed(2)}</p>
                 <p className="order-time">Placed at: {formatTime(order.created_at)}</p>
                 <div className="order-actions">
