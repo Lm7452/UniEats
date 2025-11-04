@@ -61,14 +61,10 @@ function DriverDashboard() {
 
   // Handle claiming an order
   const handleClaimOrder = (orderId) => {
-    // Find the order we're about to claim
     const orderToClaim = availableOrders.find(o => o.id === orderId);
     if (!orderToClaim) return;
-
-    // Optimistically remove it from the available list
     setAvailableOrders(prev => prev.filter(o => o.id !== orderId));
 
-    // Send request to the API
     fetch(`/api/driver/orders/${orderId}/claim`, {
       method: 'PUT'
     })
@@ -82,17 +78,42 @@ function DriverDashboard() {
       return res.json();
     })
     .then(claimedOrder => {
-      // Success! Add the newly claimed order to "My Orders"
       setMyOrders(prev => [claimedOrder, ...prev]);
-      setError(''); // Clear any previous errors
+      setError(''); 
     })
     .catch(err => {
       console.error(err);
       setError(err.message);
-      // Rollback: Add the order back to the available list if the claim failed
       setAvailableOrders(prev => [orderToClaim, ...prev]);
     });
   };
+  
+  // *** NEW FUNCTION TO COMPLETE AN ORDER ***
+  const handleCompleteOrder = (orderId) => {
+    // Optimistically remove the order from "My Orders"
+    setMyOrders(prev => prev.filter(o => o.id !== orderId));
+
+    fetch(`/api/driver/orders/${orderId}/complete`, {
+      method: 'PUT'
+    })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error('Failed to complete order.');
+      }
+      return res.json();
+    })
+    .then(completedOrder => {
+      console.log('Order completed:', completedOrder.id);
+      setError(''); // Clear any errors
+    })
+    .catch(err => {
+      console.error(err);
+      setError(err.message);
+      // Rollback: Re-fetch data if the completion failed
+      fetchData(); 
+    });
+  };
+  // *** END OF NEW FUNCTION ***
 
   if (isLoading) {
     return <div className="driver-container">Loading driver data...</div>;
@@ -102,7 +123,6 @@ function DriverDashboard() {
     <div className="driver-container">
       <header className="driver-header">
         <h1>Driver Dashboard</h1>
-        {/* Link back to Admin Center if user is an admin */}
         <Link to="/admin" className="back-link">Admin Center</Link>
       </header>
 
@@ -123,7 +143,14 @@ function DriverDashboard() {
                 <p className="order-tip">Tip: ${parseFloat(order.tip_amount).toFixed(2)}</p>
                 <p className="order-time">Placed at: {formatTime(order.created_at)}</p>
                 <div className="order-actions">
-                  <button className="action-button-secondary" disabled>Mark as Complete (WIP)</button>
+                  {/* --- UPDATED THIS BUTTON --- */}
+                  <button 
+                    className="action-button-complete"
+                    onClick={() => handleCompleteOrder(order.id)}
+                  >
+                    Mark as Complete
+                  </button>
+                  {/* --- END OF UPDATE --- */}
                 </div>
               </div>
             ))

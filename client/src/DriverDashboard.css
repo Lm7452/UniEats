@@ -13,6 +13,9 @@
   --error-border: #ffc9c9;
   --error-text: #d90429;
   --claimed-bg: #f5f5f5; /* Background for claimed orders */
+  --complete-color: #006421; /* Green color for complete button */
+  --complete-bg: #e6f7ec;
+  --complete-border: #c3e6cb;
 }
 
 body {
@@ -152,7 +155,8 @@ body {
 
 /* Button Styles (from AdminCenter.css) */
 .action-button,
-.action-button-secondary {
+.action-button-secondary,
+.action-button-complete {
   width: 100%; /* Make button fill the card width */
   padding: 10px 12px;
   border: none;
@@ -180,3 +184,15 @@ body {
   border: 1px solid #ccc;
   cursor: not-allowed;
 }
+
+/* --- NEW STYLE FOR COMPLETE BUTTON --- */
+.action-button-complete {
+  background-color: var(--complete-bg);
+  color: var(--complete-color);
+  border: 1px solid var(--complete-border);
+}
+.action-button-complete:hover {
+  background-color: var(--complete-color);
+  color: #fff;
+}
+/* --- END OF NEW STYLE --- */

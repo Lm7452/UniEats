@@ -1,4 +1,4 @@
-// server.js (Now with Student Order History route)
+// server.js (Now with Order Completion route)
 
 const express = require('express');
 const dotenv = require('dotenv');
@@ -208,7 +208,7 @@ app.post('/api/orders', isAuthenticated, async (req, res) => {
   }
 });
 
-// *** NEW API ENDPOINT FOR STUDENT ORDER HISTORY ***
+// GET Student's order history
 app.get('/api/orders/my-history', isAuthenticated, async (req, res) => {
   const customer_id = req.user.id;
   try {
@@ -219,7 +219,7 @@ app.get('/api/orders/my-history', isAuthenticated, async (req, res) => {
        FROM orders o
        LEFT JOIN users u ON o.driver_id = u.id
        WHERE o.customer_id = $1
-       ORDER BY o.created_at DESC`, // Show newest orders first
+       ORDER BY o.created_at DESC`, 
       [customer_id]
     );
     res.json(result.rows);
@@ -228,7 +228,6 @@ app.get('/api/orders/my-history', isAuthenticated, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch order history' });
   }
 });
-// *** END OF NEW ENDPOINT ***
 
 
 app.get('/login-failed', (req, res) => {
@@ -336,7 +335,6 @@ app.get('/api/driver/orders/mine', isDriver, async (req, res) => {
 app.put('/api/driver/orders/:orderId/claim', isDriver, async (req, res) => {
   const { orderId } = req.params;
   const driverId = req.user.id;
-
   try {
     const result = await db.query(
       `UPDATE orders 
@@ -348,20 +346,50 @@ app.put('/api/driver/orders/:orderId/claim', isDriver, async (req, res) => {
        RETURNING *`,
       [driverId, orderId]
     );
-
     if (result.rows.length === 0) {
       return res.status(409).json({ error: 'Order is no longer available to claim.' });
     }
-    
     const claimedOrder = result.rows[0];
     console.log(`Driver ${driverId} claimed order ${orderId}`);
     res.status(200).json(claimedOrder);
-
-  } catch (err) {
+  } catch (err){
     console.error('Driver error claiming order:', err);
     res.status(500).json({ error: 'Failed to claim order' });
   }
 });
+
+// *** NEW API ENDPOINT FOR COMPLETING ORDERS ***
+app.put('/api/driver/orders/:orderId/complete', isDriver, async (req, res) => {
+  const { orderId } = req.params;
+  const driverId = req.user.id;
+
+  try {
+    const result = await db.query(
+      `UPDATE orders 
+       SET 
+         status = 'delivered' 
+       WHERE 
+         id = $1 AND driver_id = $2 AND status = 'claimed'
+       RETURNING *`,
+      [orderId, driverId]
+    );
+
+    // Check if the update was successful
+    if (result.rows.length === 0) {
+      // This means the order wasn't claimed by this driver or was already completed
+      return res.status(404).json({ error: 'Order not found or not claimed by you.' });
+    }
+    
+    const completedOrder = result.rows[0];
+    console.log(`Driver ${driverId} completed order ${orderId}`);
+    res.status(200).json(completedOrder);
+
+  } catch (err) {
+    console.error('Driver error completing order:', err);
+    res.status(500).json({ error: 'Failed to complete order' });
+  }
+});
+// *** END OF NEW ENDPOINT ***
 
 
 // --- 7. SERVE REACT APP ---
