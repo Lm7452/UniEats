@@ -1,4 +1,4 @@
-// server.js (Now with Driver API routes)
+// server.js (Now with Student Order History route)
 
 const express = require('express');
 const dotenv = require('dotenv');
@@ -208,6 +208,29 @@ app.post('/api/orders', isAuthenticated, async (req, res) => {
   }
 });
 
+// *** NEW API ENDPOINT FOR STUDENT ORDER HISTORY ***
+app.get('/api/orders/my-history', isAuthenticated, async (req, res) => {
+  const customer_id = req.user.id;
+  try {
+    const result = await db.query(
+      `SELECT 
+         o.id, o.princeton_order_number, o.delivery_building, o.delivery_room, o.tip_amount, o.status, o.created_at,
+         u.name AS driver_name
+       FROM orders o
+       LEFT JOIN users u ON o.driver_id = u.id
+       WHERE o.customer_id = $1
+       ORDER BY o.created_at DESC`, // Show newest orders first
+      [customer_id]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching student order history:', err);
+    res.status(500).json({ error: 'Failed to fetch order history' });
+  }
+});
+// *** END OF NEW ENDPOINT ***
+
+
 app.get('/login-failed', (req, res) => {
   res.status(401).send('<h1>Login Failed</h1><p>There was an error authenticating.</p><a href="/">Home</a>');
 });
@@ -279,7 +302,7 @@ app.get('/api/driver/orders/available', isDriver, async (req, res) => {
        FROM orders o
        JOIN users u ON o.customer_id = u.id
        WHERE o.status = 'pending'
-       ORDER BY o.created_at ASC`, // Show oldest orders first
+       ORDER BY o.created_at ASC`, 
     );
     res.json(result.rows);
   } catch (err) {
@@ -299,7 +322,7 @@ app.get('/api/driver/orders/mine', isDriver, async (req, res) => {
        FROM orders o
        JOIN users u ON o.customer_id = u.id
        WHERE o.driver_id = $1 AND o.status = 'claimed'
-       ORDER BY o.created_at DESC`, // Show newest claimed orders first
+       ORDER BY o.created_at DESC`, 
       [driverId]
     );
     res.json(result.rows);
@@ -326,9 +349,7 @@ app.put('/api/driver/orders/:orderId/claim', isDriver, async (req, res) => {
       [driverId, orderId]
     );
 
-    // Check if the update was successful
     if (result.rows.length === 0) {
-      // This means the order was already claimed (or didn't exist)
       return res.status(409).json({ error: 'Order is no longer available to claim.' });
     }
     
@@ -344,7 +365,6 @@ app.put('/api/driver/orders/:orderId/claim', isDriver, async (req, res) => {
 
 
 // --- 7. SERVE REACT APP ---
-// This must come AFTER all your API routes
 app.use(express.static(path.join(__dirname, '../client/build')));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build/index.html'));

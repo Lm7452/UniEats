@@ -1,0 +1,131 @@
+/* client/src/OrderHistory.css */
+
+:root {
+  --princeton-orange: #E77500;
+  --princeton-black: #000000;
+  --dark-grey: #333333;
+  --medium-grey: #606060;
+  --light-grey-bg: #f4f4f4;
+  --card-bg: #ffffff;
+  --card-text: #333;
+  --border-color: #ddd;
+  --error-bg: #fff0f0;
+  --error-border: #ffc9c9;
+  --error-text: #d90429;
+}
+
+body {
+  background-color: var(--light-grey-bg);
+}
+
+.history-container {
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 20px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: var(--card-text);
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+.history-header h1 {
+  margin: 0;
+  color: var(--princeton-black);
+}
+
+.back-link {
+  text-decoration: none;
+  color: var(--princeton-orange);
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: var(--princeton-black);
+}
+
+.error-message {
+  background-color: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error-text);
+  padding: 15px;
+  border-radius: 8px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.history-section {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 25px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.order-table-container {
+  overflow-x: auto;
+}
+
+.order-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+.order-table th,
+.order-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.order-table th {
+  background-color: var(--light-grey-bg);
+  color: var(--medium-grey);
+  font-size: 0.9em;
+  text-transform: uppercase;
+}
+
+.order-table tr:last-child td {
+  border-bottom: none;
+}
+
+.order-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+/* --- Status Tag Styles --- */
+.status-tag {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.9em;
+  text-transform: capitalize;
+}
+
+.status-tag.status-pending {
+  background-color: #e0e0e0;
+  color: #333;
+}
+.status-tag.status-claimed {
+  background-color: #fef3e6;
+  color: #b95000;
+  border: 1px solid #fbe6c7;
+}
+.status-tag.status-delivered {
+  background-color: #e6f7ec;
+  color: #006421;
+  border: 1px solid #c3e6cb;
+}
+.status-tag.status-cancelled {
+  background-color: #ffe0e6;
+  color: #d90429;
+  border: 1px solid #ffc9c9;
+}

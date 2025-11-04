@@ -4,11 +4,12 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './Home';
 import DashboardLanding from './DashboardLanding';
 import StudentDashboard from './StudentDashboard';
-import DriverDashboard from './DriverDashboard'; // <-- 1. IMPORT DRIVER DASHBOARD
+import DriverDashboard from './DriverDashboard';
 import LoginPage from './LoginPage';
 import Settings from './Settings';
 import NewOrder from './NewOrder';
 import AdminCenter from './AdminCenter';
+import OrderHistory from './OrderHistory'; // <-- 1. IMPORT NEW COMPONENT
 
 function App() {
   return (
@@ -17,7 +18,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<DashboardLanding />} />
         <Route path="/student-dashboard" element={<StudentDashboard />} />
-        <Route path="/driver-dashboard" element={<DriverDashboard />} /> {/* <-- 2. ADD DRIVER ROUTE */}
+        <Route path="/driver-dashboard" element={<DriverDashboard />} />
+        <Route path="/order-history" element={<OrderHistory />} /> {/* <-- 2. ADD NEW ROUTE */}
         <Route path="/loginpage" element={<LoginPage />} /> 
         <Route path="/settings" element={<Settings />} />
         <Route path="/new-order" element={<NewOrder />} />

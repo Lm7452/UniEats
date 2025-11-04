@@ -1,6 +1,4 @@
 // client/src/StudentDashboard.js
-// This is the (renamed) original Dashboard.js file
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './Dashboard.css'; // We'll keep using the same CSS file
@@ -51,9 +49,8 @@ function StudentDashboard() {
             </Link>
 
             {/* --- THIS IS THE FIX --- */}
-            {/* Wrapped in a Link tag to match its siblings */}
-            <Link to="#" className="action-button-link" onClick={(e) => e.preventDefault()}>
-              <button className="action-button action-button-disabled">View Order History</button>
+            <Link to="/order-history" className="action-button-link">
+              <button className="action-button">View Order History</button>
             </Link>
             {/* --- END OF FIX --- */}
             
@@ -78,6 +75,7 @@ function StudentDashboard() {
           <h2>Recent Orders (Placeholder)</h2>
           <div className="order-list-placeholder">
             <p>Your recent orders will appear here.</p>
+            {/* This is just a placeholder, the new page will show the real history */}
             <div className="placeholder-order-item">Order #1234 - Frist Grill - Delivered</div>
             <div className="placeholder-order-item">Order #1230 - Frist Grill - Picked Up</div>
           </div>
