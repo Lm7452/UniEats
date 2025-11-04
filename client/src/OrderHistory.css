@@ -40,16 +40,21 @@ body {
   color: var(--princeton-black);
 }
 
+/* --- UPDATED STYLES HERE --- */
 .back-link {
   text-decoration: none;
   color: var(--princeton-orange);
   font-weight: 500;
-  transition: color 0.2s ease;
+  padding: 6px 12px; 
+  border-radius: 5px; 
+  transition: background-color 0.2s ease, color 0.2s ease; 
 }
 
 .back-link:hover {
-  color: var(--princeton-black);
+  color: var(--princeton-orange); 
+  background-color: #fef3e6; 
 }
+/* --- END OF UPDATE --- */
 
 .error-message {
   background-color: var(--error-bg);
