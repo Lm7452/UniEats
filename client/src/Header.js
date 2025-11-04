@@ -33,14 +33,17 @@ function Header() {
       </div>
       
       <nav className="header-nav">
-        {/* A Driver or Admin can see the Driver Dashboard */}
+        {/* --- UPDATED NAVIGATION LOGIC --- */}
+        {user && (user.role === 'driver' || user.role === 'admin') && (
+          <Link to="/student-dashboard" className="header-nav-link">Student Dashboard</Link>
+        )}
         {user && (user.role === 'driver' || user.role === 'admin') && (
           <Link to="/driver-dashboard" className="header-nav-link">Driver Dashboard</Link>
         )}
-        {/* Only an Admin can see the Admin Center */}
         {user && user.role === 'admin' && (
           <Link to="/admin" className="header-nav-link">Admin Center</Link>
         )}
+        {/* --- END OF UPDATE --- */}
       </nav>
 
       <div className="user-profile">

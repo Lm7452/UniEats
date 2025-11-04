@@ -18,22 +18,9 @@
   --complete-border: #c3e6cb;
 }
 
-body {
-  background-color: var(--light-grey-bg);
-}
+/* --- .driver-container REMOVED --- */
+/* --- All header styles REMOVED --- */
 
-/* Added top margin */
-.driver-container {
-  max-width: 1000px;
-  margin: 20px auto;
-  padding: 20px;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  color: var(--card-text);
-}
-
-/* --- HEADER STYLES REMOVED --- */
-/* .driver-header, .back-link ... all removed */
-/* --- END OF REMOVAL --- */
 
 .driver-error-message {
   background-color: var(--error-bg);

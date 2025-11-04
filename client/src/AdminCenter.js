@@ -1,8 +1,8 @@
 // client/src/AdminCenter.js
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Header from './Header'; // <-- 1. IMPORT HEADER
-import './AdminCenter.css'; 
+import Header from './Header'; 
+import './AdminCenter.css'; // Still used for table/button styles
 
 function AdminCenter() {
   const [users, setUsers] = useState([]);
@@ -60,73 +60,77 @@ function AdminCenter() {
 
   if (isLoading) {
     return (
-      <>
-        <Header /> {/* Show header even while loading */}
-        <div className="admin-container">Loading...</div>
-      </>
+      // --- UPDATED CLASSES ---
+      <div className="page-container">
+        <Header />
+        <main className="page-main">Loading...</main>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <>
-        <Header /> {/* Show header even on error */}
-        <div className="admin-container error-message">{error}</div>
-      </>
+      <div className="page-container">
+        <Header />
+        <main className="page-main error-message">{error}</main>
+      </div>
     );
   }
 
   return (
-    <div className="admin-container">
-      {/* --- 2. REPLACED HEADER --- */}
+    <div className="page-container">
       <Header />
-      {/* --- END OF REPLACEMENT --- */}
-      
-      {statusMessage && <div className="status-message">{statusMessage}</div>}
-
-      <section className="admin-section">
-        <h2>Manage User Roles</h2>
-        <div className="user-table-container">
-          <table className="user-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Current Role</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map(user => (
-                <tr key={user.id}>
-                  <td>{user.name}</td>
-                  <td>{user.email}</td>
-                  <td>
-                    <span className={`role-tag role-${user.role}`}>{user.role}</span>
-                  </td>
-                  <td className="actions-cell">
-                    {user.role === 'driver' ? (
-                      <button 
-                        className="action-button-secondary"
-                        onClick={() => handleRoleChange(user.id, 'student')}
-                      >
-                        Set as Student
-                      </button>
-                    ) : (
-                      <button 
-                        className="action-button"
-                        onClick={() => handleRoleChange(user.id, 'driver')}
-                      >
-                        Set as Driver
-                      </button>
-                    )}
-                  </td>
+      <main className="page-main">
+    {/* --- END OF UPDATE --- */}
+        {statusMessage && <div className="status-message">{statusMessage}</div>}
+        <section className="admin-section">
+          <h2>Manage User Roles</h2>
+          <div className="user-table-container">
+            <table className="user-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Current Role</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
+              <tbody>
+                {users.map(user => (
+                  <tr key={user.id}>
+                    <td>{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>
+                      <span className={`role-tag role-${user.role}`}>{user.role}</span>
+                    </td>
+                    <td className="actions-cell">
+                      {user.role === 'driver' ? (
+                        <button 
+                          className="action-button-secondary"
+                          onClick={() => handleRoleChange(user.id, 'student')}
+                        >
+                          Set as Student
+                        </button>
+                      ) : (
+                        <button 
+                          className="action-button"
+                          onClick={() => handleRoleChange(user.id, 'driver')}
+                        >
+                          Set as Driver
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+      {/* --- UPDATED CLASS --- */}
+      <footer className="page-footer">
+        UniEats &copy; 2025
+      </footer>
     </div>
   );
 }

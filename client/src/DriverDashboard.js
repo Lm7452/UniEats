@@ -1,15 +1,14 @@
 // client/src/DriverDashboard.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Header from './Header'; // <-- 1. IMPORT HEADER
-import './DriverDashboard.css'; 
+import Header from './Header'; 
+import './DriverDashboard.css'; // Still used for card/button styles
 
 function DriverDashboard() {
   const [availableOrders, setAvailableOrders] = useState([]);
   const [myOrders, setMyOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  // const [user, setUser] = useState(null); <-- 2. REMOVED USER STATE
   const navigate = useNavigate();
 
   const formatTime = (isoString) => {
@@ -25,18 +24,13 @@ function DriverDashboard() {
     if(isInitialLoad) setIsLoading(true);
     setError('');
 
-    // 3. REMOVED PROFILE FETCH
     Promise.all([
       fetch('/api/driver/orders/available'),
       fetch('/api/driver/orders/mine')
     ])
     .then(async ([availableRes, mineRes]) => {
-      if (availableRes.status === 403 || mineRes.status === 403) {
-        throw new Error('You are not authorized to view this page.');
-      }
-      if (!availableRes.ok || !mineRes.ok) {
-        throw new Error('Failed to fetch data.');
-      }
+      if (availableRes.status === 403) throw new Error('You are not authorized to view this page.');
+      if (!availableRes.ok || !mineRes.ok) throw new Error('Failed to fetch data.');
       
       const available = await availableRes.json();
       const mine = await mineRes.json();
@@ -47,7 +41,7 @@ function DriverDashboard() {
     .catch(err => {
       console.error("Error fetching driver data:", err);
       setError(err.message);
-      if (err.message.includes('authorized') || err.message.includes('authenticated')) {
+      if (err.message.includes('authorized')) {
         setTimeout(() => navigate('/'), 2000);
       }
     })
@@ -104,78 +98,82 @@ function DriverDashboard() {
 
   if (isLoading) {
     return (
-      <>
-        <Header /> {/* Show header even while loading */}
-        <div className="driver-container">Loading driver data...</div>
-      </>
+      // --- UPDATED CLASSES ---
+      <div className="page-container">
+        <Header />
+        <main className="page-main">Loading driver data...</main>
+      </div>
     );
   }
 
   return (
-    <div className="driver-container">
-      {/* --- 4. REPLACED HEADER --- */}
+    <div className="page-container">
       <Header />
-      {/* --- END OF REPLACEMENT --- */}
-
-      {error && <div className="driver-error-message">{error}</div>}
-
-      <section className="driver-section">
-        <h2>My Claimed Orders ({myOrders.length})</h2>
-        <div className="order-list">
-          {myOrders.length === 0 ? (
-            <p className="no-orders-message">You have not claimed any orders yet.</p>
-          ) : (
-            myOrders.map(order => (
-              <div key={order.id} className="order-card claimed">
-                <h3>Order for {order.customer_name}</h3>
-                <p><strong>Order #:</strong> {order.princeton_order_number}</p>
-                <p><strong>Deliver To:</strong> {order.delivery_building} - Room {order.delivery_room}</p>
-                <p><strong>Contact:</strong> 
-                  <a href={`tel:${order.customer_phone}`}>{order.customer_phone || 'Not Provided'}</a>
-                </p>
-                <p className="order-tip">Tip: ${parseFloat(order.tip_amount).toFixed(2)}</p>
-                <p className="order-time">Placed at: {formatTime(order.created_at)}</p>
-                <div className="order-actions">
-                  <button 
-                    className="action-button-complete"
-                    onClick={() => handleCompleteOrder(order.id)}
-                  >
-                    Mark as Complete
-                  </button>
+      <main className="page-main">
+    {/* --- END OF UPDATE --- */}
+        {error && <div className="driver-error-message">{error}</div>}
+        <section className="driver-section">
+          <h2>My Claimed Orders ({myOrders.length})</h2>
+          <div className="order-list">
+            {myOrders.length === 0 ? (
+              <p className="no-orders-message">You have not claimed any orders yet.</p>
+            ) : (
+              myOrders.map(order => (
+                <div key={order.id} className="order-card claimed">
+                  <h3>Order for {order.customer_name}</h3>
+                  <p><strong>Order #:</strong> {order.princeton_order_number}</p>
+                  <p><strong>Deliver To:</strong> {order.delivery_building} - Room {order.delivery_room}</p>
+                  <p><strong>Contact:</strong> 
+                    <a href={`tel:${order.customer_phone}`}>{order.customer_phone || 'Not Provided'}</a>
+                  </p>
+                  <p className="order-tip">Tip: ${parseFloat(order.tip_amount).toFixed(2)}</p>
+                  <p className="order-time">Placed at: {formatTime(order.created_at)}</p>
+                  <div className="order-actions">
+                    <button 
+                      className="action-button-complete"
+                      onClick={() => handleCompleteOrder(order.id)}
+                    >
+                      Mark as Complete
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
-      </section>
+              ))
+            )}
+          </div>
+        </section>
 
-      <section className="driver-section">
-        <h2>Available Orders ({availableOrders.length})</h2>
-        <div className="order-list">
-          {availableOrders.length === 0 ? (
-            <p className="no-orders-message">No available orders right now. Check back soon!</p>
-          ) : (
-            availableOrders.map(order => (
-              <div key={order.id} className="order-card">
-                <h3>Order for {order.customer_name}</h3>
-                <p><strong>Order #:</strong> {order.princeton_order_number}</p>
-                <p><strong>Deliver To:</strong> {order.delivery_building} - Room {order.delivery_room}</p>
-                <p><strong>Contact:</strong> {order.customer_phone || 'Not Provided'}</p>
-                <p className="order-tip">Tip: ${parseFloat(order.tip_amount).toFixed(2)}</p>
-                <p className="order-time">Placed at: {formatTime(order.created_at)}</p>
-                <div className="order-actions">
-                  <button 
-                    className="action-button"
-                    onClick={() => handleClaimOrder(order.id)}
-                  >
-                    Claim Order
-                  </button>
+        <section className="driver-section">
+          <h2>Available Orders ({availableOrders.length})</h2>
+          <div className="order-list">
+            {availableOrders.length === 0 ? (
+              <p className="no-orders-message">No available orders right now. Check back soon!</p>
+            ) : (
+              availableOrders.map(order => (
+                <div key={order.id} className="order-card">
+                  <h3>Order for {order.customer_name}</h3>
+                  <p><strong>Order #:</strong> {order.princeton_order_number}</p>
+                  <p><strong>Deliver To:</strong> {order.delivery_building} - Room {order.delivery_room}</p>
+                  <p><strong>Contact:</strong> {order.customer_phone || 'Not Provided'}</p>
+                  <p className="order-tip">Tip: ${parseFloat(order.tip_amount).toFixed(2)}</p>
+                  <p className="order-time">Placed at: {formatTime(order.created_at)}</p>
+                  <div className="order-actions">
+                    <button 
+                      className="action-button"
+                      onClick={() => handleClaimOrder(order.id)}
+                    >
+                      Claim Order
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
-      </section>
+              ))
+            )}
+          </div>
+        </section>
+      </main>
+      {/* --- UPDATED CLASS --- */}
+      <footer className="page-footer">
+        UniEats &copy; 2025
+      </footer>
     </div>
   );
 }
