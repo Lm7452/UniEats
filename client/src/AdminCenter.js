@@ -10,7 +10,6 @@ function AdminCenter() {
   const [statusMessage, setStatusMessage] = useState('');
   const navigate = useNavigate();
 
-  // Fetch all users on component load
   useEffect(() => {
     fetch('/api/admin/users')
       .then(res => {
@@ -26,14 +25,12 @@ function AdminCenter() {
         console.error("Error fetching users:", err);
         setError(err.message);
         setIsLoading(false);
-        // If not an admin, kick them back to the student dashboard
         if (err.message.includes('authorized')) {
           setTimeout(() => navigate('/student-dashboard'), 2000);
         }
       });
   }, [navigate]);
 
-  // Handle changing a user's role
   const handleRoleChange = (userId, newRole) => {
     setStatusMessage('Updating role...');
     
@@ -49,7 +46,6 @@ function AdminCenter() {
       return res.json();
     })
     .then(updatedUser => {
-      // Update the user list locally
       setUsers(prevUsers => 
         prevUsers.map(user => 
           user.id === updatedUser.id ? { ...user, role: updatedUser.role } : user
@@ -75,26 +71,42 @@ function AdminCenter() {
     <div className="admin-container">
       <header className="admin-header">
         <h1>Admin Center</h1>
-        {/* Changed this link to go to student dashboard */}
         <Link to="/student-dashboard" className="back-link">&larr; Back to Student Dashboard</Link>
       </header>
       
       {statusMessage && <div className="status-message">{statusMessage}</div>}
 
-      {/* --- NEW SECTION FOR TESTING --- */}
-      <section className="admin-section admin-tools">
-        <h2>Admin Tools</h2>
-        <p>Use these links to test other parts of the site.</p>
-        <div className="test-links">
-          <Link to="/student-dashboard" className="action-button">
-            View Student Dashboard
+      {/* --- ADDED QUICK ACTIONS FOR ADMIN --- */}
+      <section className="admin-section">
+        <h2>Quick Actions</h2>
+        <div className="action-buttons">
+          <Link to="/new-order" className="action-button-link" state={{ from: '/admin' }}>
+            <button className="action-button">Order Food Now!</button>
           </Link>
-          <Link to="/driver-dashboard" className="action-button-secondary">
-            View Driver Dashboard (WIP)
+          <Link to="/order-history" className="action-button-link" state={{ from: '/admin' }}>
+            <button className="action-button">View My Order History</button>
+          </Link>
+          <Link to="/settings" className="action-button-link" state={{ from: '/admin' }}>
+            <button className="action-button">
+              Profile & Settings
+            </button>
           </Link>
         </div>
       </section>
       {/* --- END OF NEW SECTION --- */}
+
+      <section className="admin-section admin-tools">
+        <h2>Admin Tools</h2>
+        <p>Use these links to test other parts of the site.</p>
+        <div className="test-links">
+          <Link to="/student-dashboard" className="action-button" state={{ from: '/admin' }}>
+            View Student Dashboard
+          </Link>
+          <Link to="/driver-dashboard" className="action-button-secondary" state={{ from: '/admin' }}>
+            View Driver Dashboard
+          </Link>
+        </div>
+      </section>
 
       <section className="admin-section">
         <h2>Manage User Roles</h2>

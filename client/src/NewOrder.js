@@ -1,33 +1,31 @@
 // client/src/NewOrder.js
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom'; // 1. Import useLocation
 import Select from 'react-select';
-import './NewOrder.css'; // We will create this CSS file next
+import './NewOrder.css'; 
 
 function NewOrder() {
-  // Form state
   const [orderNumber, setOrderNumber] = useState('');
   const [building, setBuilding] = useState('');
   const [room, setRoom] = useState('');
   const [tip, setTip] = useState(0);
-
-  // Data state
   const [buildingOptions, setBuildingOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false); // Prevent double-submit
+  const [isSubmitting, setIsSubmitting] = useState(false); 
   const navigate = useNavigate();
+  const location = useLocation(); // 2. Get location info
 
-  // Fetch profile (for default address) and building list (for dropdown)
+  // 3. Set the 'back' URL
+  const backUrl = location.state?.from || '/student-dashboard';
+
   useEffect(() => {
     let profileLoaded = false;
     let buildingsLoaded = false;
-
     const checkAllLoaded = () => {
       if (profileLoaded && buildingsLoaded) setIsLoading(false);
     };
 
-    // 1. Fetch user's profile for default address
     fetch('/profile')
       .then(res => {
         if (!res.ok) throw new Error('Not authenticated');
@@ -41,10 +39,9 @@ function NewOrder() {
       })
       .catch(error => {
         console.error("Error fetching profile:", error);
-        navigate('/'); // Redirect to home if not logged in
+        navigate('/'); 
       });
 
-    // 2. Fetch building list
     fetch('/api/buildings')
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch buildings');
@@ -64,11 +61,9 @@ function NewOrder() {
 
   }, [navigate]);
 
-  // Handle form submission (NOW REAL)
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (isSubmitting) return; // Don't submit twice
-
+    if (isSubmitting) return; 
     setIsSubmitting(true);
     setStatusMessage('Placing your order...');
     
@@ -79,17 +74,13 @@ function NewOrder() {
       tip_amount: tip
     };
 
-    // Send the data to the new backend endpoint
     fetch('/api/orders', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderData)
     })
     .then(res => {
       if (!res.ok) {
-        // Handle server errors
         return res.json().then(err => { throw new Error(err.error || 'Server error') });
       }
       return res.json();
@@ -97,11 +88,8 @@ function NewOrder() {
     .then(newOrder => {
       console.log('Order created:', newOrder);
       setStatusMessage('Order placed successfully!');
-      
-      // Redirect to dashboard after a short delay
       setTimeout(() => {
-        navigate('/dashboard'); 
-        // In the future, we can navigate to: navigate(`/orders/${newOrder.id}`);
+        navigate(backUrl); // <-- 5. Use dynamic backUrl on success
       }, 1500);
     })
     .catch(err => {
@@ -116,7 +104,6 @@ function NewOrder() {
     return <div className="new-order-container">Loading...</div>;
   }
 
-  // Find the currently selected building object for the Select's value prop
   const selectedBuildingValue = buildingOptions.find(
     option => option.value === building
   ) || null;
@@ -125,10 +112,10 @@ function NewOrder() {
     <div className="new-order-container">
       <header className="new-order-header">
         <h1>Place New Order</h1>
-        <Link to="/dashboard" className="back-link">&larr; Back to Dashboard</Link>
+        {/* 4. Use the dynamic backUrl */}
+        <Link to={backUrl} className="back-link">&larr; Back to Dashboard</Link>
       </header>
 
-      {/* --- INSTRUCTIONS --- */}
       <div className="instruction-box">
         <h3>How to Order:</h3>
         <p>
@@ -142,7 +129,6 @@ function NewOrder() {
         </p>
       </div>
 
-      {/* --- ORDER FORM --- */}
       <form onSubmit={handleSubmit} className="new-order-form">
         
         <section className="order-section">

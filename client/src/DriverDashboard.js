@@ -8,6 +8,7 @@ function DriverDashboard() {
   const [myOrders, setMyOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [user, setUser] = useState(null); // <-- Store user for Admin link
   const navigate = useNavigate();
 
   // Function to format time nicely
@@ -20,77 +21,63 @@ function DriverDashboard() {
     });
   };
 
-  // We use useCallback to memoize this function
   const fetchData = useCallback((isInitialLoad = false) => {
     if(isInitialLoad) setIsLoading(true);
     setError('');
 
-    // Fetch both sets of orders simultaneously
     Promise.all([
+      fetch('/profile'), // <-- Fetch profile for user role
       fetch('/api/driver/orders/available'),
       fetch('/api/driver/orders/mine')
     ])
-    .then(async ([availableRes, mineRes]) => {
+    .then(async ([profileRes, availableRes, mineRes]) => {
+      if (profileRes.status === 401) {
+        throw new Error('Not authenticated');
+      }
       if (availableRes.status === 403 || mineRes.status === 403) {
         throw new Error('You are not authorized to view this page.');
       }
-      if (!availableRes.ok || !mineRes.ok) {
-        throw new Error('Failed to fetch orders.');
+      if (!profileRes.ok || !availableRes.ok || !mineRes.ok) {
+        throw new Error('Failed to fetch data.');
       }
+      
+      const userData = await profileRes.json();
       const available = await availableRes.json();
       const mine = await mineRes.json();
       
-      // Update state
+      setUser(userData);
       setAvailableOrders(available);
       setMyOrders(mine);
     })
     .catch(err => {
       console.error("Error fetching driver data:", err);
       setError(err.message);
-      if (err.message.includes('authorized')) {
-        setTimeout(() => navigate('/student-dashboard'), 2000);
+      if (err.message.includes('authorized') || err.message.includes('authenticated')) {
+        setTimeout(() => navigate('/'), 2000);
       }
     })
     .finally(() => {
       if(isInitialLoad) setIsLoading(false);
     });
-  }, [navigate]); // navigate is a dependency
+  }, [navigate]); 
 
-  // Fetch data on initial load and set up auto-refresh
   useEffect(() => {
-    // 1. Fetch data immediately on load
     fetchData(true); 
-    
-    // 2. Set up an interval to refresh data every 30 seconds
-    const intervalId = setInterval(() => {
-      console.log("Auto-refreshing driver orders...");
-      fetchData(false); // Pass false to not show loading spinner
-    }, 30000); // 30,000 milliseconds = 30 seconds
-
-    // 3. Clear the interval when the component unmounts
+    const intervalId = setInterval(() => fetchData(false), 30000); 
     return () => clearInterval(intervalId);
-  }, [fetchData]); // Use fetchData as the dependency
+  }, [fetchData]); 
 
-  // Handle claiming an order
   const handleClaimOrder = (orderId) => {
     const orderToClaim = availableOrders.find(o => o.id === orderId);
     if (!orderToClaim) return;
     setAvailableOrders(prev => prev.filter(o => o.id !== orderId));
-
-    fetch(`/api/driver/orders/${orderId}/claim`, {
-      method: 'PUT'
-    })
+    fetch(`/api/driver/orders/${orderId}/claim`, { method: 'PUT' })
     .then(res => {
-      if (res.status === 409) { // 409 Conflict
-        throw new Error('Order was already claimed by someone else.');
-      }
-      if (!res.ok) {
-        throw new Error('Failed to claim order.');
-      }
+      if (res.status === 409) throw new Error('Order was already claimed.');
+      if (!res.ok) throw new Error('Failed to claim order.');
       return res.json();
     })
     .then(claimedOrder => {
-      // Manually add the phone number from the original object, as the claim response might not have it
       claimedOrder.customer_phone = orderToClaim.customer_phone;
       setMyOrders(prev => [claimedOrder, ...prev]);
       setError(''); 
@@ -102,16 +89,11 @@ function DriverDashboard() {
     });
   };
   
-  // Handle completing an order
   const handleCompleteOrder = (orderId) => {
     setMyOrders(prev => prev.filter(o => o.id !== orderId));
-    fetch(`/api/driver/orders/${orderId}/complete`, {
-      method: 'PUT'
-    })
+    fetch(`/api/driver/orders/${orderId}/complete`, { method: 'PUT' })
     .then(res => {
-      if (!res.ok) {
-        throw new Error('Failed to complete order.');
-      }
+      if (!res.ok) throw new Error('Failed to complete order.');
       return res.json();
     })
     .then(completedOrder => {
@@ -121,7 +103,7 @@ function DriverDashboard() {
     .catch(err => {
       console.error(err);
       setError(err.message);
-      fetchData(false); // Re-fetch all data on error
+      fetchData(false); 
     });
   };
 
@@ -133,10 +115,32 @@ function DriverDashboard() {
     <div className="driver-container">
       <header className="driver-header">
         <h1>Driver Dashboard</h1>
-        <Link to="/admin" className="back-link">Admin Center</Link>
+        {/* Show Admin Center link if user is an admin */}
+        {user && user.role === 'admin' && (
+           <Link to="/admin" className="back-link">Admin Center</Link>
+        )}
       </header>
 
       {error && <div className="driver-error-message">{error}</div>}
+
+      {/* --- ADDED QUICK ACTIONS FOR DRIVERS --- */}
+      <section className="driver-section">
+        <h2>Quick Actions</h2>
+        <div className="action-buttons">
+          <Link to="/new-order" className="action-button-link" state={{ from: '/driver-dashboard' }}>
+            <button className="action-button">Order Food Now!</button>
+          </Link>
+          <Link to="/order-history" className="action-button-link" state={{ from: '/driver-dashboard' }}>
+            <button className="action-button">View Order History</button>
+          </Link>
+          <Link to="/settings" className="action-button-link" state={{ from: '/driver-dashboard' }}>
+            <button className="action-button">
+              Profile & Settings
+            </button>
+          </Link>
+        </div>
+      </section>
+      {/* --- END OF NEW SECTION --- */}
 
       {/* --- MY CLAIMED ORDERS SECTION --- */}
       <section className="driver-section">
@@ -150,7 +154,6 @@ function DriverDashboard() {
                 <h3>Order for {order.customer_name}</h3>
                 <p><strong>Order #:</strong> {order.princeton_order_number}</p>
                 <p><strong>Deliver To:</strong> {order.delivery_building} - Room {order.delivery_room}</p>
-                {/* --- ADDED CUSTOMER PHONE --- */}
                 <p><strong>Contact:</strong> 
                   <a href={`tel:${order.customer_phone}`}>{order.customer_phone || 'Not Provided'}</a>
                 </p>
@@ -182,7 +185,6 @@ function DriverDashboard() {
                 <h3>Order for {order.customer_name}</h3>
                 <p><strong>Order #:</strong> {order.princeton_order_number}</p>
                 <p><strong>Deliver To:</strong> {order.delivery_building} - Room {order.delivery_room}</p>
-                {/* --- ADDED CUSTOMER PHONE --- */}
                 <p><strong>Contact:</strong> {order.customer_phone || 'Not Provided'}</p>
                 <p className="order-tip">Tip: ${parseFloat(order.tip_amount).toFixed(2)}</p>
                 <p className="order-time">Placed at: {formatTime(order.created_at)}</p>

@@ -1,7 +1,7 @@
 // client/src/Settings.js
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Select from 'react-select'; // <-- IMPORTED
+import { Link, useNavigate, useLocation } from 'react-router-dom'; // 1. Import useLocation
+import Select from 'react-select'; 
 import './Settings.css';
 
 function Settings() {
@@ -15,25 +15,22 @@ function Settings() {
     notify_email_promotions: true,
   });
   
-  // New state for the building dropdown options
   const [buildingOptions, setBuildingOptions] = useState([]);
-  
   const [statusMessage, setStatusMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation(); // 2. Get location info
 
-  // Fetch current user data and building list on load
+  // 3. Set the 'back' URL
+  const backUrl = location.state?.from || '/student-dashboard';
+
   useEffect(() => {
     let profileLoaded = false;
     let buildingsLoaded = false;
-
     const checkAllLoaded = () => {
-      if (profileLoaded && buildingsLoaded) {
-        setIsLoading(false);
-      }
+      if (profileLoaded && buildingsLoaded) setIsLoading(false);
     };
 
-    // 1. Fetch user's profile
     fetch('/profile')
       .then(res => {
         if (!res.ok) throw new Error('Not authenticated');
@@ -57,14 +54,12 @@ function Settings() {
         navigate('/');
       });
 
-    // 2. Fetch building list
     fetch('/api/buildings')
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch buildings');
         return res.json();
       })
       .then(buildingNames => {
-        // Map the array of strings to an array of { label, value } objects
         const options = buildingNames.map(name => ({ label: name, value: name }));
         setBuildingOptions(options);
         buildingsLoaded = true;
@@ -72,14 +67,12 @@ function Settings() {
       })
       .catch(error => {
         console.error("Error fetching buildings:", error);
-        // We can still load the page, the dropdown will just be empty
         buildingsLoaded = true; 
         checkAllLoaded();
       });
 
   }, [navigate]);
 
-  // Handle standard form field changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prevData => ({
@@ -88,25 +81,19 @@ function Settings() {
     }));
   };
 
-  // Handle the new react-select component change
   const handleBuildingChange = (selectedOption) => {
     setFormData(prevData => ({
       ...prevData,
-      // Set dorm_building to the selected value, or an empty string if cleared
       dorm_building: selectedOption ? selectedOption.value : ''
     }));
   };
 
-  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     setStatusMessage('Saving...');
-
     fetch('/profile', {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData),
     })
     .then(res => res.json())
@@ -125,7 +112,6 @@ function Settings() {
     return <div className="settings-container">Loading...</div>;
   }
 
-  // Find the currently selected building object for the Select's value prop
   const selectedBuildingValue = buildingOptions.find(
     option => option.value === formData.dorm_building
   ) || null;
@@ -134,12 +120,11 @@ function Settings() {
     <div className="settings-container">
       <header className="settings-header">
         <h1>Profile & Settings</h1>
-        <Link to="/dashboard" className="back-link">&larr; Back to Dashboard</Link>
+        {/* 4. Use the dynamic backUrl */}
+        <Link to={backUrl} className="back-link">&larr; Back to Dashboard</Link>
       </header>
 
       <form onSubmit={handleSubmit} className="settings-form">
-        
-        {/* --- Profile Section --- */}
         <section className="settings-section">
           <h2>Profile</h2>
           <div className="form-group">
@@ -176,12 +161,10 @@ function Settings() {
           </div>
         </section>
 
-        {/* --- Delivery Section --- */}
         <section className="settings-section">
           <h2>Delivery Address</h2>
           <div className="form-group">
             <label htmlFor="dorm_building">Dorm Building</label>
-            {/* --- THIS IS THE NEW COMPONENT --- */}
             <Select
               id="dorm_building"
               name="dorm_building"
@@ -192,7 +175,6 @@ function Settings() {
               placeholder="Type or select a building..."
               isClearable
             />
-            {/* --- END OF NEW COMPONENT --- */}
           </div>
           <div className="form-group">
             <label htmlFor="dorm_room">Room Number</label>
@@ -207,7 +189,6 @@ function Settings() {
           </div>
         </section>
 
-        {/* --- Notifications Section --- */}
         <section className="settings-section">
           <h2>Email Notifications</h2>
           <div className="form-group-checkbox">
@@ -232,12 +213,10 @@ function Settings() {
           </div>
         </section>
         
-        {/* --- Save Button --- */}
         <div className="form-actions">
           <button type="submit" className="save-button">Save Settings</button>
           {statusMessage && <span className="status-message">{statusMessage}</span>}
         </div>
-
       </form>
     </div>
   );

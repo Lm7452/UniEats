@@ -19,7 +19,6 @@ function StudentDashboard() {
   };
 
   useEffect(() => {
-    // Fetch profile and order history at the same time
     Promise.all([
       fetch('/profile'),
       fetch('/api/orders/my-history')
@@ -73,22 +72,22 @@ function StudentDashboard() {
           <h2>Quick Actions</h2>
           <div className="action-buttons">
           
-            <Link to="/new-order" className="action-button-link">
+            <Link to="/new-order" className="action-button-link" state={{ from: '/student-dashboard' }}>
               <button className="action-button">Order Food Now!</button>
             </Link>
 
-            <Link to="/order-history" className="action-button-link">
+            <Link to="/order-history" className="action-button-link" state={{ from: '/student-dashboard' }}>
               <button className="action-button">View Order History</button>
             </Link>
             
-            <Link to="/settings" className="action-button-link">
+            <Link to="/settings" className="action-button-link" state={{ from: '/student-dashboard' }}>
               <button className="action-button">
                 Profile & Settings
               </button>
             </Link>
             
             {user.role === 'admin' && (
-              <Link to="/admin" className="action-button-link">
+              <Link to="/admin" className="action-button-link" state={{ from: '/student-dashboard' }}>
                 <button className="action-button action-button-admin">
                   Admin Center
                 </button>
@@ -112,10 +111,7 @@ function StudentDashboard() {
                     <strong>{order.delivery_building}, {order.delivery_room}</strong>
                     <span className="order-time">{formatTime(order.created_at)}</span>
                   </div>
-                  {/* --- THIS IS THE FIX --- */}
-                  {/* The span is now the direct child */}
                   {renderStatus(order.status)}
-                  {/* --- END OF FIX --- */}
                 </div>
               ))}
             </div>

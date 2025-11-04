@@ -1,13 +1,17 @@
 // client/src/OrderHistory.js
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import './OrderHistory.css'; // We'll create this next
+import { Link, useNavigate, useLocation } from 'react-router-dom'; // 1. Import useLocation
+import './OrderHistory.css'; 
 
 function OrderHistory() {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation(); // 2. Get location info
+
+  // 3. Set the 'back' URL based on the state passed from the previous page
+  const backUrl = location.state?.from || '/student-dashboard';
 
   // Function to format time nicely
   const formatTime = (isoString) => {
@@ -56,7 +60,8 @@ function OrderHistory() {
     <div className="history-container">
       <header className="history-header">
         <h1>My Order History</h1>
-        <Link to="/student-dashboard" className="back-link">&larr; Back to Dashboard</Link>
+        {/* 4. Use the dynamic backUrl */}
+        <Link to={backUrl} className="back-link">&larr; Back to Dashboard</Link>
       </header>
       
       <section className="history-section">
