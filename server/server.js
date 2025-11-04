@@ -1,4 +1,4 @@
-// server.js (Updated Login Redirect)
+// server.js (Now with Driver API routes)
 
 const express = require('express');
 const dotenv = require('dotenv');
@@ -56,7 +56,7 @@ passport.use(new OIDCStrategy(oidcConfig,
         // User not found, create a new one with the name from Microsoft
         console.log(`User not found with OID ${azureOid}, creating new user...`);
         const insertResult = await db.query(
-          'INSERT INTO users (azure_oid, email, name) VALUES ($1, 2, $3) RETURNING *',
+          'INSERT INTO users (azure_oid, email, name) VALUES ($1, $2, $3) RETURNING *',
           [azureOid, email, name]
         );
         user = insertResult.rows[0];
@@ -122,9 +122,7 @@ app.get('/login',
 app.post('/auth/openid/return',
   passport.authenticate('azuread-openidconnect', { failureRedirect: '/login-failed' }),
   (req, res) => {
-    // --- THIS IS THE CHANGE ---
-    // Send all users to the generic /dashboard landing page.
-    // This page will then handle redirecting them based on role.
+    // Send all users to the generic /dashboard landing page
     console.log(`--- SUCCESS! Redirecting to: /dashboard ---`);
     res.redirect(`/dashboard`);
   }
@@ -261,13 +259,98 @@ app.put('/api/admin/users/:userId/role', isAdmin, async (req, res) => {
 });
 
 
-// --- 6. SERVE REACT APP ---
+// --- 6. DRIVER ROUTES ---
+
+// Middleware to check if user is a Driver (or Admin)
+function isDriver(req, res, next) {
+  if (req.isAuthenticated() && (req.user.role === 'driver' || req.user.role === 'admin')) {
+    return next();
+  }
+  res.status(403).json({ error: 'Forbidden: Requires driver privileges' });
+}
+
+// GET all available orders (status 'pending')
+app.get('/api/driver/orders/available', isDriver, async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT 
+         o.id, o.princeton_order_number, o.delivery_building, o.delivery_room, o.tip_amount, o.created_at,
+         u.name AS customer_name
+       FROM orders o
+       JOIN users u ON o.customer_id = u.id
+       WHERE o.status = 'pending'
+       ORDER BY o.created_at ASC`, // Show oldest orders first
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Driver error fetching available orders:', err);
+    res.status(500).json({ error: 'Failed to fetch orders' });
+  }
+});
+
+// GET all orders claimed by the current driver
+app.get('/api/driver/orders/mine', isDriver, async (req, res) => {
+  const driverId = req.user.id;
+  try {
+    const result = await db.query(
+      `SELECT 
+         o.id, o.princeton_order_number, o.delivery_building, o.delivery_room, o.tip_amount, o.status, o.created_at,
+         u.name AS customer_name
+       FROM orders o
+       JOIN users u ON o.customer_id = u.id
+       WHERE o.driver_id = $1 AND o.status = 'claimed'
+       ORDER BY o.created_at DESC`, // Show newest claimed orders first
+      [driverId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Driver error fetching claimed orders:', err);
+    res.status(500).json({ error: 'Failed to fetch orders' });
+  }
+});
+
+// PUT to claim an available order
+app.put('/api/driver/orders/:orderId/claim', isDriver, async (req, res) => {
+  const { orderId } = req.params;
+  const driverId = req.user.id;
+
+  try {
+    const result = await db.query(
+      `UPDATE orders 
+       SET 
+         driver_id = $1, 
+         status = 'claimed' 
+       WHERE 
+         id = $2 AND status = 'pending'
+       RETURNING *`,
+      [driverId, orderId]
+    );
+
+    // Check if the update was successful
+    if (result.rows.length === 0) {
+      // This means the order was already claimed (or didn't exist)
+      return res.status(409).json({ error: 'Order is no longer available to claim.' });
+    }
+    
+    const claimedOrder = result.rows[0];
+    console.log(`Driver ${driverId} claimed order ${orderId}`);
+    res.status(200).json(claimedOrder);
+
+  } catch (err) {
+    console.error('Driver error claiming order:', err);
+    res.status(500).json({ error: 'Failed to claim order' });
+  }
+});
+
+
+// --- 7. SERVE REACT APP ---
+// This must come AFTER all your API routes
 app.use(express.static(path.join(__dirname, '../client/build')));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build/index.html'));
 });
 
-// --- 7. SERVER START ---
+// --- 8. SERVER START ---
 app.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
 });
