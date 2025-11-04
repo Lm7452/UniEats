@@ -1,4 +1,4 @@
-// server.js (Now with customer phone numbers for drivers)
+// server.js (Now with Availability logic)
 
 const express = require('express');
 const dotenv = require('dotenv');
@@ -53,7 +53,6 @@ passport.use(new OIDCStrategy(oidcConfig,
       let userResult = await db.query('SELECT * FROM users WHERE azure_oid = $1', [azureOid]);
       let user = userResult.rows[0];
       if (!user) {
-        // User not found, create a new one with the name from Microsoft
         console.log(`User not found with OID ${azureOid}, creating new user...`);
         const insertResult = await db.query(
           'INSERT INTO users (azure_oid, email, name) VALUES ($1, $2, $3) RETURNING *',
@@ -61,9 +60,7 @@ passport.use(new OIDCStrategy(oidcConfig,
         );
         user = insertResult.rows[0];
       } else {
-        // User WAS found.
         console.log('Existing user found:', user);
-        // Only update their email if it's different.
         if (user.email !== email) {
            console.log('Updating user email from Azure AD...');
            await db.query(
@@ -105,6 +102,20 @@ function isAuthenticated(req, res, next) {
   res.redirect('/');
 }
 
+// *** NEW PUBLIC ENDPOINT FOR APP STATUS ***
+app.get('/api/app-status', async (req, res) => {
+  try {
+    const result = await db.query(
+      "SELECT COUNT(*) FROM users WHERE role = 'driver' AND is_available = true"
+    );
+    const availableDriverCount = parseInt(result.rows[0].count, 10);
+    res.json({ availableDriverCount });
+  } catch (err) {
+    console.error('Error fetching app status:', err);
+    res.status(500).json({ error: 'Failed to fetch app status' });
+  }
+});
+
 // GET all buildings
 app.get('/api/buildings', async (req, res) => {
   try {
@@ -122,7 +133,6 @@ app.get('/login',
 app.post('/auth/openid/return',
   passport.authenticate('azuread-openidconnect', { failureRedirect: '/login-failed' }),
   (req, res) => {
-    // Send all users to the generic /dashboard landing page
     console.log(`--- SUCCESS! Redirecting to: /dashboard ---`);
     res.redirect(`/dashboard`);
   }
@@ -136,9 +146,9 @@ app.get('/logout', (req, res, next) => {
   });
 });
 
-// GET profile route (sends ALL user data, including role)
+// GET profile route (sends ALL user data, including role and availability)
 app.get('/profile', isAuthenticated, (req, res) => {
-  res.json(req.user); 
+  res.json(req.user); // req.user is refreshed on login, will have is_available
 });
 
 app.put('/profile', isAuthenticated, async (req, res) => {
@@ -187,6 +197,20 @@ app.put('/profile', isAuthenticated, async (req, res) => {
 app.post('/api/orders', isAuthenticated, async (req, res) => {
   const { princeton_order_number, delivery_building, delivery_room, tip_amount } = req.body;
   const customer_id = req.user.id;
+  
+  // --- CHECK IF DRIVERS ARE AVAILABLE BEFORE CREATING ORDER ---
+  try {
+    const statusResult = await db.query(
+      "SELECT COUNT(*) FROM users WHERE role = 'driver' AND is_available = true"
+    );
+    if (parseInt(statusResult.rows[0].count, 10) === 0) {
+      return res.status(503).json({ error: 'No drivers are available to take this order. Please try again later.' });
+    }
+  } catch (err) {
+     return res.status(500).json({ error: 'Failed to check driver status.' });
+  }
+  // --- END OF CHECK ---
+
   if (!princeton_order_number || !delivery_building || !delivery_room) {
     return res.status(400).json({ error: 'Missing required order details' });
   }
@@ -248,7 +272,8 @@ function isAdmin(req, res, next) {
 // GET all users (Admin only)
 app.get('/api/admin/users', isAdmin, async (req, res) => {
   try {
-    const result = await db.query('SELECT id, name, email, role, created_at FROM users ORDER BY name ASC');
+    // --- ADDED is_available TO THE QUERY ---
+    const result = await db.query('SELECT id, name, email, role, is_available, created_at FROM users ORDER BY name ASC');
     res.json(result.rows);
   } catch (err) {
     console.error('Admin error fetching users:', err);
@@ -260,13 +285,12 @@ app.get('/api/admin/users', isAdmin, async (req, res) => {
 app.put('/api/admin/users/:userId/role', isAdmin, async (req, res) => {
   const { userId } = req.params;
   const { role } = req.body; 
-
   if (!['student', 'driver', 'admin'].includes(role)) {
     return res.status(400).json({ error: 'Invalid role specified' });
   }
   try {
     const result = await db.query(
-      'UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2 RETURNING id, name, email, role',
+      'UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
       [role, userId]
     );
     if (result.rows.length === 0) {
@@ -277,6 +301,31 @@ app.put('/api/admin/users/:userId/role', isAdmin, async (req, res) => {
   } catch (err) {
     console.error('Admin error updating role:', err);
     res.status(500).json({ error: 'Failed to update role' });
+  }
+});
+
+// *** NEW ADMIN ENDPOINT FOR DRIVER AVAILABILITY ***
+app.put('/api/admin/users/:userId/availability', isAdmin, async (req, res) => {
+  const { userId } = req.params;
+  const { is_available } = req.body; // Expects true or false
+
+  if (typeof is_available !== 'boolean') {
+    return res.status(400).json({ error: 'Invalid availability status specified' });
+  }
+
+  try {
+    const result = await db.query(
+      'UPDATE users SET is_available = $1, updated_at = NOW() WHERE id = $2 AND role = \'driver\' RETURNING *',
+      [is_available, userId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Driver not found' });
+    }
+    console.log(`Admin ${req.user.id} set driver ${userId} availability to ${is_available}`);
+    res.status(200).json(result.rows[0]);
+  } catch (err) {
+    console.error('Admin error updating availability:', err);
+    res.status(500).json({ error: 'Failed to update availability' });
   }
 });
 
@@ -291,6 +340,28 @@ function isDriver(req, res, next) {
   res.status(403).json({ error: 'Forbidden: Requires driver privileges' });
 }
 
+// *** NEW DRIVER ENDPOINT FOR AVAILABILITY ***
+app.put('/api/driver/availability', isDriver, async (req, res) => {
+  const driverId = req.user.id;
+  const { is_available } = req.body; // Expects true or false
+
+  if (typeof is_available !== 'boolean') {
+    return res.status(400).json({ error: 'Invalid availability status' });
+  }
+
+  try {
+    const result = await db.query(
+      'UPDATE users SET is_available = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+      [is_available, driverId]
+    );
+    console.log(`Driver ${driverId} set availability to ${is_available}`);
+    res.status(200).json(result.rows[0]);
+  } catch (err) {
+    console.error('Driver error updating availability:', err);
+    res.status(500).json({ error: 'Failed to update availability' });
+  }
+});
+
 // GET all available orders (status 'pending')
 app.get('/api/driver/orders/available', isDriver, async (req, res) => {
   try {
@@ -298,7 +369,7 @@ app.get('/api/driver/orders/available', isDriver, async (req, res) => {
       `SELECT 
          o.id, o.princeton_order_number, o.delivery_building, o.delivery_room, o.tip_amount, o.created_at,
          u.name AS customer_name,
-         u.phone_number AS customer_phone  -- <-- ADDED THIS
+         u.phone_number AS customer_phone
        FROM orders o
        JOIN users u ON o.customer_id = u.id
        WHERE o.status = 'pending'
@@ -319,7 +390,7 @@ app.get('/api/driver/orders/mine', isDriver, async (req, res) => {
       `SELECT 
          o.id, o.princeton_order_number, o.delivery_building, o.delivery_room, o.tip_amount, o.status, o.created_at,
          u.name AS customer_name,
-         u.phone_number AS customer_phone  -- <-- ADDED THIS
+         u.phone_number AS customer_phone
        FROM orders o
        JOIN users u ON o.customer_id = u.id
        WHERE o.driver_id = $1 AND o.status = 'claimed'

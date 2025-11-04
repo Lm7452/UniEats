@@ -13,17 +13,7 @@
   --instruction-border: #fbe6c7;
 }
 
-body {
-  background-color: var(--light-grey-bg);
-}
-
-.new-order-container {
-  max-width: 800px;
-  margin: 20px auto;
-  padding: 20px;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  color: var(--card-text);
-}
+/* --- .new-order-container REMOVED, using global .page-main --- */
 
 .new-order-header {
   display: flex;
@@ -39,7 +29,6 @@ body {
   color: var(--princeton-black);
 }
 
-/* --- UPDATED STYLES HERE --- */
 .back-link {
   text-decoration: none;
   color: var(--princeton-orange);
@@ -53,7 +42,6 @@ body {
   color: var(--princeton-orange); 
   background-color: #fef3e6; 
 }
-/* --- END OF UPDATE --- */
 
 /* --- Instruction Box --- */
 .instruction-box {
@@ -225,4 +213,23 @@ body {
 .react-select__option--is-selected {
   background-color: var(--princeton-orange) !important;
   color: var(--princeton-black) !important;
+}
+
+/* --- NEW APP OFFLINE STYLES --- */
+.app-offline-box {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 40px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  border: 1px solid var(--border-color);
+}
+.app-offline-box h2 {
+  margin-top: 0;
+  color: var(--princeton-orange);
+}
+.app-offline-box p {
+  font-size: 1.1em;
+  color: var(--medium-grey);
+  line-height: 1.6;
 }

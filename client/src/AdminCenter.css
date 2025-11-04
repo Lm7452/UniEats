@@ -12,11 +12,23 @@
   --error-bg: #fff0f0;
   --error-border: #ffc9c9;
   --error-text: #d90429;
+  --online-color: #006421;
+  --online-bg: #e6f7ec;
+  --offline-color: #555;
+  --offline-bg: #e0e0e0;
 }
 
-/* --- .admin-container REMOVED --- */
-/* --- All header styles REMOVED --- */
+body {
+  background-color: var(--light-grey-bg);
+}
 
+.admin-container {
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 20px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: var(--card-text);
+}
 
 .error-message {
   background-color: var(--error-bg);
@@ -88,7 +100,7 @@
   background-color: #f9f9f9;
 }
 
-.role-tag {
+.role-tag, .status-tag {
   padding: 4px 8px;
   border-radius: 4px;
   font-weight: bold;
@@ -111,13 +123,33 @@
   border: 1px solid #ffc9c9;
 }
 
+/* --- NEW STATUS TAG STYLES --- */
+.status-tag.status-online {
+  background-color: var(--online-bg);
+  color: var(--online-color);
+}
+.status-tag.status-offline {
+  background-color: var(--offline-bg);
+  color: var(--offline-color);
+}
+.status-tag.status-na {
+  background-color: transparent;
+  color: var(--medium-grey);
+  font-weight: normal;
+  font-style: italic;
+}
+/* --- END OF NEW STYLES --- */
+
 .actions-cell {
-  text-align: center;
+  text-align: left; /* Changed from center */
+  display: flex;
+  gap: 8px;
 }
 
-/* --- Re-using dashboard button styles --- */
 .action-button,
-.action-button-secondary {
+.action-button-secondary,
+.action-button-online,
+.action-button-offline {
   padding: 8px 12px;
   border: none;
   border-radius: 5px;
@@ -137,6 +169,11 @@
   background-color: #cc6600;
   color: var(--princeton-black);
 }
+.action-button:disabled {
+  background-color: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+}
 
 .action-button-secondary {
   background-color: #e0e0e0;
@@ -147,3 +184,24 @@
   background-color: #d4d4d4;
   color: #333;
 }
+
+/* --- NEW BUTTON STYLES --- */
+.action-button-online {
+  background-color: var(--online-bg);
+  color: var(--online-color);
+  border: 1px solid var(--online-color);
+}
+.action-button-online:hover {
+  background-color: var(--online-color);
+  color: white;
+}
+.action-button-offline {
+  background-color: var(--offline-bg);
+  color: var(--offline-color);
+  border: 1px solid #ccc;
+}
+.action-button-offline:hover {
+  background-color: var(--offline-color);
+  color: var(--offline-color);
+}
+/* --- END OF NEW STYLES --- */

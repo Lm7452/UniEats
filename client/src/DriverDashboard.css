@@ -16,11 +16,23 @@
   --complete-color: #006421;
   --complete-bg: #e6f7ec;
   --complete-border: #c3e6cb;
+  --online-color: #006421;
+  --online-bg: #e6f7ec;
+  --offline-color: #555;
+  --offline-bg: #e0e0e0;
 }
 
-/* --- .driver-container REMOVED --- */
-/* --- All header styles REMOVED --- */
+body {
+  background-color: var(--light-grey-bg);
+}
 
+.driver-container {
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 20px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: var(--card-text);
+}
 
 .driver-error-message {
   background-color: var(--error-bg);
@@ -48,6 +60,59 @@
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 10px;
 }
+
+/* --- NEW DRIVER STATUS SECTION STYLES --- */
+.driver-status-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-left: 5px solid var(--offline-color);
+  background-color: var(--offline-bg);
+}
+.driver-status-section.status-online {
+  background-color: var(--online-bg);
+  border-left-color: var(--online-color);
+}
+.driver-status-section .status-text h2 {
+  margin: 0 0 5px 0;
+  border-bottom: none;
+  padding-bottom: 0;
+  color: var(--offline-color);
+}
+.driver-status-section.status-online .status-text h2 {
+  color: var(--online-color);
+}
+.driver-status-section .status-text p {
+  margin: 0;
+  color: var(--offline-color);
+}
+.driver-status-section.status-online .status-text p {
+  color: var(--online-color);
+}
+.driver-status-section .action-button {
+  width: auto; /* Override full-width */
+  padding: 12px 20px;
+  font-size: 1em;
+}
+.driver-status-section .action-button-online {
+  background-color: var(--online-color);
+  color: white;
+  border: none;
+}
+.driver-status-section .action-button-online:hover {
+  background-color: #004b19;
+}
+.driver-status-section .action-button-offline {
+  background-color: var(--offline-color);
+  color: white;
+  border: none;
+}
+.driver-status-section .action-button-offline:hover {
+  background-color: #444;
+}
+/* --- END OF NEW STYLES --- */
+
 
 .no-orders-message {
   color: var(--medium-grey);
@@ -123,7 +188,9 @@
 /* Button Styles (from AdminCenter.css) */
 .action-button,
 .action-button-secondary,
-.action-button-complete {
+.action-button-complete,
+.action-button-online,
+.action-button-offline {
   width: 100%; /* Make button fill the card width */
   padding: 10px 12px;
   border: none;

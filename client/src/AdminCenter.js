@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from './Header'; 
-import './AdminCenter.css'; // Still used for table/button styles
+import './AdminCenter.css'; 
 
 function AdminCenter() {
   const [users, setUsers] = useState([]);
@@ -32,9 +32,17 @@ function AdminCenter() {
       });
   }, [navigate]);
 
+  // Helper to update user state locally after an API call
+  const updateLocalUser = (updatedUser) => {
+    setUsers(prevUsers => 
+      prevUsers.map(user => 
+        user.id === updatedUser.id ? { ...user, ...updatedUser } : user
+      )
+    );
+  };
+
   const handleRoleChange = (userId, newRole) => {
     setStatusMessage('Updating role...');
-    
     fetch(`/api/admin/users/${userId}/role`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -45,11 +53,7 @@ function AdminCenter() {
       return res.json();
     })
     .then(updatedUser => {
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
-          user.id === updatedUser.id ? { ...user, role: updatedUser.role } : user
-        )
-      );
+      updateLocalUser(updatedUser);
       setStatusMessage(`User ${updatedUser.name} updated to ${updatedUser.role}.`);
     })
     .catch(err => {
@@ -58,9 +62,30 @@ function AdminCenter() {
     });
   };
 
+  // --- NEW HANDLER FOR AVAILABILITY ---
+  const handleAvailabilityChange = (userId, newStatus) => {
+    setStatusMessage('Updating availability...');
+    fetch(`/api/admin/users/${userId}/availability`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_available: newStatus }),
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to update availability.');
+      return res.json();
+    })
+    .then(updatedUser => {
+      updateLocalUser(updatedUser);
+      setStatusMessage(`Driver ${updatedUser.name} set to ${newStatus ? 'Online' : 'Offline'}.`);
+    })
+    .catch(err => {
+      console.error(err);
+      setStatusMessage('Error updating availability.');
+    });
+  };
+
   if (isLoading) {
     return (
-      // --- UPDATED CLASSES ---
       <div className="page-container">
         <Header />
         <main className="page-main">Loading...</main>
@@ -81,10 +106,9 @@ function AdminCenter() {
     <div className="page-container">
       <Header />
       <main className="page-main">
-    {/* --- END OF UPDATE --- */}
         {statusMessage && <div className="status-message">{statusMessage}</div>}
         <section className="admin-section">
-          <h2>Manage User Roles</h2>
+          <h2>Manage User Roles & Status</h2>
           <div className="user-table-container">
             <table className="user-table">
               <thead>
@@ -92,6 +116,7 @@ function AdminCenter() {
                   <th>Name</th>
                   <th>Email</th>
                   <th>Current Role</th>
+                  <th>Driver Status</th> {/* <-- NEW COLUMN */}
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -103,18 +128,39 @@ function AdminCenter() {
                     <td>
                       <span className={`role-tag role-${user.role}`}>{user.role}</span>
                     </td>
+                    {/* --- NEW DRIVER STATUS CELL --- */}
+                    <td>
+                      {user.role === 'driver' ? (
+                        <span className={`status-tag ${user.is_available ? 'status-online' : 'status-offline'}`}>
+                          {user.is_available ? 'Online' : 'Offline'}
+                        </span>
+                      ) : (
+                        <span className="status-tag status-na">N/A</span>
+                      )}
+                    </td>
+                    {/* --- END OF NEW CELL --- */}
                     <td className="actions-cell">
                       {user.role === 'driver' ? (
-                        <button 
-                          className="action-button-secondary"
-                          onClick={() => handleRoleChange(user.id, 'student')}
-                        >
-                          Set as Student
-                        </button>
+                        <>
+                          <button 
+                            className="action-button-secondary"
+                            onClick={() => handleRoleChange(user.id, 'student')}
+                          >
+                            Set as Student
+                          </button>
+                          {/* --- NEW AVAILABILITY TOGGLE --- */}
+                          <button
+                            className={`action-button ${user.is_available ? 'action-button-offline' : 'action-button-online'}`}
+                            onClick={() => handleAvailabilityChange(user.id, !user.is_available)}
+                          >
+                            {user.is_available ? 'Set Offline' : 'Set Online'}
+                          </button>
+                        </>
                       ) : (
                         <button 
                           className="action-button"
                           onClick={() => handleRoleChange(user.id, 'driver')}
+                          disabled={user.role === 'admin'}
                         >
                           Set as Driver
                         </button>
@@ -127,7 +173,6 @@ function AdminCenter() {
           </div>
         </section>
       </main>
-      {/* --- UPDATED CLASS --- */}
       <footer className="page-footer">
         UniEats &copy; 2025
       </footer>

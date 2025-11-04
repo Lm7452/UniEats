@@ -2,13 +2,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from './Header'; 
-import './DriverDashboard.css'; // Still used for card/button styles
+import './DriverDashboard.css'; 
 
 function DriverDashboard() {
   const [availableOrders, setAvailableOrders] = useState([]);
   const [myOrders, setMyOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isAvailable, setIsAvailable] = useState(false); // <-- NEW STATE
+  const [user, setUser] = useState(null); 
   const navigate = useNavigate();
 
   const formatTime = (isoString) => {
@@ -25,23 +27,32 @@ function DriverDashboard() {
     setError('');
 
     Promise.all([
+      fetch('/profile'), 
       fetch('/api/driver/orders/available'),
       fetch('/api/driver/orders/mine')
     ])
-    .then(async ([availableRes, mineRes]) => {
-      if (availableRes.status === 403) throw new Error('You are not authorized to view this page.');
-      if (!availableRes.ok || !mineRes.ok) throw new Error('Failed to fetch data.');
+    .then(async ([profileRes, availableRes, mineRes]) => {
+      if (profileRes.status === 401) throw new Error('Not authenticated');
+      if (availableRes.status === 403 || mineRes.status === 403) {
+        throw new Error('You are not authorized to view this page.');
+      }
+      if (!profileRes.ok || !availableRes.ok || !mineRes.ok) {
+        throw new Error('Failed to fetch data.');
+      }
       
+      const userData = await profileRes.json();
       const available = await availableRes.json();
       const mine = await mineRes.json();
       
+      setUser(userData);
+      setIsAvailable(userData.is_available); // <-- SET AVAILABILITY
       setAvailableOrders(available);
       setMyOrders(mine);
     })
     .catch(err => {
       console.error("Error fetching driver data:", err);
       setError(err.message);
-      if (err.message.includes('authorized')) {
+      if (err.message.includes('authorized') || err.message.includes('authenticated')) {
         setTimeout(() => navigate('/'), 2000);
       }
     })
@@ -96,9 +107,31 @@ function DriverDashboard() {
     });
   };
 
+  // --- NEW HANDLER FOR DRIVER'S OWN AVAILABILITY ---
+  const handleAvailabilityToggle = () => {
+    const newStatus = !isAvailable;
+    setError('');
+
+    fetch('/api/driver/availability', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_available: newStatus })
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to update status.');
+      return res.json();
+    })
+    .then(updatedUser => {
+      setIsAvailable(updatedUser.is_available);
+    })
+    .catch(err => {
+      console.error(err);
+      setError(err.message);
+    });
+  };
+
   if (isLoading) {
     return (
-      // --- UPDATED CLASSES ---
       <div className="page-container">
         <Header />
         <main className="page-main">Loading driver data...</main>
@@ -110,8 +143,28 @@ function DriverDashboard() {
     <div className="page-container">
       <Header />
       <main className="page-main">
-    {/* --- END OF UPDATE --- */}
         {error && <div className="driver-error-message">{error}</div>}
+
+        {/* --- NEW DRIVER STATUS SECTION --- */}
+        <section className={`driver-section driver-status-section ${isAvailable ? 'status-online' : 'status-offline'}`}>
+          <div className="status-text">
+            <h2>You are currently {isAvailable ? 'Online' : 'Offline'}</h2>
+            <p>
+              {isAvailable 
+                ? 'You will be shown available orders as they come in.' 
+                : 'Go online to start receiving new order notifications.'
+              }
+            </p>
+          </div>
+          <button 
+            className={`action-button ${isAvailable ? 'action-button-offline' : 'action-button-online'}`}
+            onClick={handleAvailabilityToggle}
+          >
+            {isAvailable ? 'Go Offline' : 'Go Online'}
+          </button>
+        </section>
+        {/* --- END OF NEW SECTION --- */}
+
         <section className="driver-section">
           <h2>My Claimed Orders ({myOrders.length})</h2>
           <div className="order-list">
@@ -170,7 +223,6 @@ function DriverDashboard() {
           </div>
         </section>
       </main>
-      {/* --- UPDATED CLASS --- */}
       <footer className="page-footer">
         UniEats &copy; 2025
       </footer>
