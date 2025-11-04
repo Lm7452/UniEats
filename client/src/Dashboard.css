@@ -21,19 +21,82 @@ body {
 }
 
 .dashboard-container {
-  /* This class is no longer a flex container, */
-  /* but it's fine to keep for page structure. */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-/* --- HEADER STYLES REMOVED --- */
-/* .dashboard-header, .logo, .dashboard-nav, */
-/* .header-nav-link, .user-profile, .user-name, */
-/* .logout-button-link, .logout-button ... all removed */
-/* --- END OF REMOVAL --- */
+/* --- Header --- */
+.dashboard-header {
+  background-color: var(--princeton-black);
+  color: var(--light-text);
+  padding: 10px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
 
+.dashboard-header .logo {
+  font-size: 1.6em;
+  font-weight: bold;
+  color: var(--princeton-orange);
+}
+
+/* --- STYLES ADDED BACK --- */
+.dashboard-nav {
+  /* This will push the nav to the center-left */
+  margin-right: auto;
+  margin-left: 40px; 
+  display: flex;
+  gap: 10px; 
+}
+.header-nav-link {
+  color: var(--light-text);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9em;
+  padding: 6px 12px; 
+  border-radius: 5px; 
+  transition: background-color 0.2s ease, color 0.2s ease; 
+}
+.header-nav-link:hover {
+  background-color: var(--dark-grey); 
+  color: var(--light-text); 
+}
+/* --- END OF STYLES --- */
+
+.user-profile {
+  display: flex;
+  align-items: center;
+}
+
+.user-name {
+  margin-right: 15px;
+  font-weight: 500;
+}
+
+.logout-button-link {
+  text-decoration: none;
+}
+
+.logout-button {
+  background-color: var(--princeton-orange);
+  color: var(--princeton-black);
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9em;
+  transition: background-color 0.2s ease;
+}
+
+.logout-button:hover {
+  background-color: #cc6600;
+}
 
 /* --- Main Content --- */
-/* Added some top margin to account for header removal */
 .dashboard-main {
   flex-grow: 1;
   padding: 30px;
@@ -101,6 +164,7 @@ body {
   background-color: #e0e0e0;
 }
 
+/* Admin button is no longer here, but style is harmless to keep */
 .action-button-admin {
   background-color: var(--admin-bg);
   color: var(--admin-color);
@@ -121,7 +185,6 @@ body {
   background-color: #f0f0f0;
   color: #999;
 }
-
 
 .recent-orders-list {
   display: flex;
@@ -197,6 +260,9 @@ body {
 
 /* --- Basic Responsiveness --- */
 @media (max-width: 768px) {
+  .dashboard-header {
+    padding: 10px 15px;
+  }
   .dashboard-main {
     padding: 20px;
     width: 95%;
@@ -206,9 +272,22 @@ body {
       flex-direction: column;
       align-items: flex-start;
   }
+  .dashboard-nav {
+    display: none; /* Hide header nav on small screens */
+  }
 }
 
 @media (max-width: 480px) {
+    .dashboard-header {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px;
+    }
+    .user-profile {
+        margin-top: 10px;
+        width: 100%;
+        justify-content: space-between;
+    }
     .dashboard-title {
         font-size: 1.5em;
     }
