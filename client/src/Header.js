@@ -25,26 +25,28 @@ function Header() {
 
   return (
     <header className="app-header">
-      <div className="logo-container">
-        <Link to="/student-dashboard" className="logo-link">
-          <span role="img" aria-label="utensils" style={{ marginRight: '8px' }}>🍴</span>
-          UniEats
-        </Link>
+      {/* --- NEW WRAPPER TO GROUP LOGO + NAV --- */}
+      <div className="header-left-side">
+        <div className="logo-container">
+          <Link to="/student-dashboard" className="logo-link">
+            <span role="img" aria-label="utensils" style={{ marginRight: '8px' }}>🍴</span>
+            UniEats
+          </Link>
+        </div>
+        
+        <nav className="header-nav">
+          {user && (user.role === 'driver' || user.role === 'admin') && (
+            <Link to="/student-dashboard" className="header-nav-link">Student Dashboard</Link>
+          )}
+          {user && (user.role === 'driver' || user.role === 'admin') && (
+            <Link to="/driver-dashboard" className="header-nav-link">Driver Dashboard</Link>
+          )}
+          {user && user.role === 'admin' && (
+            <Link to="/admin" className="header-nav-link">Admin Center</Link>
+          )}
+        </nav>
       </div>
-      
-      <nav className="header-nav">
-        {/* --- UPDATED NAVIGATION LOGIC --- */}
-        {user && (user.role === 'driver' || user.role === 'admin') && (
-          <Link to="/student-dashboard" className="header-nav-link">Student Dashboard</Link>
-        )}
-        {user && (user.role === 'driver' || user.role === 'admin') && (
-          <Link to="/driver-dashboard" className="header-nav-link">Driver Dashboard</Link>
-        )}
-        {user && user.role === 'admin' && (
-          <Link to="/admin" className="header-nav-link">Admin Center</Link>
-        )}
-        {/* --- END OF UPDATE --- */}
-      </nav>
+      {/* --- END OF WRAPPER --- */}
 
       <div className="user-profile">
         {user ? (

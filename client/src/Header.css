@@ -5,6 +5,8 @@
   --princeton-black: #000000;
   --dark-grey: #333333;
   --light-text: #FFFFFF;
+  --orange-highlight: rgba(231, 117, 0, 0.5); /* Subtle orange for border */
+  --orange-highlight-hover: rgba(231, 117, 0, 0.8); /* Brighter on hover */
 }
 
 .app-header {
@@ -12,13 +14,19 @@
   color: var(--light-text);
   padding: 10px 30px;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* This pushes left and right sides apart */
   align-items: center;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+/* --- NEW WRAPPER STYLE --- */
+.header-left-side {
+  display: flex;
+  align-items: center;
+}
+
 .logo-container {
-  flex: 1;
+  /* No flex property needed */
 }
 
 .logo-link {
@@ -29,11 +37,11 @@
 }
 
 .header-nav {
-  flex: 2; /* Give nav more space */
+  /* No flex property needed */
   display: flex;
-  justify-content: flex-start; /* Align to the left of its container */
+  justify-content: flex-start;
   gap: 10px; 
-  margin-left: 40px;
+  margin-left: 30px; /* This moves it closer to the logo */
 }
 
 .header-nav-link {
@@ -43,19 +51,24 @@
   font-size: 0.9em;
   padding: 6px 12px; 
   border-radius: 5px; 
-  transition: background-color 0.2s ease, color 0.2s ease; 
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  
+  /* --- NEW ORANGE HIGHLIGHT --- */
+  border: 1px solid var(--orange-highlight);
 }
 
 .header-nav-link:hover {
   background-color: var(--dark-grey); 
   color: var(--light-text); 
+  /* --- NEW HOVER HIGHLIGHT --- */
+  border-color: var(--orange-highlight-hover);
 }
 
 .user-profile {
-  flex: 1;
+  /* No flex property needed */
   display: flex;
   align-items: center;
-  justify-content: flex-end; /* Push to the far right */
+  justify-content: flex-end;
 }
 
 .user-name {
@@ -89,6 +102,11 @@
   .app-header {
     padding: 10px 15px;
   }
+  .header-left-side {
+     /* On small screens, let's keep logo centered */
+    flex-grow: 1;
+    justify-content: center;
+  }
   .header-nav {
     display: none; /* Hide header nav on small screens */
   }
@@ -99,6 +117,9 @@
         flex-direction: column;
         gap: 10px;
         padding: 15px;
+    }
+    .header-left-side {
+      /* no change needed, will stack */
     }
     .logo-container {
       text-align: center;
