@@ -9,14 +9,15 @@
   --off-white: #f4f4f4;
   --card-bg: #ffffff;
   --card-text: #333;
-  --admin-color: #d90429; /* Added for Admin Button */
-  --admin-bg: #ffe0e6; /* Added for Admin Button */
+  --admin-color: #d90429;
+  --admin-bg: #ffe0e6;
+  --border-color: #ddd;
 }
 
 body {
   margin: 0;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  background-color: var(--off-white); /* Light background for the page */
+  background-color: var(--off-white); 
 }
 
 .dashboard-container {
@@ -52,11 +53,11 @@ body {
   font-weight: 500;
 }
 
-.profile-pic-placeholder { /* Style if you add an image */
+.profile-pic-placeholder { 
   width: 35px;
   height: 35px;
   border-radius: 50%;
-  background-color: var(--medium-grey); /* Placeholder color */
+  background-color: var(--medium-grey); 
   margin-right: 10px;
 }
 
@@ -77,22 +78,22 @@ body {
 }
 
 .logout-button:hover {
-  background-color: #cc6600; /* Darker orange */
+  background-color: #cc6600;
 }
 
 /* --- Main Content --- */
 .dashboard-main {
-  flex-grow: 1; /* Takes up remaining vertical space */
+  flex-grow: 1;
   padding: 30px;
   max-width: 1200px;
-  margin: 20px auto; /* Center content area with some margin */
+  margin: 20px auto;
   width: 90%;
 }
 
 .dashboard-title {
   color: var(--dark-grey);
   margin-bottom: 30px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 10px;
 }
 
@@ -115,12 +116,12 @@ body {
 
 .action-buttons {
   display: flex;
-  gap: 15px; /* Space between buttons */
-  flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+  gap: 15px; 
+  flex-wrap: wrap;
 }
 
 .action-button-link {
-  text-decoration: none; /* Remove underline from links */
+  text-decoration: none; 
 }
 
 .action-button {
@@ -139,7 +140,6 @@ body {
   background-color: #cc6600;
 }
 
-/* New secondary button style */
 .action-button-secondary {
   background-color: #f0f0f0;
   color: #333;
@@ -149,7 +149,6 @@ body {
   background-color: #e0e0e0;
 }
 
-/* New Admin button style */
 .action-button-admin {
   background-color: var(--admin-bg);
   color: var(--admin-color);
@@ -160,17 +159,84 @@ body {
   color: white;
 }
 
+.action-button-disabled {
+  background-color: #f0f0f0;
+  color: #999;
+  border: 1px solid #ccc;
+  cursor: not-allowed;
+}
+.action-button-disabled:hover {
+  background-color: #f0f0f0;
+  color: #999;
+}
 
-.order-list-placeholder {
+
+/* --- NEW STYLES FOR RECENT ORDERS --- */
+.recent-orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.recent-order-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  background-color: #fdfdfd;
+}
+
+.recent-order-item .order-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.recent-order-item .order-info strong {
+  font-size: 1.05em;
+  color: var(--dark-grey);
+}
+
+.recent-order-item .order-info .order-time {
+  font-size: 0.85em;
   color: var(--medium-grey);
+  margin-top: 2px;
 }
 
-.placeholder-order-item {
-  padding: 10px 0;
-  border-bottom: 1px dashed #eee;
+.order-status {
+  /* Status tags will be styled below */
 }
-.placeholder-order-item:last-child {
-  border-bottom: none;
+/* --- END OF NEW STYLES --- */
+
+
+/* --- Status Tag Styles (Copied from OrderHistory.css) --- */
+.status-tag {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.9em;
+  text-transform: capitalize;
+}
+
+.status-tag.status-pending {
+  background-color: #e0e0e0;
+  color: #333;
+}
+.status-tag.status-claimed {
+  background-color: #fef3e6;
+  color: #b95000;
+  border: 1px solid #fbe6c7;
+}
+.status-tag.status-delivered {
+  background-color: #e6f7ec;
+  color: #006421;
+  border: 1px solid #c3e6cb;
+}
+.status-tag.status-cancelled {
+  background-color: #ffe0e6;
+  color: #d90429;
+  border: 1px solid #ffc9c9;
 }
 
 
@@ -178,10 +244,10 @@ body {
 .dashboard-footer {
   text-align: center;
   padding: 15px;
-  margin-top: auto; /* Pushes footer down */
+  margin-top: auto; 
   font-size: 0.85em;
   color: var(--medium-grey);
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--border-color);
 }
 
 /* --- Basic Responsiveness --- */
@@ -195,7 +261,7 @@ body {
     margin-top: 15px;
   }
   .action-buttons {
-      flex-direction: column; /* Stack buttons vertically */
+      flex-direction: column;
       align-items: flex-start;
   }
 }
@@ -218,16 +284,4 @@ body {
         width: 100%;
         text-align: center;
     }
-}
-
-/* --- ADDED THIS NEW STYLE --- */
-.action-button-disabled {
-  background-color: #f0f0f0;
-  color: #999;
-  border: 1px solid #ccc;
-  cursor: not-allowed;
-}
-.action-button-disabled:hover {
-  background-color: #f0f0f0;
-  color: #999;
 }

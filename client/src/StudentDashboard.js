@@ -5,20 +5,50 @@ import './Dashboard.css'; // We'll keep using the same CSS file
 
 function StudentDashboard() {
   const [user, setUser] = useState({ name: "Student", role: "student" });
+  const [recentOrders, setRecentOrders] = useState([]); // <-- 1. ADD NEW STATE
+  const [isLoading, setIsLoading] = useState(true); // <-- 2. ADD LOADING STATE
+
+  // Function to format time nicely
+  const formatTime = (isoString) => {
+    return new Date(isoString).toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   useEffect(() => {
-    fetch('/profile')
-      .then(res => {
-        if (!res.ok) throw new Error('Not authenticated');
-        return res.json();
-      })
-      .then(userData => {
-        setUser(userData); 
-      })
-      .catch(error => {
-        console.error("Error fetching profile:", error);
-      });
+    // Fetch profile and order history at the same time
+    Promise.all([
+      fetch('/profile'),
+      fetch('/api/orders/my-history')
+    ])
+    .then(async ([profileRes, ordersRes]) => {
+      if (!profileRes.ok) {
+        throw new Error('Not authenticated');
+      }
+      const userData = await profileRes.json();
+      setUser(userData);
+      
+      if (ordersRes.ok) {
+        const orderData = await ordersRes.json();
+        // 3. Get the first 3 orders
+        setRecentOrders(orderData.slice(0, 3)); 
+      }
+    })
+    .catch(error => {
+      console.error("Error fetching dashboard data:", error);
+    })
+    .finally(() => {
+      setIsLoading(false); // 4. Set loading to false
+    });
   }, []); 
+
+  // Helper to render the status tag
+  const renderStatus = (status) => {
+    return <span className={`status-tag status-${status}`}>{status}</span>;
+  };
 
   return (
     <div className="dashboard-container">
@@ -48,11 +78,9 @@ function StudentDashboard() {
               <button className="action-button">Order Food Now!</button>
             </Link>
 
-            {/* --- THIS IS THE FIX --- */}
             <Link to="/order-history" className="action-button-link">
               <button className="action-button">View Order History</button>
             </Link>
-            {/* --- END OF FIX --- */}
             
             <Link to="/settings" className="action-button-link">
               <button className="action-button">
@@ -71,15 +99,30 @@ function StudentDashboard() {
           </div>
         </section>
 
+        {/* --- 5. UPDATED THIS SECTION --- */}
         <section className="dashboard-section">
-          <h2>Recent Orders (Placeholder)</h2>
-          <div className="order-list-placeholder">
-            <p>Your recent orders will appear here.</p>
-            {/* This is just a placeholder, the new page will show the real history */}
-            <div className="placeholder-order-item">Order #1234 - Frist Grill - Delivered</div>
-            <div className="placeholder-order-item">Order #1230 - Frist Grill - Picked Up</div>
-          </div>
+          <h2>Recent Orders</h2>
+          {isLoading ? (
+            <p>Loading recent orders...</p>
+          ) : recentOrders.length === 0 ? (
+            <p>You have not placed any orders yet.</p>
+          ) : (
+            <div className="recent-orders-list">
+              {recentOrders.map(order => (
+                <div key={order.id} className="recent-order-item">
+                  <div className="order-info">
+                    <strong>{order.delivery_building}, {order.delivery_room}</strong>
+                    <span className="order-time">{formatTime(order.created_at)}</span>
+                  </div>
+                  <div className="order-status">
+                    {renderStatus(order.status)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
+        {/* --- END OF UPDATE --- */}
       </main>
 
       <footer className="dashboard-footer">
