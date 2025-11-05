@@ -1,12 +1,10 @@
-// src/components/Home.js or src/pages/Home.js
+// src/Home.js (Updated)
 
 import React from 'react';
-import './Home.css'; // Import the CSS file
+import './Home.css'; // Import the CSS file for the hero section
+import Header from './Header'; // --- IMPORT YOUR REUSABLE HEADER ---
 
 function Home() {
-  // Use the environment variable for the backend URL
-  // const BACKEND_URL = process.env.REACT_APP_API_URL; // <-- REMOVED THIS
-
   // Function to handle "How it works" button click (for future implementation)
   const handleHowItWorksClick = () => {
     // You can add logic here to scroll to a section,
@@ -16,18 +14,10 @@ function Home() {
 
   return (
     <div className="home-container">
-      {/* Navigation Bar */}
-      <nav className="navbar">
-        <div className="navbar-logo">
-          {/* Using an emoji for the fork/spoon for now, or you can add an image */}
-          <span role="img" aria-label="utensils">🍴</span> UniEats
-        </div>
-        <a href="/login" className="login-button-nav"> {/* <-- CHANGED THIS */}
-          Login
-        </a>
-      </nav>
+      {/* --- USE THE REUSABLE HEADER COMPONENT --- */}
+      <Header />
 
-      {/* Hero Section */}
+      {/* Hero Section (This part stays the same) */}
       <section className="hero-section">
         <h1 className="hero-title">Your Campus. Your Cravings. Delivered.</h1>
         <p className="hero-subtitle">
@@ -49,7 +39,7 @@ function Home() {
         {/* ... more cards ... */}
       </section>
 
-      {/* Footer */}
+      {/* Footer (This stays the same) */}
       <footer className="footer">
         <p>UniEats &copy; 2025</p>
         {/* Add more footer links here */}
