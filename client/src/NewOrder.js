@@ -20,6 +20,20 @@ function NewOrder() {
 
   const backUrl = location.state?.from || '/student-dashboard';
 
+  const receiptEmail = 'UniEats.OrderReceipts@gmail.com';
+  const princetonUrl = 'https://princeton.buy-ondemand.com/';
+  const [copiedEmail, setCopiedEmail] = useState(false);
+
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(receiptEmail);
+      setCopiedEmail(true);
+      setTimeout(() => setCopiedEmail(false), 1800);
+    } catch (err) {
+      console.error('Copy failed', err);
+    }
+  };
+
   useEffect(() => {
     // 1. First, check if the app is "online"
     fetch('/api/app-status')
@@ -133,10 +147,16 @@ function NewOrder() {
             <div className="instruction-box">
               <h3>How to Order:</h3>
               <p>
-                <strong>Step 1:</strong> Go to the official Princeton food order site.
+                <strong>Step 1:</strong> Go to the official Princeton ordering site: {' '}
+                <a href={princetonUrl} target="_blank" rel="noopener noreferrer">{princetonUrl}</a>
               </p>
               <p>
-                <strong>Step 2:</strong> In the email field, please enter <strong><code>placeholder@gmail.com</code></strong>. This redirects the confirmation to our system.
+                <strong>Step 2:</strong> In the email field, please enter{' '}
+                <strong>
+                  <button type="button" className="copy-email" onClick={copyEmail}>{receiptEmail}</button>
+                </strong>
+                {copiedEmail && <span className="copied-badge">Copied!</span>}.
+                This redirects the confirmation to our system.
               </p>
               <p>
                 <strong>Step 3:</strong> After paying, copy your Order Number (e.g., #12345) and paste it below.

@@ -221,3 +221,23 @@ body {
   .modal-header h2 { font-size: 1.25rem; }
   .step-number { min-width: 32px; height: 32px; border-radius: 16px; }
 }
+
+/* --- Copyable email/button --- */
+.copy-email {
+  background: #f4f4f4;
+  border: 1px solid #e0e0e0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: monospace;
+  font-size: 0.95rem;
+  margin: 0 6px;
+}
+.copy-email:hover { background: #eef3f7; }
+.copied-badge {
+  display: inline-block;
+  margin-left: 8px;
+  color: #0a7a07;
+  font-weight: 700;
+  font-size: 0.9rem;
+}

@@ -233,3 +233,18 @@
   color: var(--medium-grey);
   line-height: 1.6;
 }
+
+/* copy email button used in instructions */
+.copy-email {
+  background: #f0f0f0;
+  border: 1px solid #e0e0e0;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: monospace;
+}
+.copied-badge {
+  margin-left: 8px;
+  color: #0a7a07;
+  font-weight: 700;
+}

@@ -6,6 +6,19 @@ import Header from './Header'; // --- IMPORT YOUR REUSABLE HEADER ---
 
 function Home() {
   const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const receiptEmail = 'UniEats.OrderReceipts@gmail.com';
+  const princetonUrl = 'https://princeton.buy-ondemand.com/';
+  const [copied, setCopied] = useState(false);
+
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(receiptEmail);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch (err) {
+      console.error('Copy failed', err);
+    }
+  };
 
   return (
     <div className="home-container">
@@ -57,7 +70,13 @@ function Home() {
                 <div className="step-body">
                   <h3 className="step-title">Order from Princeton</h3>
                   <p>
-                    Go to Frist Grill (or other campus dining) and place your order. <strong>IMPORTANT:</strong> Use placeholder@gmail.com for the contact email so we receive the confirmation.
+                    Go to Frist Grill (or other campus dining) and place your order on the{' '}
+                    <a href={princetonUrl} target="_blank" rel="noopener noreferrer">Princeton ordering site</a>.
+                    {' '}<strong>IMPORTANT:</strong> In the contact-email field use{' '}
+                    <button type="button" className="copy-email" onClick={copyEmail}>
+                      {receiptEmail}
+                    </button>
+                    {copied && <span className="copied-badge">Copied!</span>} so we receive the confirmation.
                   </p>
                 </div>
               </div>
