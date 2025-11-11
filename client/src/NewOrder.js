@@ -210,24 +210,18 @@ function NewOrder() {
 
               <section className="order-section">
                 <h2>3. Tip Your Deliverer</h2>
-                <div className="tip-buttons">
-                  {[1, 2, 3, 5].map((amount) => (
-                    <button
-                      type="button"
-                      key={amount}
-                      className={`tip-button ${tip === amount ? 'selected' : ''}`}
-                      onClick={() => setTip(amount)}
-                    >
-                      ${amount}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    className={`tip-button ${tip === 0 ? 'selected' : ''}`}
-                    onClick={() => setTip(0)}
-                  >
-                    No Tip
-                  </button>
+                <div className="form-group">
+                  <label htmlFor="tipAmount">Tip Amount (USD)</label>
+                  <input
+                    id="tipAmount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={tip}
+                    onChange={(e) => setTip(Number(e.target.value || 0))}
+                    placeholder="0.00"
+                  />
+                  <small className="help-text">Enter a tip amount for your deliverer.</small>
                 </div>
               </section>
               
@@ -235,7 +229,7 @@ function NewOrder() {
                 <h2>4. Payment (Mock-up)</h2>
                 <div className="payment-summary">
                   <p>Order Total: <span>(From Princeton)</span></p>
-                  <p>Service Fee: <span>$0.50</span></p>
+                  <p>Service Fee: <span>$1.50</span></p>
                   <p>Tip: <span>${tip.toFixed(2)}</span></p>
                   <hr/>
                   <p className="total"><strong>Total:</strong> <span>(Mock Total)</span></p>

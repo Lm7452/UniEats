@@ -143,6 +143,18 @@
   border-color: var(--princeton-orange);
 }
 
+/* Tip input styles */
+.help-text {
+  display: block;
+  margin-top: 6px;
+  color: var(--medium-grey);
+  font-size: 0.9em;
+}
+
+.form-group input[type="number"] {
+  max-width: 160px;
+}
+
 /* --- Payment Summary --- */
 .payment-summary p {
   display: flex;
