@@ -109,3 +109,115 @@ body {
     font-size: 1em;
   }
 }
+
+/* --- Modal styles for "How it works" popup --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0; /* top:0; right:0; bottom:0; left:0; */
+  background-color: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 820px;
+  background: #fff;
+  color: #222;
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 28px;
+  border-bottom: 3px solid #f5f5f5;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: #222;
+  font-size: 1.5rem;
+}
+
+.close-button {
+  background: transparent;
+  border: none;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 6px 10px;
+}
+
+.modal-subtitle {
+  padding: 12px 28px 4px 28px;
+  margin: 0;
+  color: #555;
+}
+
+.modal-steps {
+  padding: 18px 28px 8px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.step {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  border-left: 4px solid var(--princeton-orange);
+  padding-left: 12px;
+}
+
+.step-number {
+  min-width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background: var(--princeton-orange);
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+.step-body .step-title {
+  margin: 0 0 6px 0;
+  color: var(--princeton-orange);
+  font-size: 1.05rem;
+}
+
+.step-body p {
+  margin: 0;
+  color: #444;
+  line-height: 1.35;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: center;
+  padding: 18px 28px 26px 28px;
+}
+
+.got-it-button {
+  background: var(--princeton-orange);
+  color: #000;
+  border: none;
+  padding: 12px 36px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .modal-content { max-width: 100%; }
+  .modal-header h2 { font-size: 1.25rem; }
+  .step-number { min-width: 32px; height: 32px; border-radius: 16px; }
+}
