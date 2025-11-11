@@ -1,4 +1,4 @@
-/* src/components/Home.css */
+/* src/Home.css (Updated) */
 
 :root {
   --princeton-orange: #E77500;
@@ -22,43 +22,6 @@ body {
   min-height: 100vh; /* Ensures the container takes at least full viewport height */
   background-color: var(--dark-grey); /* Overall dark grey background */
   color: var(--light-text);
-}
-
-/* --- Navigation Bar --- */
-.navbar {
-  background-color: var(--princeton-black); /* Black nav bar */
-  padding: 15px 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-.navbar-logo {
-  font-size: 28px;
-  font-weight: bold;
-  color: var(--princeton-orange); /* Orange logo */
-}
-
-.navbar-logo span {
-  margin-right: 8px; /* Space between emoji and text */
-}
-
-.login-button-nav {
-  background-color: var(--princeton-orange); /* Orange login button */
-  color: var(--princeton-black);
-  font-weight: bold;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-  text-decoration: none; /* Remove underline from link */
-  transition: background-color 0.2s ease-in-out;
-}
-
-.login-button-nav:hover {
-  background-color: #CC6600; /* Slightly darker orange on hover */
 }
 
 /* --- Hero Section --- */
@@ -130,128 +93,19 @@ body {
 
 /* --- Media Queries for Responsiveness --- */
 @media (max-width: 768px) {
-  .navbar {
-    padding: 10px 20px;
-  }
-  .navbar-logo {
-    font-size: 22px;
-  }
   .hero-title {
     font-size: 2.5em;
   }
   .hero-subtitle {
     font-size: 1.2em;
   }
-  .login-button-nav {
-    padding: 8px 15px;
-    font-size: 14px;
-  }
 }
 
 @media (max-width: 480px) {
-  .navbar {
-    flex-direction: column;
-    gap: 10px;
-  }
   .hero-title {
     font-size: 2em;
   }
   .hero-subtitle {
     font-size: 1em;
   }
-}
-
-/* --- HOW IT WORKS MODAL STYLES --- */
-
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8); /* Dark overlay */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal-content {
-    background: var(--light-text);
-    padding: 30px;
-    border-radius: 12px;
-    max-width: 650px;
-    width: 90%;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-    color: var(--dark-grey);
-}
-
-.modal-title {
-    font-size: 2em;
-    font-weight: 800;
-    color: var(--princeton-black);
-    margin-bottom: 5px;
-    border-bottom: 2px solid var(--princeton-orange);
-    padding-bottom: 10px;
-}
-
-.modal-subtitle {
-    font-size: 1em;
-    color: var(--medium-grey);
-    margin-bottom: 30px;
-}
-
-.modal-steps-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 25px;
-    margin-bottom: 25px;
-}
-
-.modal-step {
-    border-left: 4px solid var(--princeton-orange);
-    padding-left: 15px;
-}
-
-.modal-step .step-title {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: var(--princeton-orange);
-    margin-top: 0;
-    margin-bottom: 5px;
-}
-
-.modal-step .step-text {
-    font-size: 0.95em;
-    line-height: 1.5;
-}
-
-.modal-close-button {
-    display: block;
-    width: 100%;
-    background-color: var(--princeton-orange);
-    color: var(--princeton-black);
-    font-weight: bold;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1.1em;
-    transition: background-color 0.2s;
-}
-
-.modal-close-button:hover {
-    background-color: #CC6600;
-}
-
-@media (max-width: 600px) {
-    .modal-title {
-        font-size: 1.5em;
-    }
-    .modal-content {
-        padding: 20px;
-    }
-    .modal-steps-container {
-        gap: 15px;
-    }
 }
