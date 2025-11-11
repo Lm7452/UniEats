@@ -9,8 +9,7 @@ function NewOrder() {
   const [orderNumber, setOrderNumber] = useState('');
   const [building, setBuilding] = useState('');
   const [room, setRoom] = useState('');
-  const [tip, setTip] = useState(0);
-  const [orderTotal, setOrderTotal] = useState(0);
+  const [tip, setTip] = useState('');
   const [buildingOptions, setBuildingOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState('');
@@ -90,8 +89,7 @@ function NewOrder() {
       princeton_order_number: orderNumber,
       delivery_building: building,
       delivery_room: room,
-      tip_amount: tip,
-      princeton_order_total: orderTotal
+      tip_amount: Number(tip) || 0
     };
 
     fetch('/api/orders', {
@@ -220,7 +218,7 @@ function NewOrder() {
                     min="0"
                     step="0.01"
                     value={tip}
-                    onChange={(e) => setTip(Number(e.target.value || 0))}
+                    onChange={(e) => setTip(e.target.value)}
                     placeholder="0.00"
                   />
                   <small className="help-text">Enter a tip amount for your deliverer.</small>
@@ -230,31 +228,12 @@ function NewOrder() {
               <section className="order-section">
                 <h2>4. Payment</h2>
                 <div className="payment-summary">
-                  <p>
-                    Order Total:
-                    <span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={orderTotal}
-                        onChange={(e) => setOrderTotal(Number(e.target.value || 0))}
-                        className="inline-money-input"
-                      />
-                    </span>
-                  </p>
                   <p>Service Fee: <span>$1.50</span></p>
                   <p>Tip: <span>${(Number(tip) || 0).toFixed(2)}</span></p>
                   <hr/>
                   <p className="total">
                     <strong>Total:</strong>
-                    <span>
-                      ${(
-                        (Number(orderTotal) || 0) +
-                        1.5 +
-                        (Number(tip) || 0)
-                      ).toFixed(2)}
-                    </span>
+                    <span>${(1.5 + (Number(tip) || 0)).toFixed(2)}</span>
                   </p>
                 </div>
                 <div className="form-actions">
