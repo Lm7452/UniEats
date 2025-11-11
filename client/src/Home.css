@@ -161,6 +161,13 @@ body {
   color: #555;
 }
 
+.important-note {
+  padding: 8px 28px 0 28px;
+  margin: 0;
+  color: #444;
+  font-weight: 600;
+}
+
 .modal-steps {
   padding: 18px 28px 8px 28px;
   display: flex;

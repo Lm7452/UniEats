@@ -10,6 +10,7 @@ function NewOrder() {
   const [building, setBuilding] = useState('');
   const [room, setRoom] = useState('');
   const [tip, setTip] = useState(0);
+  const [orderTotal, setOrderTotal] = useState(0);
   const [buildingOptions, setBuildingOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState('');
@@ -89,7 +90,8 @@ function NewOrder() {
       princeton_order_number: orderNumber,
       delivery_building: building,
       delivery_room: room,
-      tip_amount: tip
+      tip_amount: tip,
+      princeton_order_total: orderTotal
     };
 
     fetch('/api/orders', {
@@ -226,13 +228,34 @@ function NewOrder() {
               </section>
               
               <section className="order-section">
-                <h2>4. Payment (Mock-up)</h2>
+                <h2>4. Payment</h2>
                 <div className="payment-summary">
-                  <p>Order Total: <span>(From Princeton)</span></p>
+                  <p>
+                    Order Total:
+                    <span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={orderTotal}
+                        onChange={(e) => setOrderTotal(Number(e.target.value || 0))}
+                        className="inline-money-input"
+                      />
+                    </span>
+                  </p>
                   <p>Service Fee: <span>$1.50</span></p>
-                  <p>Tip: <span>${tip.toFixed(2)}</span></p>
+                  <p>Tip: <span>${(Number(tip) || 0).toFixed(2)}</span></p>
                   <hr/>
-                  <p className="total"><strong>Total:</strong> <span>(Mock Total)</span></p>
+                  <p className="total">
+                    <strong>Total:</strong>
+                    <span>
+                      ${(
+                        (Number(orderTotal) || 0) +
+                        1.5 +
+                        (Number(tip) || 0)
+                      ).toFixed(2)}
+                    </span>
+                  </p>
                 </div>
                 <div className="form-actions">
                   <button type="submit" className="save-button" disabled={isSubmitting}>

@@ -80,7 +80,9 @@ function Home() {
                     >
                       {displayDomain}
                     </a>
-                    {' '}<strong>IMPORTANT:</strong> In the contact-email field use{' '}
+                  </p>
+                  <p className="important-note">
+                    <strong>IMPORTANT:</strong> In the contact-email field use{' '}
                     <button type="button" className="copy-email" onClick={copyEmail}>
                       {receiptEmail}
                     </button>
