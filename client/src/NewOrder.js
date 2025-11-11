@@ -23,6 +23,7 @@ function NewOrder() {
   const receiptEmail = 'UniEats.OrderReceipts@gmail.com';
   const princetonUrl = 'https://princeton.buy-ondemand.com/';
   const [copiedEmail, setCopiedEmail] = useState(false);
+  const displayDomain = 'princeton.buy-ondemand.com';
 
   const copyEmail = async () => {
     try {
@@ -147,8 +148,8 @@ function NewOrder() {
             <div className="instruction-box">
               <h3>How to Order:</h3>
               <p>
-                <strong>Step 1:</strong> Go to the official Princeton ordering site: {' '}
-                <a href={princetonUrl} target="_blank" rel="noopener noreferrer">{princetonUrl}</a>
+                <strong>Step 1:</strong> Go to the official Frist Grill Ordering Form:{' '}
+                <a href={princetonUrl} target="_blank" rel="noopener noreferrer" className="copy-email">{displayDomain}</a>
               </p>
               <p>
                 <strong>Step 2:</strong> In the email field, please enter{' '}

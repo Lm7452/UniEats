@@ -9,6 +9,7 @@ function Home() {
   const receiptEmail = 'UniEats.OrderReceipts@gmail.com';
   const princetonUrl = 'https://princeton.buy-ondemand.com/';
   const [copied, setCopied] = useState(false);
+  const displayDomain = 'princeton.buy-ondemand.com';
 
   const copyEmail = async () => {
     try {
@@ -70,8 +71,15 @@ function Home() {
                 <div className="step-body">
                   <h3 className="step-title">Order from Princeton</h3>
                   <p>
-                    Go to Frist Grill (or other campus dining) and place your order on the{' '}
-                    <a href={princetonUrl} target="_blank" rel="noopener noreferrer">Princeton ordering site</a>.
+                    <strong>Go to the official Frist Grill Ordering Form:</strong>{' '}
+                    <a
+                      href={princetonUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="copy-email"
+                    >
+                      {displayDomain}
+                    </a>
                     {' '}<strong>IMPORTANT:</strong> In the contact-email field use{' '}
                     <button type="button" className="copy-email" onClick={copyEmail}>
                       {receiptEmail}
