@@ -32,14 +32,20 @@ function DriverDashboard() {
       fetch('/api/driver/orders/mine')
     ])
     .then(async ([profileRes, availableRes, mineRes]) => {
-      if (profileRes.status === 401) throw new Error('Not authenticated');
-      if (availableRes.status === 403 || mineRes.status === 403) {
-        throw new Error('You are not authorized to view this page.');
+      // Prefer showing server-provided error messages when available
+      if (!profileRes.ok) {
+        const errBody = await safeParseJson(profileRes);
+        throw new Error(errBody?.error || `Profile fetch failed (${profileRes.status})`);
       }
-      if (!profileRes.ok || !availableRes.ok || !mineRes.ok) {
-        throw new Error('Failed to fetch data.');
+      if (!availableRes.ok) {
+        const errBody = await safeParseJson(availableRes);
+        throw new Error(errBody?.error || `Available orders fetch failed (${availableRes.status})`);
       }
-      
+      if (!mineRes.ok) {
+        const errBody = await safeParseJson(mineRes);
+        throw new Error(errBody?.error || `My orders fetch failed (${mineRes.status})`);
+      }
+
       const userData = await profileRes.json();
       const available = await availableRes.json();
       const mine = await mineRes.json();
@@ -51,15 +57,22 @@ function DriverDashboard() {
     })
     .catch(err => {
       console.error("Error fetching driver data:", err);
-      setError(err.message);
-      if (err.message.includes('authorized') || err.message.includes('authenticated')) {
-        setTimeout(() => navigate('/'), 2000);
-      }
+      // Show the error to the driver and don't forcibly redirect; let them see why access failed.
+      setError(err.message || 'Failed to fetch driver data');
     })
     .finally(() => {
       if(isInitialLoad) setIsLoading(false);
     });
   }, [navigate]); 
+
+  // Helper to parse JSON responses safely
+  const safeParseJson = async (res) => {
+    try {
+      return await res.json();
+    } catch (e) {
+      return null;
+    }
+  };
 
   useEffect(() => {
     fetchData(true); 
@@ -201,7 +214,10 @@ function DriverDashboard() {
             ) : (
               myOrders.map(order => (
                 <div key={order.id} className="order-card claimed">
-                  <h3>Order for {order.customer_name}</h3>
+                  <h3>
+                    Order for {order.customer_name}
+                    <span className={`status-tag status-${order.status}`} style={{ marginLeft: 10 }}>{order.status.replace('_', ' ')}</span>
+                  </h3>
                   <p><strong>Order #:</strong> {order.princeton_order_number}</p>
                   <p><strong>Deliver To:</strong> {order.delivery_building} - Room {order.delivery_room}</p>
                   <p><strong>Contact:</strong> 
@@ -238,7 +254,10 @@ function DriverDashboard() {
             ) : (
               availableOrders.map(order => (
                 <div key={order.id} className="order-card">
-                  <h3>Order for {order.customer_name}</h3>
+                  <h3>
+                    Order for {order.customer_name}
+                    <span className={`status-tag status-${order.status}`} style={{ marginLeft: 10 }}>{order.status.replace('_', ' ')}</span>
+                  </h3>
                   <p><strong>Order #:</strong> {order.princeton_order_number}</p>
                   <p><strong>Deliver To:</strong> {order.delivery_building} - Room {order.delivery_room}</p>
                   <p><strong>Contact:</strong> {order.customer_phone || 'Not Provided'}</p>

@@ -142,6 +142,45 @@ body {
   color: var(--dark-grey);
 }
 
+/* Status tag styles (match student dashboard/order history) */
+.status-tag {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.85em;
+  text-transform: capitalize;
+  margin-left: 8px;
+}
+.status-tag.status-pending {
+  background-color: #e0e0e0;
+  color: #333;
+}
+.status-tag.status-claimed {
+  background-color: #fef3e6;
+  color: #b95000;
+  border: 1px solid #fbe6c7;
+}
+.status-tag.status-picked_up {
+  background-color: #fff6e8; /* light amber */
+  color: #b36b00;
+  border: 1px solid #fde6c7;
+}
+.status-tag.status-en_route {
+  background-color: #e6f3ff; /* light blue */
+  color: #0b67b1;
+  border: 1px solid #cfe6ff;
+}
+.status-tag.status-delivered {
+  background-color: #e6f7ec;
+  color: #006421;
+  border: 1px solid #c3e6cb;
+}
+.status-tag.status-cancelled {
+  background-color: #ffe0e6;
+  color: #d90429;
+  border: 1px solid #ffc9c9;
+}
+
 .order-card p {
   margin: 4px 0;
   color: var(--card-text);
