@@ -9,7 +9,7 @@ function NewOrder() {
   const [orderNumber, setOrderNumber] = useState('');
   const [building, setBuilding] = useState('');
   const [room, setRoom] = useState('');
-  const [locationType, setLocationType] = useState('residential'); // 'residential' or 'campus'
+  const [locationType, setLocationType] = useState('residential'); // 'residential', 'upperclassmen' or 'campus'
   const [residenceHall, setResidenceHall] = useState('');
   const [campusBuildingText, setCampusBuildingText] = useState('');
   const [campusRoomText, setCampusRoomText] = useState('');
@@ -101,7 +101,8 @@ function NewOrder() {
         setIsSubmitting(false);
         return;
       }
-      if (!residenceHall) {
+      // residenceHall is required only for residential (not upperclassmen)
+      if (locationType === 'residential' && !residenceHall) {
         setStatusMessage('Please enter your hall/section.');
         setIsSubmitting(false);
         return;
@@ -240,10 +241,10 @@ function NewOrder() {
                       <input
                         type="radio"
                         name="locationType"
-                        value="upperclassman"
-                        checked={locationType === 'upperclassman'}
-                        onChange={() => setLocationType('upperclassman')}
-                      /> Upperclassman
+                        value="upperclassmen"
+                        checked={locationType === 'upperclassmen'}
+                        onChange={() => setLocationType('upperclassmen')}
+                      /> Upperclassmen
                     </label>
                     <label>
                       <input
@@ -271,17 +272,20 @@ function NewOrder() {
                         isClearable
                       />
                     </div>
-                    <div className="form-group">
-                      <label htmlFor="residenceHall">Hall / Section</label>
-                      <input
-                        type="text"
-                        id="residenceHall"
-                        value={residenceHall}
-                        onChange={(e) => setResidenceHall(e.target.value)}
-                        placeholder="e.g., Quad A, Butler Hall"
-                        required={locationType !== 'campus'}
-                      />
-                    </div>
+                    {/* Only show Hall / Section for residential (not upperclassmen) */}
+                    {locationType === 'residential' && (
+                      <div className="form-group">
+                        <label htmlFor="residenceHall">Hall / Section</label>
+                        <input
+                          type="text"
+                          id="residenceHall"
+                          value={residenceHall}
+                          onChange={(e) => setResidenceHall(e.target.value)}
+                          placeholder="e.g., Quad A, Butler Hall"
+                          required={locationType === 'residential'}
+                        />
+                      </div>
+                    )}
                     <div className="form-group">
                       <label htmlFor="dorm_room">Room Number</label>
                       <input
