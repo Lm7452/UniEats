@@ -429,7 +429,7 @@ app.get('/api/driver/orders/mine', isDriver, async (req, res) => {
          u.phone_number AS customer_phone
        FROM orders o
        JOIN users u ON o.customer_id = u.id
-       WHERE o.driver_id = $1 AND o.status = 'claimed'
+       WHERE o.driver_id = $1 AND o.status IN ('claimed', 'picked_up', 'en_route')
        ORDER BY o.created_at DESC`, 
       [driverId]
     );
@@ -490,6 +490,36 @@ app.put('/api/driver/orders/:orderId/complete', isDriver, async (req, res) => {
   } catch (err) {
     console.error('Driver error completing order:', err);
     res.status(500).json({ error: 'Failed to complete order' });
+  }
+});
+
+// PUT to update order status (picked_up, en_route, delivered) by assigned driver
+app.put('/api/driver/orders/:orderId/status', isDriver, async (req, res) => {
+  const { orderId } = req.params;
+  const driverId = req.user.id;
+  const { status } = req.body;
+
+  const allowed = ['claimed', 'picked_up', 'en_route', 'delivered'];
+  if (!allowed.includes(status)) {
+    return res.status(400).json({ error: 'Invalid status value' });
+  }
+
+  try {
+    const result = await db.query(
+      `UPDATE orders
+       SET status = $1
+       WHERE id = $2 AND driver_id = $3
+       RETURNING *`,
+      [status, orderId, driverId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Order not found or not assigned to you.' });
+    }
+    console.log(`Driver ${driverId} set order ${orderId} status to ${status}`);
+    res.status(200).json(result.rows[0]);
+  } catch (err) {
+    console.error('Driver error updating order status:', err);
+    res.status(500).json({ error: 'Failed to update order status' });
   }
 });
 

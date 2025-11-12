@@ -107,6 +107,34 @@ function DriverDashboard() {
     });
   };
 
+  // Generic status updater for driver's orders (picked_up -> en_route -> delivered)
+  const updateOrderStatus = (orderId, newStatus) => {
+    // optimistic UI: update local copy
+    setMyOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+    fetch(`/api/driver/orders/${orderId}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to update order status.');
+      return res.json();
+    })
+    .then(updated => {
+      setMyOrders(prev => prev.map(o => o.id === orderId ? updated : o));
+      setError('');
+      // If delivered, remove from claimed list
+      if (newStatus === 'delivered') {
+        setMyOrders(prev => prev.filter(o => o.id !== orderId));
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      setError(err.message);
+      fetchData(false);
+    });
+  };
+
   // --- NEW HANDLER FOR DRIVER'S OWN AVAILABILITY ---
   const handleAvailabilityToggle = () => {
     const newStatus = !isAvailable;
@@ -182,12 +210,19 @@ function DriverDashboard() {
                   <p className="order-tip">Tip: ${parseFloat(order.tip_amount).toFixed(2)}</p>
                   <p className="order-time">Placed at: {formatTime(order.created_at)}</p>
                   <div className="order-actions">
-                    <button 
-                      className="action-button-complete"
-                      onClick={() => handleCompleteOrder(order.id)}
-                    >
-                      Mark as Complete
-                    </button>
+                        {/* Status flow: Claimed -> Picked Up -> En Route -> Delivered */}
+                        {order.status === 'claimed' && (
+                          <button className="action-button" onClick={() => updateOrderStatus(order.id, 'picked_up')}>Mark as Picked Up</button>
+                        )}
+                        {order.status === 'picked_up' && (
+                          <>
+                            <button className="action-button" onClick={() => updateOrderStatus(order.id, 'en_route')}>Mark as On the Way</button>
+                            <button className="action-button-complete" onClick={() => updateOrderStatus(order.id, 'delivered')}>Mark as Delivered</button>
+                          </>
+                        )}
+                        {order.status === 'en_route' && (
+                          <button className="action-button-complete" onClick={() => updateOrderStatus(order.id, 'delivered')}>Mark as Delivered</button>
+                        )}
                   </div>
                 </div>
               ))
