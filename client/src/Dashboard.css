@@ -136,6 +136,61 @@
   margin-top: 2px;
 }
 
+/* Order tracker styles */
+.order-tracker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 10px;
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+.tracker-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1 1 0;
+}
+.step-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #fff;
+  background: #dcdcdc;
+}
+.tracker-step.done .step-circle {
+  background: #006421; /* green */
+}
+.tracker-step.active .step-circle {
+  background: var(--princeton-orange);
+}
+.step-label {
+  margin-top: 8px;
+  font-size: 0.85em;
+  color: var(--dark-grey);
+  text-align: center;
+}
+.step-line {
+  position: absolute;
+  height: 6px;
+  width: calc(100% - 48px);
+  background: #e6e6e6;
+  top: 16px;
+  left: calc(50% + 18px);
+  z-index: -1;
+}
+.step-line.done {
+  background: #006421;
+}
+
+
 /* --- Status Tag Styles (Copied from OrderHistory.css) --- */
 .status-tag {
   padding: 4px 8px;

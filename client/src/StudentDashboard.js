@@ -7,6 +7,7 @@ import { formatStatus, statusClass } from './utils/statusUtils';
 
 function StudentDashboard() {
   const [recentOrders, setRecentOrders] = useState([]); 
+  const [activeOrder, setActiveOrder] = useState(null);
   const [isLoading, setIsLoading] = useState(true); 
 
   const formatTime = (isoString) => {
@@ -26,6 +27,12 @@ function StudentDashboard() {
       })
       .then(orderData => {
         setRecentOrders(orderData.slice(0, 3)); 
+        // determine an active order (not delivered or cancelled) - newest first
+        const active = orderData
+          .slice()
+          .sort((a,b) => new Date(b.created_at) - new Date(a.created_at))
+          .find(o => (o.status || 'pending') !== 'delivered' && (o.status || 'pending') !== 'cancelled');
+        setActiveOrder(active || null);
       })
       .catch(error => console.error("Error fetching dashboard data:", error))
       .finally(() => setIsLoading(false));
@@ -36,12 +43,46 @@ function StudentDashboard() {
     return <span className={`status-tag status-${cls}`}>{formatStatus(status)}</span>;
   };
 
+  const steps = [
+    { key: 'pending', label: 'Pending' },
+    { key: 'claimed', label: 'Claimed' },
+    { key: 'picked_up', label: 'Picked Up' },
+    { key: 'en_route', label: 'En Route' },
+    { key: 'delivered', label: 'Delivered' },
+  ];
+
+  const renderTracker = (order) => {
+    if (!order) return null;
+    const cur = (order.status || 'pending');
+    const curIndex = steps.findIndex(s => s.key === cur);
+    return (
+      <div className="order-tracker" aria-hidden={false}>
+        {steps.map((s, idx) => {
+          const state = idx < curIndex ? 'done' : (idx === curIndex ? 'active' : 'pending');
+          return (
+            <div key={s.key} className={`tracker-step ${state}`}>
+              <div className="step-circle">{idx < curIndex ? '✓' : (idx === curIndex ? '●' : idx+1)}</div>
+              <div className="step-label">{s.label}</div>
+              {idx < steps.length - 1 && <div className={`step-line ${idx < curIndex ? 'done' : ''}`} />}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     // --- UPDATED CLASSES ---
     <div className="page-container">
       <Header />
       <main className="page-main">
     {/* --- END OF UPDATE --- */}
+        {activeOrder && (
+          <section className="dashboard-section">
+            <h2>Current Order Status</h2>
+            {renderTracker(activeOrder)}
+          </section>
+        )}
         <h1 className="dashboard-title">Student Dashboard</h1>
 
         <section className="dashboard-section">
