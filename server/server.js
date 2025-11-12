@@ -281,6 +281,42 @@ app.get('/api/admin/users', isAdmin, async (req, res) => {
   }
 });
 
+// GET all orders (Admin only) - list orders with brief details
+app.get('/api/admin/orders', isAdmin, async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT o.id, o.princeton_order_number, o.delivery_building, o.delivery_room, o.tip_amount, o.status, o.created_at, o.customer_id,
+              u.name AS customer_name, u.email AS customer_email
+       FROM orders o
+       JOIN users u ON o.customer_id = u.id
+       ORDER BY o.created_at DESC`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Admin error fetching orders:', err);
+    res.status(500).json({ error: 'Failed to fetch orders' });
+  }
+});
+
+// DELETE an order (Admin only)
+app.delete('/api/admin/orders/:orderId', isAdmin, async (req, res) => {
+  const { orderId } = req.params;
+  try {
+    const result = await db.query(
+      'DELETE FROM orders WHERE id = $1 RETURNING *',
+      [orderId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    console.log(`Admin ${req.user.id} deleted order ${orderId}`);
+    res.json({ deleted: true, order: result.rows[0] });
+  } catch (err) {
+    console.error('Admin error deleting order:', err);
+    res.status(500).json({ error: 'Failed to delete order' });
+  }
+});
+
 // PUT to update a user's role (Admin only)
 app.put('/api/admin/users/:userId/role', isAdmin, async (req, res) => {
   const { userId } = req.params;

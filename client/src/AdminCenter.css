@@ -77,6 +77,29 @@ body {
   font-size: 0.95em;
 }
 
+.order-table-container {
+  margin-top: 18px;
+}
+.order-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.order-table th, .order-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+  font-size: 0.95rem;
+}
+.action-button-danger {
+  background: #d9534f;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.action-button-danger:hover { background: #c9302c; }
+
 .user-table th,
 .user-table td {
   padding: 12px 15px;
