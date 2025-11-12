@@ -21,6 +21,28 @@ function StudentDashboard() {
     });
   };
 
+  // Format phone numbers to (###) ###-#### for display and produce safe tel: hrefs
+  const formatPhoneForDisplay = (phone) => {
+    if (!phone) return '';
+    const digits = String(phone).replace(/\D/g, '');
+    if (digits.length === 10) {
+      return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+    }
+    if (digits.length === 11 && digits[0] === '1') {
+      return `(${digits.slice(1,4)}) ${digits.slice(4,7)}-${digits.slice(7)}`;
+    }
+    // fallback: return the raw phone if it doesn't look like US 10/11-digit
+    return phone;
+  };
+
+  const formatPhoneForTel = (phone) => {
+    if (!phone) return '';
+    const digits = String(phone).replace(/\D/g, '');
+    if (digits.length === 10) return `tel:+1${digits}`;
+    if (digits.length === 11 && digits[0] === '1') return `tel:+${digits}`;
+    return `tel:${phone}`;
+  };
+
   useEffect(() => {
     fetch('/api/orders/my-history')
       .then(res => {
@@ -107,7 +129,7 @@ function StudentDashboard() {
             <div className="driver-details">
               <div className="driver-name">Driver: {order.driver_name || 'Assigned'}</div>
               {order.driver_phone ? (
-                <a className="driver-phone" href={`tel:${order.driver_phone}`}>{order.driver_phone}</a>
+                <a className="driver-phone" href={formatPhoneForTel(order.driver_phone)}>{formatPhoneForDisplay(order.driver_phone)}</a>
               ) : (
                 <div className="driver-phone muted">Contact not available</div>
               )}
