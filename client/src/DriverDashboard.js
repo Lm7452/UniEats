@@ -201,7 +201,10 @@ function DriverDashboard() {
             ) : (
               myOrders.map(order => (
                 <div key={order.id} className="order-card claimed">
-                  <h3>Order for {order.customer_name}</h3>
+                  <h3>
+                    Order for {order.customer_name}
+                    <span className={`status-tag status-${order.status}`} style={{ marginLeft: 10 }}>{order.status.replace('_', ' ')}</span>
+                  </h3>
                   <p><strong>Order #:</strong> {order.princeton_order_number}</p>
                   <p><strong>Deliver To:</strong> {order.delivery_building} - Room {order.delivery_room}</p>
                   <p><strong>Contact:</strong> 
@@ -238,7 +241,10 @@ function DriverDashboard() {
             ) : (
               availableOrders.map(order => (
                 <div key={order.id} className="order-card">
-                  <h3>Order for {order.customer_name}</h3>
+                  <h3>
+                    Order for {order.customer_name}
+                    <span className={`status-tag status-${order.status}`} style={{ marginLeft: 10 }}>{order.status.replace('_', ' ')}</span>
+                  </h3>
                   <p><strong>Order #:</strong> {order.princeton_order_number}</p>
                   <p><strong>Deliver To:</strong> {order.delivery_building} - Room {order.delivery_room}</p>
                   <p><strong>Contact:</strong> {order.customer_phone || 'Not Provided'}</p>
