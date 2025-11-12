@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from './Header'; 
 import './DriverDashboard.css'; 
+import { formatStatus, statusClass } from './utils/statusUtils';
 
 function DriverDashboard() {
   const [availableOrders, setAvailableOrders] = useState([]);
@@ -217,10 +218,10 @@ function DriverDashboard() {
                   <h3>
                     Order for {order.customer_name}
                     {(() => {
-                      const displayRaw = order.status || 'pending';
+                      const cls = statusClass(order.status);
                       return (
-                        <span className={`status-tag status-${displayRaw}`} style={{ marginLeft: 10 }}>
-                          {String(displayRaw).replace(/_/g, ' ')}
+                        <span className={`status-tag status-${cls}`} style={{ marginLeft: 10 }}>
+                          {formatStatus(order.status)}
                         </span>
                       );
                     })()}
@@ -264,10 +265,10 @@ function DriverDashboard() {
                   <h3>
                     Order for {order.customer_name}
                     {(() => {
-                      const displayRaw = order.status || 'pending';
+                      const cls = statusClass(order.status);
                       return (
-                        <span className={`status-tag status-${displayRaw}`} style={{ marginLeft: 10 }}>
-                          {String(displayRaw).replace(/_/g, ' ')}
+                        <span className={`status-tag status-${cls}`} style={{ marginLeft: 10 }}>
+                          {formatStatus(order.status)}
                         </span>
                       );
                     })()}

@@ -154,6 +154,16 @@
   color: #b95000;
   border: 1px solid #fbe6c7;
 }
+.status-tag.status-picked_up {
+  background-color: #fff6e8; /* light amber */
+  color: #b36b00;
+  border: 1px solid #fde6c7;
+}
+.status-tag.status-en_route {
+  background-color: #e6f3ff; /* light blue */
+  color: #0b67b1;
+  border: 1px solid #cfe6ff;
+}
 .status-tag.status-delivered {
   background-color: #e6f7ec;
   color: #006421;

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from './Header'; 
 import './Dashboard.css'; // Still used for section/button styles
+import { formatStatus, statusClass } from './utils/statusUtils';
 
 function StudentDashboard() {
   const [recentOrders, setRecentOrders] = useState([]); 
@@ -31,7 +32,8 @@ function StudentDashboard() {
   }, []); 
 
   const renderStatus = (status) => {
-    return <span className={`status-tag status-${status}`}>{status}</span>;
+    const cls = statusClass(status);
+    return <span className={`status-tag status-${cls}`}>{formatStatus(status)}</span>;
   };
 
   return (

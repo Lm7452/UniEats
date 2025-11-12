@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom'; // 1. Import useLocation
 import './OrderHistory.css'; 
+import { formatStatus, statusClass } from './utils/statusUtils';
 
 function OrderHistory() {
   const [orders, setOrders] = useState([]);
@@ -44,7 +45,8 @@ function OrderHistory() {
   }, [navigate]);
 
   const renderStatus = (status) => {
-    return <span className={`status-tag status-${status}`}>{status}</span>;
+    const cls = statusClass(status);
+    return <span className={`status-tag status-${cls}`}>{formatStatus(status)}</span>;
   };
 
   if (isLoading) {

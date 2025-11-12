@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from './Header'; 
 import './AdminCenter.css'; 
+import { formatStatus, statusClass } from './utils/statusUtils';
 
 function AdminCenter() {
   const [users, setUsers] = useState([]);
@@ -254,7 +255,11 @@ function AdminCenter() {
                     <td>{order.princeton_order_number}</td>
                     <td>{order.delivery_building} / {order.delivery_room}</td>
                     <td>${Number(order.tip_amount || 0).toFixed(2)}</td>
-                    <td>{order.status}</td>
+                    <td>
+                      <span className={`status-tag status-${statusClass(order.status)}`}>
+                        {formatStatus(order.status)}
+                      </span>
+                    </td>
                     <td>{new Date(order.created_at).toLocaleString()}</td>
                     <td>
                       <button className="action-button-danger" onClick={() => handleDeleteOrder(order.id)}>Delete</button>
