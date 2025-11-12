@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import Header from './Header'; 
 import './Dashboard.css'; // Still used for section/button styles
 import { formatStatus, statusClass } from './utils/statusUtils';
+import { formatPhoneForDisplay, formatPhoneForTel } from './utils/phoneUtils';
 
 function StudentDashboard() {
   const [recentOrders, setRecentOrders] = useState([]); 
@@ -21,27 +22,7 @@ function StudentDashboard() {
     });
   };
 
-  // Format phone numbers to (###) ###-#### for display and produce safe tel: hrefs
-  const formatPhoneForDisplay = (phone) => {
-    if (!phone) return '';
-    const digits = String(phone).replace(/\D/g, '');
-    if (digits.length === 10) {
-      return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
-    }
-    if (digits.length === 11 && digits[0] === '1') {
-      return `(${digits.slice(1,4)}) ${digits.slice(4,7)}-${digits.slice(7)}`;
-    }
-    // fallback: return the raw phone if it doesn't look like US 10/11-digit
-    return phone;
-  };
-
-  const formatPhoneForTel = (phone) => {
-    if (!phone) return '';
-    const digits = String(phone).replace(/\D/g, '');
-    if (digits.length === 10) return `tel:+1${digits}`;
-    if (digits.length === 11 && digits[0] === '1') return `tel:+${digits}`;
-    return `tel:${phone}`;
-  };
+  // phone formatting helpers are imported from utils/phoneUtils
 
   useEffect(() => {
     fetch('/api/orders/my-history')

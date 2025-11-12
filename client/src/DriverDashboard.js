@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Header from './Header'; 
 import './DriverDashboard.css'; 
 import { formatStatus, statusClass } from './utils/statusUtils';
+import { formatPhoneForDisplay, formatPhoneForTel } from './utils/phoneUtils';
 
 function DriverDashboard() {
   const [availableOrders, setAvailableOrders] = useState([]);
@@ -229,7 +230,11 @@ function DriverDashboard() {
                   <p><strong>Order #:</strong> {order.princeton_order_number}</p>
                   <p><strong>Deliver To:</strong> {order.delivery_building} - Room {order.delivery_room}</p>
                   <p><strong>Contact:</strong> 
-                    <a href={`tel:${order.customer_phone}`}>{order.customer_phone || 'Not Provided'}</a>
+                    {order.customer_phone ? (
+                      <a href={formatPhoneForTel(order.customer_phone)}>{formatPhoneForDisplay(order.customer_phone)}</a>
+                    ) : (
+                      'Not Provided'
+                    )}
                   </p>
                   <p className="order-tip">Tip: ${parseFloat(order.tip_amount).toFixed(2)}</p>
                   <p className="order-time">Placed at: {formatTime(order.created_at)}</p>
@@ -275,7 +280,11 @@ function DriverDashboard() {
                   </h3>
                   <p><strong>Order #:</strong> {order.princeton_order_number}</p>
                   <p><strong>Deliver To:</strong> {order.delivery_building} - Room {order.delivery_room}</p>
-                  <p><strong>Contact:</strong> {order.customer_phone || 'Not Provided'}</p>
+                  <p><strong>Contact:</strong> {order.customer_phone ? (
+                      <a href={formatPhoneForTel(order.customer_phone)}>{formatPhoneForDisplay(order.customer_phone)}</a>
+                    ) : (
+                      'Not Provided'
+                    )}</p>
                   <p className="order-tip">Tip: ${parseFloat(order.tip_amount).toFixed(2)}</p>
                   <p className="order-time">Placed at: {formatTime(order.created_at)}</p>
                   <div className="order-actions">
