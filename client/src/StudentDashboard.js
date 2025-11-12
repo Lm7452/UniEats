@@ -78,22 +78,28 @@ function StudentDashboard() {
       const deliveredAt = order.updated_at || order.delivered_at || order.created_at;
       if (deliveredAt) deliveredAgo = Math.floor((Date.now() - new Date(deliveredAt).getTime()) / 1000);
     }
+
     return (
-      <div className="order-tracker" aria-hidden={false}>
+      <div className="order-tracker circle-tracker" aria-hidden={false}>
         {steps.map((s, idx) => {
           const state = idx < curIndex ? 'done' : (idx === curIndex ? 'active' : 'pending');
           return (
-            <div key={s.key} className={`tracker-step ${state}`}>
-              <div className="step-bar-wrapper">
-                <div className={`step-bar ${state}`} aria-hidden>
-                  {idx < curIndex ? '✓' : ''}
+            <React.Fragment key={s.key}>
+              <div className={`circle-step ${state}`}>
+                <div className={`circle ${state}`} aria-hidden>
+                  {state === 'done' ? '✓' : (idx + 1)}
                 </div>
+                <div className="step-label">{s.label}</div>
               </div>
-              <div className="step-label">{s.label}</div>
-              {idx < steps.length - 1 && <div className={`step-line ${idx < curIndex ? 'done' : ''}`} />}
-            </div>
+              {idx < steps.length - 1 && (
+                <div className={`tracker-arrow ${idx < curIndex ? 'done' : ''}`} aria-hidden>
+                  →
+                </div>
+              )}
+            </React.Fragment>
           );
         })}
+
         {cur === 'delivered' && deliveredAgo !== null && (
           <div className="tracker-footer">Delivered — this will move to your order history in {formatRemaining(Math.max(0, graceSeconds - deliveredAgo))}</div>
         )}
