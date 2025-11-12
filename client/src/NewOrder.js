@@ -95,9 +95,14 @@ function NewOrder() {
     setIsSubmitting(true);
     setStatusMessage('Placing your order...');
     // Basic client-side validation for delivery address
-    if (locationType === 'residential') {
+    if (locationType !== 'campus') {
       if (!building) {
         setStatusMessage('Please select your residential college/building.');
+        setIsSubmitting(false);
+        return;
+      }
+      if (!residenceHall) {
+        setStatusMessage('Please enter your hall/section.');
         setIsSubmitting(false);
         return;
       }
@@ -229,7 +234,16 @@ function NewOrder() {
                         value="residential"
                         checked={locationType === 'residential'}
                         onChange={() => setLocationType('residential')}
-                      /> Residential College / Residential Area
+                      /> Residential College
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="locationType"
+                        value="upperclassman"
+                        checked={locationType === 'upperclassman'}
+                        onChange={() => setLocationType('upperclassman')}
+                      /> Upperclassman
                     </label>
                     <label>
                       <input
@@ -243,7 +257,7 @@ function NewOrder() {
                   </div>
                 </div>
 
-                {locationType === 'residential' ? (
+                {locationType !== 'campus' ? (
                   <>
                     <div className="form-group">
                       <label htmlFor="dorm_building">Residential College</label>
@@ -258,13 +272,14 @@ function NewOrder() {
                       />
                     </div>
                     <div className="form-group">
-                      <label htmlFor="residenceHall">Hall / Section (optional)</label>
+                      <label htmlFor="residenceHall">Hall / Section</label>
                       <input
                         type="text"
                         id="residenceHall"
                         value={residenceHall}
                         onChange={(e) => setResidenceHall(e.target.value)}
                         placeholder="e.g., Quad A, Butler Hall"
+                        required={locationType !== 'campus'}
                       />
                     </div>
                     <div className="form-group">
@@ -275,7 +290,7 @@ function NewOrder() {
                         value={room}
                         onChange={(e) => setRoom(e.target.value)}
                         placeholder="e.g., 301"
-                        required={locationType === 'residential'}
+                        required={locationType !== 'campus'}
                       />
                     </div>
                   </>
