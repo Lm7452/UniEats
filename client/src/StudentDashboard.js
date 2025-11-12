@@ -100,6 +100,21 @@ function StudentDashboard() {
           );
         })}
 
+        {/* Driver info box */}
+        {(order.driver_name || order.driver_phone) && (
+          <div className="tracker-driver">
+            <div className="driver-avatar">{(order.driver_name || 'D').split(' ').map(n=>n[0]).slice(0,2).join('')}</div>
+            <div className="driver-details">
+              <div className="driver-name">Driver: {order.driver_name || 'Assigned'}</div>
+              {order.driver_phone ? (
+                <a className="driver-phone" href={`tel:${order.driver_phone}`}>{order.driver_phone}</a>
+              ) : (
+                <div className="driver-phone muted">Contact not available</div>
+              )}
+            </div>
+          </div>
+        )}
+
         {cur === 'delivered' && deliveredAgo !== null && (
           <div className="tracker-footer">Delivered — this will move to your order history in {formatRemaining(Math.max(0, graceSeconds - deliveredAgo))}</div>
         )}

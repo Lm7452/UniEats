@@ -239,7 +239,8 @@ app.get('/api/orders/my-history', isAuthenticated, async (req, res) => {
     const result = await db.query(
       `SELECT 
          o.id, o.princeton_order_number, o.delivery_building, o.delivery_room, o.tip_amount, o.status, o.created_at,
-         u.name AS driver_name
+         u.name AS driver_name,
+         u.phone_number AS driver_phone
        FROM orders o
        LEFT JOIN users u ON o.driver_id = u.id
        WHERE o.customer_id = $1
