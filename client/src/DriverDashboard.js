@@ -216,7 +216,14 @@ function DriverDashboard() {
                 <div key={order.id} className="order-card claimed">
                   <h3>
                     Order for {order.customer_name}
-                    <span className={`status-tag status-${order.status}`} style={{ marginLeft: 10 }}>{order.status.replace('_', ' ')}</span>
+                    {(() => {
+                      const displayRaw = order.status || 'pending';
+                      return (
+                        <span className={`status-tag status-${displayRaw}`} style={{ marginLeft: 10 }}>
+                          {String(displayRaw).replace(/_/g, ' ')}
+                        </span>
+                      );
+                    })()}
                   </h3>
                   <p><strong>Order #:</strong> {order.princeton_order_number}</p>
                   <p><strong>Deliver To:</strong> {order.delivery_building} - Room {order.delivery_room}</p>
@@ -256,7 +263,14 @@ function DriverDashboard() {
                 <div key={order.id} className="order-card">
                   <h3>
                     Order for {order.customer_name}
-                    <span className={`status-tag status-${order.status}`} style={{ marginLeft: 10 }}>{order.status.replace('_', ' ')}</span>
+                    {(() => {
+                      const displayRaw = order.status || 'pending';
+                      return (
+                        <span className={`status-tag status-${displayRaw}`} style={{ marginLeft: 10 }}>
+                          {String(displayRaw).replace(/_/g, ' ')}
+                        </span>
+                      );
+                    })()}
                   </h3>
                   <p><strong>Order #:</strong> {order.princeton_order_number}</p>
                   <p><strong>Deliver To:</strong> {order.delivery_building} - Room {order.delivery_room}</p>
