@@ -58,21 +58,42 @@ function AdminCenter() {
     setOrders(prev => prev.filter(o => o.id !== orderId));
   };
 
+  // Confirmation modal state for deleting orders
+  const [confirmOrderId, setConfirmOrderId] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  const openDeleteConfirm = (orderId) => {
+    setConfirmOrderId(orderId);
+    setShowConfirmModal(true);
+  };
+
+  const closeDeleteConfirm = () => {
+    setConfirmOrderId(null);
+    setShowConfirmModal(false);
+  };
+
   const handleDeleteOrder = (orderId) => {
-    if (!window.confirm('Delete this order? This action cannot be undone.')) return;
+    // keep backward compatibility if called directly
+    openDeleteConfirm(orderId);
+  };
+
+  const confirmDelete = () => {
+    if (!confirmOrderId) return;
     setStatusMessage('Deleting order...');
-    fetch(`/api/admin/orders/${orderId}`, { method: 'DELETE' })
+    fetch(`/api/admin/orders/${confirmOrderId}`, { method: 'DELETE' })
       .then(res => {
         if (!res.ok) throw new Error('Failed to delete order.');
         return res.json();
       })
       .then(() => {
-        removeLocalOrder(orderId);
+        removeLocalOrder(confirmOrderId);
         setStatusMessage('Order deleted.');
+        closeDeleteConfirm();
       })
       .catch(err => {
         console.error(err);
         setStatusMessage('Error deleting order.');
+        closeDeleteConfirm();
       });
   };
 
@@ -244,6 +265,18 @@ function AdminCenter() {
             </table>
           </div>
         </section>
+        {showConfirmModal && (
+          <div className="modal-overlay" role="dialog" aria-modal="true">
+            <div className="modal-content">
+              <h3>Confirm delete</h3>
+              <p>Are you sure you want to delete this order? This action cannot be undone.</p>
+              <div className="modal-actions">
+                <button className="action-button-secondary cancel-button" onClick={closeDeleteConfirm}>Cancel</button>
+                <button className="action-button-danger confirm-button" onClick={confirmDelete}>Delete order</button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
       <footer className="page-footer">
         UniEats &copy; 2025
