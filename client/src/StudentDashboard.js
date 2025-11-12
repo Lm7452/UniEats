@@ -8,7 +8,9 @@ import { formatStatus, statusClass } from './utils/statusUtils';
 function StudentDashboard() {
   const [recentOrders, setRecentOrders] = useState([]); 
   const [activeOrder, setActiveOrder] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); 
+  const [graceSeconds, setGraceSeconds] = useState(300); // 5 minutes default
+  const [remainingSeconds, setRemainingSeconds] = useState(null);
 
   const formatTime = (isoString) => {
     return new Date(isoString).toLocaleString('en-US', {
@@ -20,31 +22,37 @@ function StudentDashboard() {
   };
 
   useEffect(() => {
-    let cancelled = false;
-    const doFetch = () => {
-      fetch('/api/orders/my-history')
-        .then(res => {
-          if (!res.ok) throw new Error('Failed to fetch order history');
-          return res.json();
-        })
-        .then(orderData => {
-          if (cancelled) return;
-          setRecentOrders(orderData.slice(0, 3));
-          // determine an active order: prefer the newest order that is not delivered/cancelled
-          const sorted = orderData.slice().sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-          const active = sorted.find(o => {
+    fetch('/api/orders/my-history')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch order history');
+        return res.json();
+      })
+      .then(orderData => {
+        setRecentOrders(orderData.slice(0, 3)); 
+        // determine an active order:
+        // - prefer the newest order that is not delivered/cancelled
+        // - if the newest delivered order was delivered within graceSeconds, show it as active for that window
+        const sorted = orderData.slice().sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+        let active = sorted.find(o => {
+          const s = (o.status || 'pending');
+          return s !== 'delivered' && s !== 'cancelled';
+        });
+        if (!active) {
+          // check for recently delivered
+          const recentlyDelivered = sorted.find(o => {
             const s = (o.status || 'pending');
-            return s !== 'delivered' && s !== 'cancelled';
-          }) || null;
-          setActiveOrder(active);
-        })
-        .catch(error => { if (!cancelled) console.error("Error fetching dashboard data:", error); })
-        .finally(() => { if (!cancelled) setIsLoading(false); });
-    };
-
-    doFetch();
-    const id = setInterval(doFetch, 10000); // poll every 10s for updates
-    return () => { cancelled = true; clearInterval(id); };
+            if (s !== 'delivered') return false;
+            const deliveredAt = o.updated_at || o.delivered_at || o.created_at;
+            if (!deliveredAt) return false;
+            const diff = Date.now() - new Date(deliveredAt).getTime();
+            return diff <= (graceSeconds * 1000);
+          });
+          active = recentlyDelivered || null;
+        }
+        setActiveOrder(active || null);
+      })
+      .catch(error => console.error("Error fetching dashboard data:", error))
+      .finally(() => setIsLoading(false));
   }, []); 
 
   const renderStatus = (status) => {
