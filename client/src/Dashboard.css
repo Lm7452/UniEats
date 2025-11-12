@@ -154,22 +154,75 @@
   position: relative;
   flex: 1 1 0;
 }
-.step-circle {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+.step-bar-wrapper {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.step-bar {
+  width: 85%;
+  height: 18px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e6e6e6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
   font-weight: 700;
-  color: #fff;
-  background: #dcdcdc;
+  position: relative;
+  overflow: hidden;
 }
-.tracker-step.done .step-circle {
-  background: #006421; /* green */
-}
-.tracker-step.active .step-circle {
+.step-bar.done {
   background: var(--princeton-orange);
+  border-color: var(--princeton-orange);
+}
+.step-bar.active {
+  background: #ffffff;
+  border: 2px solid var(--princeton-orange);
+}
+
+/* Animated fill using pseudo element */
+.step-bar::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  background: var(--princeton-orange);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 600ms cubic-bezier(.2,.8,.2,1);
+  z-index: 0;
+  border-radius: 12px;
+}
+.step-bar.done::before {
+  transform: scaleX(1);
+}
+.step-bar.done {
+  color: #fff; /* ensure any text (check) is visible */
+}
+.step-bar.done::after {
+  content: '✓';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  color: #fff;
+  font-weight: 800;
+}
+
+/* Active state pulse (subtle) */
+.step-bar.active {
+  animation: active-pulse 1200ms ease-out 1;
+}
+@keyframes active-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(231,117,0,0.0); }
+  50% { box-shadow: 0 6px 20px -8px rgba(231,117,0,0.35); }
+  100% { box-shadow: 0 0 0 0 rgba(231,117,0,0.0); }
 }
 .step-label {
   margin-top: 8px;
@@ -178,16 +231,7 @@
   text-align: center;
 }
 .step-line {
-  position: absolute;
-  height: 6px;
-  width: calc(100% - 48px);
-  background: #e6e6e6;
-  top: 16px;
-  left: calc(50% + 18px);
-  z-index: -1;
-}
-.step-line.done {
-  background: #006421;
+  display: none; /* lines are implicit via step bars */
 }
 
 

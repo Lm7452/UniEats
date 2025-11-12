@@ -9,6 +9,8 @@ function StudentDashboard() {
   const [recentOrders, setRecentOrders] = useState([]); 
   const [activeOrder, setActiveOrder] = useState(null);
   const [isLoading, setIsLoading] = useState(true); 
+  const [graceSeconds, setGraceSeconds] = useState(300); // 5 minutes default
+  const [remainingSeconds, setRemainingSeconds] = useState(null);
 
   const formatTime = (isoString) => {
     return new Date(isoString).toLocaleString('en-US', {
@@ -27,11 +29,26 @@ function StudentDashboard() {
       })
       .then(orderData => {
         setRecentOrders(orderData.slice(0, 3)); 
-        // determine an active order (not delivered or cancelled) - newest first
-        const active = orderData
-          .slice()
-          .sort((a,b) => new Date(b.created_at) - new Date(a.created_at))
-          .find(o => (o.status || 'pending') !== 'delivered' && (o.status || 'pending') !== 'cancelled');
+        // determine an active order:
+        // - prefer the newest order that is not delivered/cancelled
+        // - if the newest delivered order was delivered within graceSeconds, show it as active for that window
+        const sorted = orderData.slice().sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+        let active = sorted.find(o => {
+          const s = (o.status || 'pending');
+          return s !== 'delivered' && s !== 'cancelled';
+        });
+        if (!active) {
+          // check for recently delivered
+          const recentlyDelivered = sorted.find(o => {
+            const s = (o.status || 'pending');
+            if (s !== 'delivered') return false;
+            const deliveredAt = o.updated_at || o.delivered_at || o.created_at;
+            if (!deliveredAt) return false;
+            const diff = Date.now() - new Date(deliveredAt).getTime();
+            return diff <= (graceSeconds * 1000);
+          });
+          active = recentlyDelivered || null;
+        }
         setActiveOrder(active || null);
       })
       .catch(error => console.error("Error fetching dashboard data:", error))
@@ -55,21 +72,65 @@ function StudentDashboard() {
     if (!order) return null;
     const cur = (order.status || 'pending');
     const curIndex = steps.findIndex(s => s.key === cur);
+    // compute remainingSeconds if delivered recently
+    let deliveredAgo = null;
+    if (cur === 'delivered') {
+      const deliveredAt = order.updated_at || order.delivered_at || order.created_at;
+      if (deliveredAt) deliveredAgo = Math.floor((Date.now() - new Date(deliveredAt).getTime()) / 1000);
+    }
     return (
       <div className="order-tracker" aria-hidden={false}>
         {steps.map((s, idx) => {
           const state = idx < curIndex ? 'done' : (idx === curIndex ? 'active' : 'pending');
           return (
             <div key={s.key} className={`tracker-step ${state}`}>
-              <div className="step-circle">{idx < curIndex ? '✓' : (idx === curIndex ? '●' : idx+1)}</div>
+              <div className="step-bar-wrapper">
+                <div className={`step-bar ${state}`} aria-hidden>
+                  {idx < curIndex ? '✓' : ''}
+                </div>
+              </div>
               <div className="step-label">{s.label}</div>
               {idx < steps.length - 1 && <div className={`step-line ${idx < curIndex ? 'done' : ''}`} />}
             </div>
           );
         })}
+        {cur === 'delivered' && deliveredAgo !== null && (
+          <div className="tracker-footer">Delivered — this will move to your order history in {formatRemaining(Math.max(0, graceSeconds - deliveredAgo))}</div>
+        )}
       </div>
     );
   };
+
+  const formatRemaining = (secs) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}:${String(s).padStart(2, '0')}`;
+  };
+
+  // Tick remainingSeconds when there is an active delivered order
+  useEffect(() => {
+    if (!activeOrder) {
+      setRemainingSeconds(null);
+      return;
+    }
+    if ((activeOrder.status || 'pending') !== 'delivered') {
+      setRemainingSeconds(null);
+      return;
+    }
+    const deliveredAt = activeOrder.updated_at || activeOrder.delivered_at || activeOrder.created_at;
+    if (!deliveredAt) return;
+    const updateRemaining = () => {
+      const elapsed = Math.floor((Date.now() - new Date(deliveredAt).getTime()) / 1000);
+      const rem = Math.max(0, graceSeconds - elapsed);
+      setRemainingSeconds(rem);
+      if (rem <= 0) {
+        setActiveOrder(null);
+      }
+    };
+    updateRemaining();
+    const id = setInterval(updateRemaining, 1000);
+    return () => clearInterval(id);
+  }, [activeOrder, graceSeconds]);
 
   return (
     // --- UPDATED CLASSES ---
