@@ -9,6 +9,10 @@ function NewOrder() {
   const [orderNumber, setOrderNumber] = useState('');
   const [building, setBuilding] = useState('');
   const [room, setRoom] = useState('');
+  const [locationType, setLocationType] = useState('residential'); // 'residential' or 'campus'
+  const [residenceHall, setResidenceHall] = useState('');
+  const [campusBuildingText, setCampusBuildingText] = useState('');
+  const [campusRoomText, setCampusRoomText] = useState('');
   const [tip, setTip] = useState('');
   const [buildingOptions, setBuildingOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,6 +65,12 @@ function NewOrder() {
         // We are online and all data is fetched
         setBuilding(user.dorm_building || '');
         setRoom(user.dorm_room || '');
+        // If profile has a dorm_building, assume residential by default
+        if (user.dorm_building) {
+          setLocationType('residential');
+        } else {
+          setLocationType('campus');
+        }
         const options = buildingNames.map(name => ({ label: name, value: name }));
         setBuildingOptions(options);
       })
@@ -84,11 +94,37 @@ function NewOrder() {
     if (isSubmitting) return; 
     setIsSubmitting(true);
     setStatusMessage('Placing your order...');
-    
+    // Basic client-side validation for delivery address
+    if (locationType === 'residential') {
+      if (!building) {
+        setStatusMessage('Please select your residential college/building.');
+        setIsSubmitting(false);
+        return;
+      }
+      if (!room) {
+        setStatusMessage('Please enter your room number.');
+        setIsSubmitting(false);
+        return;
+      }
+    } else {
+      if (!campusBuildingText) {
+        setStatusMessage('Please enter the campus building name.');
+        setIsSubmitting(false);
+        return;
+      }
+      if (!campusRoomText) {
+        setStatusMessage('Please enter the room/location within the campus building.');
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     const orderData = {
       princeton_order_number: orderNumber,
-      delivery_building: building,
-      delivery_room: room,
+      location_type: locationType,
+      delivery_building: locationType === 'residential' ? building : campusBuildingText,
+      delivery_room: locationType === 'residential' ? room : campusRoomText,
+      residence_hall: locationType === 'residential' ? residenceHall : undefined,
       tip_amount: Number(tip) || 0
     };
 
@@ -184,28 +220,91 @@ function NewOrder() {
               <section className="order-section">
                 <h2>2. Delivery Address</h2>
                 <div className="form-group">
-                  <label htmlFor="dorm_building">Building</label>
-                  <Select
-                    id="dorm_building"
-                    classNamePrefix="react-select"
-                    options={buildingOptions}
-                    value={buildingOptions.find(o => o.value === building) || null}
-                    onChange={(option) => setBuilding(option ? option.value : '')}
-                    placeholder="Type or select a building..."
-                    isClearable
-                  />
+                  <label>Location Type</label>
+                  <div className="radio-group">
+                    <label>
+                      <input
+                        type="radio"
+                        name="locationType"
+                        value="residential"
+                        checked={locationType === 'residential'}
+                        onChange={() => setLocationType('residential')}
+                      /> Residential College / Residential Area
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="locationType"
+                        value="campus"
+                        checked={locationType === 'campus'}
+                        onChange={() => setLocationType('campus')}
+                      /> Campus Building
+                    </label>
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="dorm_room">Room Number / Location</label>
-                  <input
-                    type="text"
-                    id="dorm_room"
-                    value={room}
-                    onChange={(e) => setRoom(e.target.value)}
-                    placeholder="e.g., 301 or 'Firestone Lobby'"
-                    required
-                  />
-                </div>
+
+                {locationType === 'residential' ? (
+                  <>
+                    <div className="form-group">
+                      <label htmlFor="dorm_building">Residential College</label>
+                      <Select
+                        id="dorm_building"
+                        classNamePrefix="react-select"
+                        options={buildingOptions}
+                        value={buildingOptions.find(o => o.value === building) || null}
+                        onChange={(option) => setBuilding(option ? option.value : '')}
+                        placeholder="Choose your residential college..."
+                        isClearable
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="residenceHall">Hall / Section (optional)</label>
+                      <input
+                        type="text"
+                        id="residenceHall"
+                        value={residenceHall}
+                        onChange={(e) => setResidenceHall(e.target.value)}
+                        placeholder="e.g., Quad A, Butler Hall"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="dorm_room">Room Number</label>
+                      <input
+                        type="text"
+                        id="dorm_room"
+                        value={room}
+                        onChange={(e) => setRoom(e.target.value)}
+                        placeholder="e.g., 301"
+                        required={locationType === 'residential'}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="form-group">
+                      <label htmlFor="campus_building">Campus Building</label>
+                      <input
+                        type="text"
+                        id="campus_building"
+                        value={campusBuildingText}
+                        onChange={(e) => setCampusBuildingText(e.target.value)}
+                        placeholder="e.g., Lewis Library"
+                        required={locationType === 'campus'}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="campus_room">Room / Location</label>
+                      <input
+                        type="text"
+                        id="campus_room"
+                        value={campusRoomText}
+                        onChange={(e) => setCampusRoomText(e.target.value)}
+                        placeholder="e.g., 2nd floor, Room 215"
+                        required={locationType === 'campus'}
+                      />
+                    </div>
+                  </>
+                )}
               </section>
 
               <section className="order-section">
