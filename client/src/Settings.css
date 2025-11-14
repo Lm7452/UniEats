@@ -26,7 +26,24 @@ body {
 /* Ensure the last form content is reachable on mobile (footer may overlap) */
 @media (max-width: 768px) {
   .settings-container {
-    padding-bottom: 100px; /* give space for footer / mobile chrome */
+    padding-bottom: 180px; /* extra space for footer / mobile chrome */
+    position: relative;
+  }
+
+  /* Add an explicit spacer in case mobile chrome overlaps the bottom of the content */
+  .settings-container::after {
+    content: "";
+    display: block;
+    height: 80px;
+    width: 100%;
+  }
+
+  /* Make the primary save button easier to tap and ensure it doesn't get partially hidden */
+  .form-actions .save-button {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 18px;
+    font-size: 1.05rem;
   }
 }
 
