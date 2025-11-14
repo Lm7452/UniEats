@@ -36,6 +36,11 @@
   text-decoration: none;
 }
 
+/* Ensure profile/login area is visible on desktop */
+@media (min-width: 769px) {
+  .user-profile { display: flex !important; }
+}
+
 /* Hide mobile-specific controls by default on desktop */
 .menu-toggle { display: none; }
 .mobile-nav-overlay { display: none; }

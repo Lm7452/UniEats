@@ -1,6 +1,6 @@
 // src/Home.js (Updated)
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Home.css'; // Import the CSS file for the hero section
 import Header from './Header'; // --- IMPORT YOUR REUSABLE HEADER ---
 
@@ -21,10 +21,20 @@ function Home() {
     }
   };
 
+  const [hideHeaderLogin, setHideHeaderLogin] = useState(false);
+
+  useEffect(() => {
+    // Hide header login on small screens (mobile), show on desktop
+    const check = () => setHideHeaderLogin(window.innerWidth <= 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
   return (
     <div className="home-container">
-      {/* --- USE THE REUSABLE HEADER COMPONENT (hide header login, show CTA in hero) --- */}
-      <Header hideLogin={true} />
+      {/* --- USE THE REUSABLE HEADER COMPONENT (hide header login on mobile only) --- */}
+      <Header hideLogin={hideHeaderLogin} />
 
       {/* Hero Section (This part stays the same) */}
       <section className="hero-section">
