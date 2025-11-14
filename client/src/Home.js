@@ -23,8 +23,8 @@ function Home() {
 
   return (
     <div className="home-container">
-      {/* --- USE THE REUSABLE HEADER COMPONENT --- */}
-      <Header />
+      {/* --- USE THE REUSABLE HEADER COMPONENT (hide header login, show CTA in hero) --- */}
+      <Header hideLogin={true} />
 
       {/* Hero Section (This part stays the same) */}
       <section className="hero-section">
@@ -32,12 +32,18 @@ function Home() {
         <p className="hero-subtitle">
           Fresh meals from campus dining, brought right to your dorm.
         </p>
-        <button
-          onClick={() => setShowHowItWorks(true)}
-          className="how-it-works-button"
-        >
-          How it works
-        </button>
+        <div className="hero-cta-row">
+          <button
+            onClick={() => setShowHowItWorks(true)}
+            className="how-it-works-button"
+          >
+            How it works
+          </button>
+
+          <a className="center-login-link" href="/login">
+            <button className="hero-login-button">Login</button>
+          </a>
+        </div>
       </section>
 
       {/* How it works modal */}

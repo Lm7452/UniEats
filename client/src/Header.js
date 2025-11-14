@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './Header.css'; // We'll create this next
 
-function Header() {
+function Header({ hideLogin = false }) {
   const [user, setUser] = useState(null);
   const [navOpen, setNavOpen] = useState(false);
 
@@ -59,20 +59,22 @@ function Header() {
       </div>
       {/* --- END OF WRAPPER --- */}
 
-      <div className="user-profile">
-        {user ? (
-          <>
-            <span className="user-name">Welcome, {user.name}!</span>
-            <a href="/logout" className="logout-button-link">
-              <button className="logout-button">Logout</button>
+      {!hideLogin && (
+        <div className="user-profile">
+          {user ? (
+            <>
+              <span className="user-name">Welcome, {user.name}!</span>
+              <a href="/logout" className="logout-button-link">
+                <button className="logout-button">Logout</button>
+              </a>
+            </>
+          ) : (
+            <a href="/login" className="logout-button-link">
+              <button className="logout-button">Login</button>
             </a>
-          </>
-        ) : (
-          <a href="/login" className="logout-button-link">
-            <button className="logout-button">Login</button>
-          </a>
-        )}
-      </div>
+          )}
+        </div>
+      )}
       {/* Mobile overlay nav (covers screen when open). Rendered for drivers/admin only. */}
       {navOpen && user && (user.role === 'driver' || user.role === 'admin') && (
         <div className="mobile-nav-overlay" onClick={() => setNavOpen(false)}>

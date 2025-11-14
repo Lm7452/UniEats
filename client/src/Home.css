@@ -72,6 +72,28 @@ body {
   color: var(--princeton-black);
 }
 
+/* Row for CTAs in hero (how-it-works + login) */
+.hero-cta-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.hero-login-button {
+  background: var(--princeton-orange);
+  color: var(--princeton-black);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.center-login-link { text-decoration: none; }
+
 /* --- Value Propositions Section (Placeholder) --- */
 .value-props-section {
     padding: 40px 20px;
