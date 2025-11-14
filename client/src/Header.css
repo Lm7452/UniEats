@@ -105,25 +105,11 @@
 @media (max-width: 768px) {
   .app-header {
     padding: 10px 15px;
-    position: relative; /* allow absolute-centering the logo */
   }
   .header-left-side {
-     /* keep left utilities (menu) aligned left on small screens */
+     /* On small screens, let's keep logo centered */
     flex-grow: 1;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-  }
-  /* Center the logo absolutely so it stays visually centered while other controls sit left/right */
-  .logo-container {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1300;
-  }
-  .user-profile {
-    margin-left: auto; /* ensures profile/login sits to the right */
-    z-index: 1305;
+    justify-content: center;
   }
   .header-nav {
     display: none; /* Hide header nav on small screens by default */
