@@ -203,11 +203,13 @@ function NewOrder() {
               </p>
               <p>
                 <strong>Step 2:</strong> In the email field, please enter{' '}
-                <strong>
-                  <button type="button" className="copy-email" onClick={copyEmail}>{receiptEmail}</button>
-                </strong>
-                {copiedEmail && <span className="copied-badge">Copied!</span>}.
-                This redirects the confirmation to our system.
+                <span className="email-inline">
+                  <strong>
+                    <button type="button" className="copy-email" onClick={copyEmail}>{receiptEmail}</button>
+                  </strong>
+                  {copiedEmail && <span className="copied-badge">Copied!</span>}.
+                </span>
+                {' '}This redirects the confirmation to our system.
               </p>
               <p>
                 <strong>Step 3:</strong> After paying, copy your Order Number (e.g., #12345) and paste it below.
