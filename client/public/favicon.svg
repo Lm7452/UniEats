@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="10" fill="#E77500"/>
+  <g fill="#fff">
+    <!-- simple fork + knife abstract shapes -->
+    <rect x="18" y="10" width="4" height="28" rx="1" />
+    <rect x="26" y="10" width="4" height="28" rx="1" />
+    <rect x="36" y="8" width="4" height="30" rx="1" />
+  </g>
+</svg>
