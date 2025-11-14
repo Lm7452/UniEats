@@ -15,6 +15,8 @@ function NewOrder() {
   const [campusRoomText, setCampusRoomText] = useState('');
   const [tip, setTip] = useState('');
   const [buildingOptions, setBuildingOptions] = useState([]);
+  const [residentialOptionsCache, setResidentialOptionsCache] = useState([]);
+  const [upperclassOptionsCache, setUpperclassOptionsCache] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false); 
@@ -52,21 +54,23 @@ function NewOrder() {
       .then(data => {
         setAvailableDriverCount(data.availableDriverCount);
         if (data.availableDriverCount > 0) {
-          // If online, fetch profile and buildings (default to Residential College)
+          // If online, fetch profile and both building lists so switching types is instant
           return Promise.all([
             fetch('/profile'),
-            fetch('/api/buildings?type=' + encodeURIComponent('Residential College'))
+            fetch('/api/buildings?type=' + encodeURIComponent('Residential College')),
+            fetch('/api/buildings?type=' + encodeURIComponent('Upperclassmen Hall'))
           ]);
         }
         // If offline, stop here
         return Promise.reject('offline');
       })
-      .then(([profileRes, buildingsRes]) => {
+      .then(([profileRes, buildingsRes, upperRes]) => {
         if (!profileRes.ok) throw new Error('Not authenticated');
-        if (!buildingsRes.ok) throw new Error('Failed to fetch buildings');
-        return Promise.all([profileRes.json(), buildingsRes.json()]);
+        if (!buildingsRes.ok) throw new Error('Failed to fetch residential buildings');
+        if (!upperRes.ok) throw new Error('Failed to fetch upperclassmen buildings');
+        return Promise.all([profileRes.json(), buildingsRes.json(), upperRes.json()]);
       })
-      .then(([user, buildingNames]) => {
+      .then(([user, residentialNames, upperNames]) => {
         // We are online and all data is fetched
         setBuilding(user.dorm_building || '');
         setRoom(user.dorm_room || '');
@@ -76,8 +80,16 @@ function NewOrder() {
         } else {
           setLocationType('');
         }
-        const options = buildingNames.map(name => ({ label: name, value: name }));
-        setBuildingOptions(options);
+        const resOptions = residentialNames.map(name => ({ label: name, value: name }));
+        const upOptions = upperNames.map(name => ({ label: name, value: name }));
+        setResidentialOptionsCache(resOptions);
+        setUpperclassOptionsCache(upOptions);
+        // Set initial building options based on preselected locationType (or residential by default)
+        if (user.dorm_building) {
+          setBuildingOptions(resOptions);
+        } else {
+          setBuildingOptions(resOptions);
+        }
       })
       .catch(err => {
         if (err === 'offline') {
@@ -95,6 +107,15 @@ function NewOrder() {
   // When the selected location type changes (residential vs upperclassmen), reload options
   useEffect(() => {
     if (!locationType || locationType === 'campus') return; // campus uses free-text
+    // If we already prefetched the list, use it
+    if (locationType === 'residential' && residentialOptionsCache.length > 0) {
+      setBuildingOptions(residentialOptionsCache);
+      return;
+    }
+    if (locationType === 'upperclassmen' && upperclassOptionsCache.length > 0) {
+      setBuildingOptions(upperclassOptionsCache);
+      return;
+    }
     const typeName = locationType === 'residential' ? 'Residential College' : 'Upperclassmen Hall';
     fetch('/api/buildings?type=' + encodeURIComponent(typeName))
       .then(res => {
@@ -104,6 +125,8 @@ function NewOrder() {
       .then(buildingNames => {
         const options = buildingNames.map(name => ({ label: name, value: name }));
         setBuildingOptions(options);
+        if (locationType === 'residential') setResidentialOptionsCache(options);
+        if (locationType === 'upperclassmen') setUpperclassOptionsCache(options);
       })
       .catch(err => {
         console.error('Error fetching buildings by type:', err);
