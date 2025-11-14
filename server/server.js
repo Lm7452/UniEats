@@ -141,7 +141,9 @@ app.get('/api/buildings', async (req, res) => {
       WHERE lt.type_name = $1
       ORDER BY l.name ASC
     `;
+    console.log('[api/buildings] requested typeName=', typeName);
     const result = await db.query(query, [typeName]);
+    console.log('[api/buildings] db returned rows=', result.rows.length, result.rows);
     res.json(result.rows.map(row => row.name));
   } catch (err) {
     console.error('Error fetching buildings/locations:', err);
