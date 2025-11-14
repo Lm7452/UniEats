@@ -108,6 +108,14 @@
   }
 }
 
+/* Keep the 'Form:' + link together on one line when possible */
+.instruction-box .form-link-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
 /* --- Form Styles --- */
 .new-order-form {
   display: flex;

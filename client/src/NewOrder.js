@@ -199,7 +199,9 @@ function NewOrder() {
               <h3>How to Order:</h3>
               <p>
                 <strong>Step 1:</strong> Go to the official Frist Grill Ordering Form:{' '}
-                <a href={princetonUrl} target="_blank" rel="noopener noreferrer" className="copy-email">{displayDomain}</a>
+                <span className="form-link-inline"> 
+                  <a href={princetonUrl} target="_blank" rel="noopener noreferrer" className="copy-email">{displayDomain}</a>
+                </span>
               </p>
               <p>
                 <strong>Step 2:</strong> In the email field, please enter{' '}
@@ -207,7 +209,7 @@ function NewOrder() {
                   <strong>
                     <button type="button" className="copy-email" onClick={copyEmail}>{receiptEmail}</button>
                   </strong>
-                  {copiedEmail && <span className="copied-badge">Copied!</span>}.
+                  {copiedEmail && <span className="copied-badge">Copied!</span>}
                 </span>
                 {' '}This redirects the confirmation to our system.
               </p>
