@@ -180,7 +180,8 @@ function Settings() {
               options={buildingOptions}
               value={selectedBuildingValue}
               onChange={handleBuildingChange}
-              placeholder="Type or select a building..."
+              placeholder="Select a building..."
+              isSearchable={false}
               isClearable
             />
           </div>

@@ -307,16 +307,17 @@ function NewOrder() {
                   locationType !== 'campus' ? (
                   <>
                     <div className="form-group">
-                      <label htmlFor="dorm_building">Residential College</label>
+                      <label htmlFor="dorm_building">{locationType === 'upperclassmen' ? 'Upperclassmen Hall' : 'Residential College'}</label>
                       <Select
                         id="dorm_building"
-                          classNamePrefix="react-select"
-                          className="dorm-select"
+                        classNamePrefix="react-select"
+                        className="dorm-select"
                         options={buildingOptions}
                         value={buildingOptions.find(o => o.value === building) || null}
                         onChange={(option) => setBuilding(option ? option.value : '')}
-                        placeholder="Choose your residential college..."
+                        placeholder={locationType === 'upperclassmen' ? 'Choose your upperclassmen hall...' : 'Choose your residential college...'}
                         isClearable
+                        isSearchable={false}
                       />
                     </div>
                     {/* Only show Hall / Section for residential (not upperclassmen) */}
