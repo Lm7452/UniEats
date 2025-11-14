@@ -331,3 +331,17 @@
         text-align: center;
     }
 }
+
+/* Reduce some sizes to avoid horizontal overflow on very small screens */
+@media (max-width: 420px) {
+  .circle-step { width: 56px; }
+  .circle { width: 44px; height: 44px; }
+  .circle-tracker { padding: 8px; gap: 8px; }
+}
+
+/* Make grids adapt better on smaller devices */
+@media (max-width: 600px) {
+  .order-list {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}

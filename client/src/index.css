@@ -1,14 +1,21 @@
 /* client/src/index.css */
-body {
+html, body {
+  box-sizing: border-box;
   margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden; /* Prevent scrolling into empty white space */
+}
+
+body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  
-  /* Make sure body takes full height */
-  height: 100vh;
+
+  /* Use min-height to avoid odd white scrolling areas */
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -25,6 +32,13 @@ code {
   flex-direction: column;
 }
 
+/* Make images and svgs responsive by default */
+img, svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* --- NEW GLOBAL LAYOUT STYLES --- */
 .page-container {
   display: flex;
@@ -39,6 +53,15 @@ code {
   max-width: 1200px;
   margin: 20px auto;
   width: 90%;
+}
+
+/* Tighter layout on small screens */
+@media (max-width: 768px) {
+  .page-main {
+    padding: 16px;
+    margin: 12px auto;
+    width: 95%;
+  }
 }
 
 .page-footer {

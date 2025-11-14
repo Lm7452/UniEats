@@ -108,7 +108,60 @@
     justify-content: center;
   }
   .header-nav {
-    display: none; /* Hide header nav on small screens */
+    display: none; /* Hide header nav on small screens by default */
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    color: var(--light-text);
+    cursor: pointer;
+    margin-left: 12px;
+  }
+
+  .menu-toggle .hamburger {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: currentColor;
+    position: relative;
+  }
+  .menu-toggle .hamburger:before,
+  .menu-toggle .hamburger:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 22px;
+    height: 2px;
+    background: currentColor;
+  }
+  .menu-toggle .hamburger:before { top: -7px; }
+  .menu-toggle .hamburger:after { top: 7px; }
+
+  /* When nav is opened, show it in a stacked panel */
+  .app-header.nav-open .header-nav {
+    display: flex;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100%);
+    background-color: var(--princeton-black);
+    padding: 12px 16px 16px 16px;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 1200;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  }
+  .app-header.nav-open .header-nav .header-nav-link {
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.02);
+    width: 100%;
   }
 }
 

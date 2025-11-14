@@ -5,6 +5,7 @@ import './Header.css'; // We'll create this next
 
 function Header() {
   const [user, setUser] = useState(null);
+  const [navOpen, setNavOpen] = useState(false);
 
   useEffect(() => {
     // Fetch the user's profile to get name and role
@@ -24,7 +25,7 @@ function Header() {
   }, []);
 
   return (
-    <header className="app-header">
+    <header className={`app-header ${navOpen ? 'nav-open' : ''}`}>
       {/* --- NEW WRAPPER TO GROUP LOGO + NAV --- */}
       <div className="header-left-side">
         <div className="logo-container">
@@ -34,6 +35,14 @@ function Header() {
           </Link>
         </div>
         
+        <button
+          className="menu-toggle"
+          aria-label="Toggle navigation"
+          onClick={() => setNavOpen(open => !open)}
+        >
+          <span className="hamburger" />
+        </button>
+
         <nav className="header-nav">
           {user && (user.role === 'driver' || user.role === 'admin') && (
             <Link to="/student-dashboard" className="header-nav-link">Student Dashboard</Link>
