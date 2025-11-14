@@ -22,6 +22,12 @@ function NewOrder() {
   const navigate = useNavigate();
   const location = useLocation(); 
 
+  const locationOptions = [
+    { value: 'residential', label: 'Residential College' },
+    { value: 'upperclassmen', label: 'Upperclassmen' },
+    { value: 'campus', label: 'Campus Building' }
+  ];
+
   const backUrl = location.state?.from || '/student-dashboard';
 
   const receiptEmail = 'UniEats.OrderReceipts@gmail.com';
@@ -40,36 +46,34 @@ function NewOrder() {
   };
 
   useEffect(() => {
-    // 1. First, check if the app is "online"
+    // 1. First, check if the app is "online" and fetch profile/buildings when available
     fetch('/api/app-status')
       .then(res => res.json())
       .then(data => {
         setAvailableDriverCount(data.availableDriverCount);
         if (data.availableDriverCount > 0) {
-          // 2. If online, fetch profile and buildings
+          // If online, fetch profile and buildings
           return Promise.all([
             fetch('/profile'),
             fetch('/api/buildings')
           ]);
         }
         // If offline, stop here
-        return Promise.reject('offline'); 
+        return Promise.reject('offline');
       })
       .then(([profileRes, buildingsRes]) => {
         if (!profileRes.ok) throw new Error('Not authenticated');
         if (!buildingsRes.ok) throw new Error('Failed to fetch buildings');
-        
         return Promise.all([profileRes.json(), buildingsRes.json()]);
       })
       .then(([user, buildingNames]) => {
         // We are online and all data is fetched
         setBuilding(user.dorm_building || '');
         setRoom(user.dorm_room || '');
-        // If profile has a dorm_building, assume residential by default
+        // If profile has a dorm_building, preselect residential; otherwise leave empty
         if (user.dorm_building) {
           setLocationType('residential');
         } else {
-          // leave blank so user explicitly selects location type
           setLocationType('');
         }
         const options = buildingNames.map(name => ({ label: name, value: name }));
@@ -78,15 +82,13 @@ function NewOrder() {
       .catch(err => {
         if (err === 'offline') {
           console.log('App is offline. No drivers available.');
-        } else if (err.message.includes('authenticated')) {
+        } else if (err.message && err.message.includes('authenticated')) {
           navigate('/'); // Redirect home if not logged in
         } else {
-          console.error("Error fetching order page data:", err);
+          console.error('Error fetching order page data:', err);
         }
       })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      .finally(() => setIsLoading(false));
 
   }, [navigate]);
 
@@ -233,12 +235,18 @@ function NewOrder() {
                 <h2>2. Delivery Address</h2>
                 <div className="form-group">
                   <label htmlFor="locationType">Location Type</label>
-                  <select id="locationType" value={locationType} onChange={(e) => setLocationType(e.target.value)}>
-                    <option value="">-- Select location type --</option>
-                    <option value="residential">Residential College</option>
-                    <option value="upperclassmen">Upperclassmen</option>
-                    <option value="campus">Campus Building</option>
-                  </select>
+                  <Select
+                    id="locationType"
+                    className="location-type-select"
+                    classNamePrefix="react-select"
+                    options={locationOptions}
+                    value={locationOptions.find(o => o.value === locationType) || null}
+                    onChange={(opt) => setLocationType(opt ? opt.value : '')}
+                    placeholder="Select location type..."
+                    isClearable
+                    styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                    menuPortalTarget={document.body}
+                  />
                 </div>
 
                 {locationType ? (

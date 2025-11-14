@@ -277,6 +277,33 @@
   color: var(--princeton-black) !important;
 }
 
+/* Larger, cleaner location-type select used on NewOrder page */
+.location-type-select .react-select__control {
+  min-height: 52px; /* taller control to match other hero CTAs */
+  padding: 2px 6px;
+  border-radius: 8px !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  background: #fff;
+}
+.location-type-select .react-select__control--is-focused {
+  box-shadow: 0 6px 20px rgba(231,117,0,0.12) !important;
+  border-color: var(--princeton-orange) !important;
+}
+.location-type-select .react-select__value-container {
+  padding-left: 8px;
+}
+.location-type-select .react-select__single-value {
+  color: #333;
+  font-weight: 600;
+}
+.location-type-select .react-select__menu {
+  border-radius: 8px;
+  overflow: hidden;
+}
+.location-type-select .react-select__option {
+  padding: 10px 12px;
+}
+
 /* --- NEW APP OFFLINE STYLES --- */
 .app-offline-box {
   background-color: var(--card-bg);
