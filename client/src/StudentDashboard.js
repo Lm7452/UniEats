@@ -96,7 +96,9 @@ function StudentDashboard() {
               </div>
               {idx < steps.length - 1 && (
                 <div className={`tracker-arrow ${idx < curIndex ? 'done' : ''}`} aria-hidden>
-                  →
+                  <svg className="chev" width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M8 5l8 7-8 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </div>
               )}
             </React.Fragment>
