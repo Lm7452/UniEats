@@ -14,14 +14,10 @@
   --error-text: #d90429;
 }
 
-body {
-  background-color: var(--light-grey-bg);
-}
-
 .history-container {
-  max-width: 1000px;
-  margin: 20px auto;
-  padding: 20px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   color: var(--card-text);
 }
