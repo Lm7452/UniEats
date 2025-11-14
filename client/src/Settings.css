@@ -26,15 +26,14 @@ body {
 /* Ensure the last form content is reachable on mobile (footer may overlap) */
 @media (max-width: 768px) {
   .settings-container {
-    padding-bottom: 180px; /* extra space for footer / mobile chrome */
-    position: relative;
+    padding-bottom: 96px; /* reduced space so Save button is near bottom when scrolled */
   }
 
-  /* Add an explicit spacer in case mobile chrome overlaps the bottom of the content */
+  /* Small spacer to guarantee scroll room but avoid excessive gap */
   .settings-container::after {
     content: "";
     display: block;
-    height: 80px;
+    height: 16px;
     width: 100%;
   }
 
