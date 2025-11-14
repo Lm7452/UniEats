@@ -60,9 +60,6 @@ body {
   background-color: transparent;
   color: var(--princeton-orange);
   border: 2px solid var(--princeton-orange);
-  padding: 12px 30px;
-  border-radius: 6px;
-  font-size: 1em;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
 }
@@ -70,6 +67,26 @@ body {
 .how-it-works-button:hover {
   background-color: var(--princeton-orange);
   color: var(--princeton-black);
+}
+
+/* Ensure hero CTAs (How it works + Login) match exactly in height and alignment */
+.how-it-works-button,
+.hero-login-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px; /* consistent horizontal padding */
+  min-height: 48px; /* ensure same visual height */
+  line-height: 1;
+  font-size: 1rem;
+  border-radius: 6px;
+  box-sizing: border-box; /* include borders in the height calculation */
+}
+
+.hero-login-button { /* ensure a clear visual difference */
+  background: var(--princeton-orange);
+  color: var(--princeton-black);
+  border: none;
 }
 
 /* Row for CTAs in hero (how-it-works + login) */
