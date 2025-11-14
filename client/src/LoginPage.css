@@ -1,0 +1,35 @@
+/* client/src/LoginPage.css */
+
+.loginpage-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f4f4f4;
+}
+
+.loginpage-main {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.center-login-button {
+  background: #E77500;
+  color: #000;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.center-login-link { text-decoration: none; }
+
+@media (min-width: 769px) {
+  /* On desktop the header shows the login top-right; hide the center CTA to avoid duplication */
+  .center-login-link { display: none; }
+}
