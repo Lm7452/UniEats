@@ -76,9 +76,13 @@ function Settings() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    let newValue = type === 'checkbox' ? checked : value;
+    if (name === 'dorm_room') {
+      newValue = String(newValue).replace(/\D/g, '');
+    }
     setFormData(prevData => ({
       ...prevData,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: newValue,
     }));
   };
 
@@ -192,6 +196,8 @@ function Settings() {
               id="dorm_room"
               name="dorm_room"
               value={formData.dorm_room}
+              inputMode="numeric"
+              pattern="\d*"
               onChange={handleChange}
               placeholder="e.g., 301"
             />

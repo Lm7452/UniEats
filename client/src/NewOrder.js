@@ -340,7 +340,9 @@ function NewOrder() {
                         type="text"
                         id="dorm_room"
                         value={room}
-                        onChange={(e) => setRoom(e.target.value)}
+                        inputMode="numeric"
+                        pattern="\d*"
+                        onChange={(e) => setRoom(e.target.value.replace(/\D/g, ''))}
                         placeholder="e.g., 301"
                         required={locationType !== 'campus'}
                       />
