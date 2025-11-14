@@ -47,23 +47,52 @@
 .instruction-box {
   background-color: var(--instruction-bg);
   border: 1px solid var(--instruction-border);
-  border-radius: 8px;
-  padding: 15px 25px;
-  margin-bottom: 25px;
+  border-radius: 10px;
+  padding: 18px 22px;
+  margin-bottom: 20px;
+  box-sizing: border-box;
 }
 .instruction-box h3 {
   margin-top: 0;
   color: var(--princeton-orange);
 }
 .instruction-box p {
-  margin: 5px 0;
-  line-height: 1.5;
+  margin: 10px 0;
+  line-height: 1.6;
+  font-size: 0.98rem;
 }
 .instruction-box code {
   background-color: #f0f0f0;
   padding: 2px 5px;
   border-radius: 4px;
   color: var(--dark-grey);
+}
+
+/* Make inline controls and links wrap nicely on narrow screens */
+.instruction-box a.copy-email,
+.instruction-box .copy-email {
+  display: inline-block;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Tweak for small screens: more breathing room and slightly smaller text */
+@media (max-width: 600px) {
+  .instruction-box {
+    padding: 18px;
+    margin-bottom: 18px;
+  }
+  .instruction-box h3 {
+    font-size: 1.05rem;
+    margin-bottom: 8px;
+  }
+  .instruction-box p {
+    font-size: 0.95rem;
+    margin: 10px 0;
+  }
+  .instruction-box .copied-badge { display: inline-block; margin-left: 6px; }
 }
 
 /* --- Form Styles --- */
