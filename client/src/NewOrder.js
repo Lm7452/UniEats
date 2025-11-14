@@ -15,6 +15,7 @@ function NewOrder() {
   const [campusRoomText, setCampusRoomText] = useState('');
   const [tip, setTip] = useState('');
   const [buildingOptions, setBuildingOptions] = useState([]);
+  const [hallOptions, setHallOptions] = useState([]);
   const [residentialOptionsCache, setResidentialOptionsCache] = useState([]);
   const [upperclassOptionsCache, setUpperclassOptionsCache] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -132,6 +133,28 @@ function NewOrder() {
         console.error('Error fetching buildings by type:', err);
       });
   }, [locationType]);
+
+  // When a building is selected and the type is residential, fetch halls for that location
+  useEffect(() => {
+    if (!building || locationType !== 'residential') {
+      setHallOptions([]);
+      setResidenceHall('');
+      return;
+    }
+    const fetchHalls = async () => {
+      try {
+        const res = await fetch('/api/halls?location_name=' + encodeURIComponent(building));
+        if (!res.ok) throw new Error('Failed to fetch halls');
+        const names = await res.json();
+        const opts = names.map(n => ({ label: n, value: n }));
+        setHallOptions(opts);
+      } catch (err) {
+        console.error('Error fetching halls for building:', err);
+        setHallOptions([]);
+      }
+    };
+    fetchHalls();
+  }, [building, locationType]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -324,13 +347,15 @@ function NewOrder() {
                     {locationType === 'residential' && (
                       <div className="form-group">
                         <label htmlFor="residenceHall">Hall / Section</label>
-                        <input
-                          type="text"
+                        <Select
                           id="residenceHall"
-                          value={residenceHall}
-                          onChange={(e) => setResidenceHall(e.target.value)}
-                          placeholder="e.g., Quad A, Butler Hall"
-                          required={locationType === 'residential'}
+                          classNamePrefix="react-select"
+                          options={hallOptions}
+                          value={hallOptions.find(o => o.value === residenceHall) || null}
+                          onChange={(opt) => setResidenceHall(opt ? opt.value : '')}
+                          placeholder="Choose your hall/section..."
+                          isClearable
+                          isSearchable={false}
                         />
                       </div>
                     )}

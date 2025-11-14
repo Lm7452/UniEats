@@ -151,6 +151,37 @@ app.get('/api/buildings', async (req, res) => {
   }
 });
 
+// GET halls for a given location (by id or name)
+// Examples:
+//  - /api/halls?location_id=1
+//  - /api/halls?location_name=Mathey%20College
+app.get('/api/halls', async (req, res) => {
+  try {
+    const { location_id, location_name } = req.query;
+    console.log('[api/halls] request:', { location_id, location_name });
+    if (location_id) {
+      const result = await db.query('SELECT name FROM halls WHERE location_id = $1 ORDER BY name ASC', [location_id]);
+      console.log('[api/halls] rows=', result.rows.length);
+      return res.json(result.rows.map(r => r.name));
+    }
+    if (location_name) {
+      const result = await db.query(
+        `SELECT h.name FROM halls h
+         JOIN locations l ON h.location_id = l.id
+         WHERE l.name = $1
+         ORDER BY h.name ASC`,
+        [location_name]
+      );
+      console.log('[api/halls] rows=', result.rows.length);
+      return res.json(result.rows.map(r => r.name));
+    }
+    return res.status(400).json({ error: 'Please provide location_id or location_name' });
+  } catch (err) {
+    console.error('Error fetching halls:', err);
+    res.status(500).json({ error: 'Failed to fetch halls' });
+  }
+});
+
 app.get('/login',
   passport.authenticate('azuread-openidconnect', { failureRedirect: '/login-failed' })
 );
