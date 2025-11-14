@@ -235,18 +235,27 @@ function NewOrder() {
                 <h2>2. Delivery Address</h2>
                 <div className="form-group">
                   <label htmlFor="locationType">Location Type</label>
-                  <Select
-                    id="locationType"
-                    className="location-type-select"
-                    classNamePrefix="react-select"
-                    options={locationOptions}
-                    value={locationOptions.find(o => o.value === locationType) || null}
-                    onChange={(opt) => setLocationType(opt ? opt.value : '')}
-                    placeholder="Select location type..."
-                    isClearable
-                    styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
-                    menuPortalTarget={document.body}
-                  />
+                    {/* Use react-select so the control matches the Residential College control and is not typable */}
+                    {(() => {
+                      const locOptions = [
+                        { value: 'residential', label: 'Residential College' },
+                        { value: 'upperclassmen', label: 'Upperclassmen' },
+                        { value: 'campus', label: 'Campus Building' }
+                      ];
+                      const selected = locOptions.find(o => o.value === locationType) || null;
+                      return (
+                        <Select
+                          id="locationType"
+                          classNamePrefix="react-select"
+                          options={locOptions}
+                          value={selected}
+                          onChange={(opt) => setLocationType(opt ? opt.value : '')}
+                          placeholder="-- Select location type --"
+                          isClearable={false}
+                          isSearchable={false}
+                        />
+                      );
+                    })()}
                 </div>
 
                 {locationType ? (
