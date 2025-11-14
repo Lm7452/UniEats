@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom'; // 1. Import useLocation
 import Select from 'react-select'; 
 import './Settings.css';
-import Header from './Header';
 
 function Settings() {
   const [formData, setFormData] = useState({
@@ -110,12 +109,7 @@ function Settings() {
   };
 
   if (isLoading) {
-    return (
-      <div className="page-container settings-page">
-        <Header />
-        <main className="page-main">Loading...</main>
-      </div>
-    );
+    return <div className="settings-container">Loading...</div>;
   }
 
   const selectedBuildingValue = buildingOptions.find(
@@ -123,16 +117,12 @@ function Settings() {
   ) || null;
 
   return (
-    <div className="page-container settings-page">
-      <Header />
-      <main className="page-main">
-        <div className="settings-container">
-          <header className="settings-header">
-            <h1>Profile & Settings</h1>
-            {/* 4. Use the dynamic backUrl */}
-            <Link to={backUrl} className="back-link">&larr; Back</Link>
-          </header>
-        </div>
+    <div className="settings-container">
+      <header className="settings-header">
+        <h1>Profile & Settings</h1>
+        {/* 4. Use the dynamic backUrl */}
+        <Link to={backUrl} className="back-link">&larr; Back</Link>
+      </header>
 
       <form onSubmit={handleSubmit} className="settings-form">
         <section className="settings-section">
@@ -228,7 +218,6 @@ function Settings() {
           {statusMessage && <span className="status-message">{statusMessage}</span>}
         </div>
       </form>
-      </main>
     </div>
   );
 }

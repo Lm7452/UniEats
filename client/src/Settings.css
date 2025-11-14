@@ -23,6 +23,13 @@ body {
   color: var(--card-text);
 }
 
+/* Ensure the last form content is reachable on mobile (footer may overlap) */
+@media (max-width: 768px) {
+  .settings-container {
+    padding-bottom: 100px; /* give space for footer / mobile chrome */
+  }
+}
+
 .settings-header {
   display: flex;
   justify-content: space-between;
