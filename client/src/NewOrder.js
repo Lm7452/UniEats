@@ -9,7 +9,7 @@ function NewOrder() {
   const [orderNumber, setOrderNumber] = useState('');
   const [building, setBuilding] = useState('');
   const [room, setRoom] = useState('');
-  const [locationType, setLocationType] = useState('residential'); // 'residential', 'upperclassmen' or 'campus'
+  const [locationType, setLocationType] = useState(''); // '', 'residential', 'upperclassmen' or 'campus'
   const [residenceHall, setResidenceHall] = useState('');
   const [campusBuildingText, setCampusBuildingText] = useState('');
   const [campusRoomText, setCampusRoomText] = useState('');
@@ -69,7 +69,8 @@ function NewOrder() {
         if (user.dorm_building) {
           setLocationType('residential');
         } else {
-          setLocationType('campus');
+          // leave blank so user explicitly selects location type
+          setLocationType('');
         }
         const options = buildingNames.map(name => ({ label: name, value: name }));
         setBuildingOptions(options);
@@ -94,6 +95,11 @@ function NewOrder() {
     if (isSubmitting) return; 
     setIsSubmitting(true);
     setStatusMessage('Placing your order...');
+    if (!locationType) {
+      setStatusMessage('Please select a delivery location type.');
+      setIsSubmitting(false);
+      return;
+    }
     // Basic client-side validation for delivery address
     if (locationType !== 'campus') {
       if (!building) {
@@ -226,39 +232,17 @@ function NewOrder() {
               <section className="order-section">
                 <h2>2. Delivery Address</h2>
                 <div className="form-group">
-                  <label>Location Type</label>
-                  <div className="radio-group">
-                    <label>
-                      <input
-                        type="radio"
-                        name="locationType"
-                        value="residential"
-                        checked={locationType === 'residential'}
-                        onChange={() => setLocationType('residential')}
-                      /> Residential College
-                    </label>
-                    <label>
-                      <input
-                        type="radio"
-                        name="locationType"
-                        value="upperclassmen"
-                        checked={locationType === 'upperclassmen'}
-                        onChange={() => setLocationType('upperclassmen')}
-                      /> Upperclassmen
-                    </label>
-                    <label>
-                      <input
-                        type="radio"
-                        name="locationType"
-                        value="campus"
-                        checked={locationType === 'campus'}
-                        onChange={() => setLocationType('campus')}
-                      /> Campus Building
-                    </label>
-                  </div>
+                  <label htmlFor="locationType">Location Type</label>
+                  <select id="locationType" value={locationType} onChange={(e) => setLocationType(e.target.value)}>
+                    <option value="">-- Select location type --</option>
+                    <option value="residential">Residential College</option>
+                    <option value="upperclassmen">Upperclassmen</option>
+                    <option value="campus">Campus Building</option>
+                  </select>
                 </div>
 
-                {locationType !== 'campus' ? (
+                {locationType ? (
+                  locationType !== 'campus' ? (
                   <>
                     <div className="form-group">
                       <label htmlFor="dorm_building">Residential College</label>
@@ -323,7 +307,7 @@ function NewOrder() {
                       />
                     </div>
                   </>
-                )}
+                )) : null }
               </section>
 
               <section className="order-section">
