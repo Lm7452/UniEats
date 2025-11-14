@@ -52,7 +52,7 @@ function OrderHistory() {
 
   if (isLoading) {
     return (
-      <div className="page-container">
+      <div className="page-container order-history-page">
         <Header />
         <main className="page-main">Loading your order history...</main>
       </div>
@@ -61,7 +61,7 @@ function OrderHistory() {
 
   if (error) {
     return (
-      <div className="page-container">
+      <div className="page-container order-history-page">
         <Header />
         <main className="page-main">
           <div className="history-container error-message">{error}</div>
@@ -71,7 +71,7 @@ function OrderHistory() {
   }
 
   return (
-    <div className="page-container">
+    <div className="page-container order-history-page">
       <Header />
       <main className="page-main">
         <div className="history-container">

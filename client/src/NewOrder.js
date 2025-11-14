@@ -176,7 +176,7 @@ function NewOrder() {
 
   if (isLoading) {
     return (
-      <div className="page-container">
+      <div className="page-container order-form-page">
         <Header />
         <main className="page-main">Loading...
         </main>
@@ -185,7 +185,7 @@ function NewOrder() {
   }
 
   return (
-    <div className="page-container">
+    <div className="page-container order-form-page">
       <Header />
       <main className="page-main">
         <header className="new-order-header" style={{border: 'none', padding: 0, marginBottom: '25px'}}>

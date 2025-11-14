@@ -228,3 +228,12 @@
       font-size: 0.85em;
     }
 }
+
+/* Page-specific: hide the full banner/header on very small screens for certain pages */
+@media (max-width: 600px) {
+  .order-history-page .app-header,
+  .settings-page .app-header,
+  .order-form-page .app-header {
+    display: none !important;
+  }
+}
