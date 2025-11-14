@@ -36,6 +36,10 @@
   text-decoration: none;
 }
 
+/* Hide mobile-specific controls by default on desktop */
+.menu-toggle { display: none; }
+.mobile-nav-overlay { display: none; }
+
 .header-nav {
   /* No flex property needed */
   display: flex;
@@ -165,14 +169,47 @@
   }
 }
 
+/* Mobile overlay nav styles */
+@media (max-width: 768px) {
+  .mobile-nav-overlay {
+    position: fixed;
+    inset: 0; /* top:0; left:0; right:0; bottom:0 */
+    background: rgba(0,0,0,0.45);
+    z-index: 1100;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 72px; /* space for the header */
+  }
+  .mobile-nav {
+    width: calc(100% - 32px);
+    max-width: 420px;
+    background: var(--princeton-black);
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+  }
+  .mobile-nav-link {
+    color: var(--light-text);
+    text-decoration: none;
+    padding: 12px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+    font-weight: 600;
+  }
+  .mobile-nav-link:hover { background: rgba(255,255,255,0.04); }
+  /* Hide the desktop header-nav when using the mobile overlay to avoid duplicates */
+  .app-header.nav-open .header-nav { display: none; }
+}
+
 @media (max-width: 480px) {
     .app-header {
         flex-direction: column;
         gap: 10px;
         padding: 15px;
-    }
-    .header-left-side {
-      /* no change needed, will stack */
     }
     .logo-container {
       text-align: center;

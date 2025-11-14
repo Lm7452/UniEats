@@ -34,14 +34,16 @@ function Header() {
             UniEats
           </Link>
         </div>
-        
-        <button
-          className="menu-toggle"
-          aria-label="Toggle navigation"
-          onClick={() => setNavOpen(open => !open)}
-        >
-          <span className="hamburger" />
-        </button>
+        {/* Show mobile menu toggle only for driver/admin users (desktop hides it via CSS) */}
+        {user && (user.role === 'driver' || user.role === 'admin') && (
+          <button
+            className="menu-toggle"
+            aria-label="Toggle navigation"
+            onClick={() => setNavOpen(open => !open)}
+          >
+            <span className="hamburger" />
+          </button>
+        )}
 
         <nav className="header-nav">
           {user && (user.role === 'driver' || user.role === 'admin') && (
@@ -71,6 +73,22 @@ function Header() {
           </a>
         )}
       </div>
+      {/* Mobile overlay nav (covers screen when open). Rendered for drivers/admin only. */}
+      {navOpen && user && (user.role === 'driver' || user.role === 'admin') && (
+        <div className="mobile-nav-overlay" onClick={() => setNavOpen(false)}>
+          <nav className="mobile-nav" onClick={(e) => e.stopPropagation()}>
+            {user && (user.role === 'driver' || user.role === 'admin') && (
+              <Link to="/student-dashboard" className="mobile-nav-link" onClick={() => setNavOpen(false)}>Student Dashboard</Link>
+            )}
+            {user && (user.role === 'driver' || user.role === 'admin') && (
+              <Link to="/driver-dashboard" className="mobile-nav-link" onClick={() => setNavOpen(false)}>Driver Dashboard</Link>
+            )}
+            {user && user.role === 'admin' && (
+              <Link to="/admin" className="mobile-nav-link" onClick={() => setNavOpen(false)}>Admin Center</Link>
+            )}
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
