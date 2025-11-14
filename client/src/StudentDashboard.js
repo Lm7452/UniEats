@@ -71,6 +71,14 @@ function StudentDashboard() {
     { key: 'delivered', label: 'Delivered' },
   ];
 
+  const [isSmallScreen, setIsSmallScreen] = useState(typeof window !== 'undefined' ? window.innerWidth <= 600 : false);
+
+  useEffect(() => {
+    const onResize = () => setIsSmallScreen(window.innerWidth <= 600);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   const renderTracker = (order) => {
     if (!order) return null;
     const cur = (order.status || 'pending');
@@ -82,20 +90,28 @@ function StudentDashboard() {
       if (deliveredAt) deliveredAgo = Math.floor((Date.now() - new Date(deliveredAt).getTime()) / 1000);
     }
 
+    // On small screens, show only the current step and the next step (if any)
+    const visibleSteps = isSmallScreen
+      ? steps.slice(Math.max(0, curIndex), Math.min(steps.length, curIndex + 2))
+      : steps;
+
     return (
       <div className="order-tracker circle-tracker" aria-hidden={false}>
-        {steps.map((s, idx) => {
-          const state = idx < curIndex ? 'done' : (idx === curIndex ? 'active' : 'pending');
+        {visibleSteps.map((s, i) => {
+          // compute real index in full steps list for numbering and done-state checks
+          const realIdx = steps.findIndex(x => x.key === s.key);
+          const state = realIdx < curIndex ? 'done' : (realIdx === curIndex ? 'active' : 'pending');
           return (
             <React.Fragment key={s.key}>
               <div className={`circle-step ${state}`}>
                 <div className={`circle ${state}`} aria-hidden>
-                  {state === 'done' ? '✓' : (idx + 1)}
+                  {state === 'done' ? '✓' : (realIdx + 1)}
                 </div>
                 <div className="step-label">{s.label}</div>
               </div>
-              {idx < steps.length - 1 && (
-                <div className={`tracker-arrow ${idx < curIndex ? 'done' : ''}`} aria-hidden>
+              {/* show arrow only between visible items */}
+              {i < visibleSteps.length - 1 && (
+                <div className={`tracker-arrow ${realIdx < curIndex ? 'done' : ''}`} aria-hidden>
                   <svg className="chev" width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                     <path d="M8 5l8 7-8 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>

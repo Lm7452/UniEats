@@ -233,6 +233,44 @@
   width: 100%;
 }
 
+/* Mobile: make tracker compact and horizontally scrollable to avoid overflow */
+@media (max-width: 600px) {
+  .order-tracker {
+    padding: 10px 6px;
+  }
+  .circle-tracker {
+    display: flex;
+    gap: 12px;
+    padding: 8px 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    align-items: center;
+  }
+  .circle-step {
+    flex: 0 0 auto;
+    min-width: 64px;
+    scroll-snap-align: start;
+    padding: 6px 4px;
+  }
+  .circle {
+    width: 44px;
+    height: 44px;
+    font-size: 0.85em;
+  }
+  .circle-step .step-label {
+    margin-top: 6px;
+    font-size: 0.75em;
+  }
+  /* keep arrows visible between the two visible steps */
+  .tracker-arrow { display: flex; align-items: center; justify-content: center; }
+  /* make order-tracker container not overflow the page */
+  .order-tracker, .order-tracker > * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
 /* Driver info styles */
 .tracker-driver {
   display: flex;
