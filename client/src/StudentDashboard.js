@@ -95,6 +95,59 @@ function StudentDashboard() {
       ? steps.slice(Math.max(0, curIndex), Math.min(steps.length, curIndex + 2))
       : steps;
 
+    const driverInfo = (order.driver_name || order.driver_phone) ? (
+      <div className="tracker-driver">
+        <div className="driver-avatar">{(order.driver_name || 'D').split(' ').map(n=>n[0]).slice(0,2).join('')}</div>
+        <div className="driver-details">
+          <div className="driver-name">Driver: {order.driver_name || 'Assigned'}</div>
+          {order.driver_phone ? (
+            <a className="driver-phone" href={formatPhoneForTel(order.driver_phone)}>{formatPhoneForDisplay(order.driver_phone)}</a>
+          ) : (
+            <div className="driver-phone muted">Contact not available</div>
+          )}
+        </div>
+      </div>
+    ) : null;
+
+    // If small screen, render tracker first and then the driver info below as its own block
+    if (isSmallScreen) {
+      return (
+        <>
+          <div className="order-tracker circle-tracker" aria-hidden={false}>
+            {visibleSteps.map((s, i) => {
+              // compute real index in full steps list for numbering and done-state checks
+              const realIdx = steps.findIndex(x => x.key === s.key);
+              const state = realIdx < curIndex ? 'done' : (realIdx === curIndex ? 'active' : 'pending');
+              return (
+                <React.Fragment key={s.key}>
+                  <div className={`circle-step ${state}`}>
+                    <div className={`circle ${state}`} aria-hidden>
+                      {state === 'done' ? '✓' : (realIdx + 1)}
+                    </div>
+                    <div className="step-label">{s.label}</div>
+                  </div>
+                  {/* show arrow only between visible items */}
+                  {i < visibleSteps.length - 1 && (
+                    <div className={`tracker-arrow ${realIdx < curIndex ? 'done' : ''}`} aria-hidden>
+                      <svg className="chev" width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M8 5l8 7-8 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
+
+            {cur === 'delivered' && deliveredAgo !== null && (
+              <div className="tracker-footer">Delivered — this will move to your order history in {formatRemaining(Math.max(0, graceSeconds - deliveredAgo))}</div>
+            )}
+          </div>
+
+          {driverInfo}
+        </>
+      );
+    }
+
     return (
       <div className="order-tracker circle-tracker" aria-hidden={false}>
         {visibleSteps.map((s, i) => {
@@ -121,20 +174,7 @@ function StudentDashboard() {
           );
         })}
 
-        {/* Driver info box */}
-        {(order.driver_name || order.driver_phone) && (
-          <div className="tracker-driver">
-            <div className="driver-avatar">{(order.driver_name || 'D').split(' ').map(n=>n[0]).slice(0,2).join('')}</div>
-            <div className="driver-details">
-              <div className="driver-name">Driver: {order.driver_name || 'Assigned'}</div>
-              {order.driver_phone ? (
-                <a className="driver-phone" href={formatPhoneForTel(order.driver_phone)}>{formatPhoneForDisplay(order.driver_phone)}</a>
-              ) : (
-                <div className="driver-phone muted">Contact not available</div>
-              )}
-            </div>
-          </div>
-        )}
+        {driverInfo}
 
         {cur === 'delivered' && deliveredAgo !== null && (
           <div className="tracker-footer">Delivered — this will move to your order history in {formatRemaining(Math.max(0, graceSeconds - deliveredAgo))}</div>

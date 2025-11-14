@@ -271,6 +271,28 @@
   }
 }
 
+/* Mobile: center driver info and stack avatar/name/phone */
+@media (max-width: 600px) {
+  .tracker-driver {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+    padding: 12px;
+  }
+  .tracker-driver .driver-avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 1.05em;
+  }
+  .tracker-driver .driver-name {
+    font-size: 1em;
+  }
+  .tracker-driver .driver-phone {
+    font-size: 0.95em;
+  }
+}
+
 /* Driver info styles */
 .tracker-driver {
   display: flex;
