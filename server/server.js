@@ -133,11 +133,12 @@ app.get('/api/buildings', async (req, res) => {
     }
 
     // Join locations -> location_types to get only locations of the requested type
+    // Note: DB columns are `location_types.type_name` and `locations.type_id` (per schema)
     const query = `
       SELECT l.name
       FROM locations l
-      JOIN location_types lt ON lt.id = l.location_type_id
-      WHERE lt.name = $1
+      JOIN location_types lt ON lt.id = l.type_id
+      WHERE lt.type_name = $1
       ORDER BY l.name ASC
     `;
     const result = await db.query(query, [typeName]);
