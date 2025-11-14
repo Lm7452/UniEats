@@ -52,10 +52,10 @@ function NewOrder() {
       .then(data => {
         setAvailableDriverCount(data.availableDriverCount);
         if (data.availableDriverCount > 0) {
-          // If online, fetch profile and buildings
+          // If online, fetch profile and buildings (default to Residential College)
           return Promise.all([
             fetch('/profile'),
-            fetch('/api/buildings')
+            fetch('/api/buildings?type=' + encodeURIComponent('Residential College'))
           ]);
         }
         // If offline, stop here
@@ -91,6 +91,24 @@ function NewOrder() {
       .finally(() => setIsLoading(false));
 
   }, [navigate]);
+
+  // When the selected location type changes (residential vs upperclassmen), reload options
+  useEffect(() => {
+    if (!locationType || locationType === 'campus') return; // campus uses free-text
+    const typeName = locationType === 'residential' ? 'Residential College' : 'Upperclassmen Hall';
+    fetch('/api/buildings?type=' + encodeURIComponent(typeName))
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch buildings for type');
+        return res.json();
+      })
+      .then(buildingNames => {
+        const options = buildingNames.map(name => ({ label: name, value: name }));
+        setBuildingOptions(options);
+      })
+      .catch(err => {
+        console.error('Error fetching buildings by type:', err);
+      });
+  }, [locationType]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

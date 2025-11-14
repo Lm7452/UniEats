@@ -55,7 +55,7 @@ function Settings() {
         navigate('/');
       });
 
-    fetch('/api/buildings')
+    fetch('/api/buildings?type=' + encodeURIComponent('Residential College'))
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch buildings');
         return res.json();

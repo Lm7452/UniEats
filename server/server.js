@@ -116,14 +116,35 @@ app.get('/api/app-status', async (req, res) => {
   }
 });
 
-// GET all buildings
+// GET buildings/locations filtered by location type
+// Accepts optional query param `type` which should match a value in `location_types.name`.
+// If no `type` is provided, defaults to 'Residential College' to preserve previous behavior.
 app.get('/api/buildings', async (req, res) => {
   try {
-    const result = await db.query('SELECT name FROM buildings ORDER BY name ASC');
+    const rawType = req.query.type;
+    // Allow short aliases from the client (e.g., 'residential', 'upperclassmen')
+    let typeName = rawType;
+    if (!typeName) {
+      typeName = 'Residential College';
+    } else if (typeName.toLowerCase() === 'residential') {
+      typeName = 'Residential College';
+    } else if (typeName.toLowerCase() === 'upperclassmen') {
+      typeName = 'Upperclassmen Hall';
+    }
+
+    // Join locations -> location_types to get only locations of the requested type
+    const query = `
+      SELECT l.name
+      FROM locations l
+      JOIN location_types lt ON lt.id = l.location_type_id
+      WHERE lt.name = $1
+      ORDER BY l.name ASC
+    `;
+    const result = await db.query(query, [typeName]);
     res.json(result.rows.map(row => row.name));
   } catch (err) {
-    console.error('Error fetching buildings:', err);
-    res.status(500).json({ error: 'Failed to fetch buildings' });
+    console.error('Error fetching buildings/locations:', err);
+    res.status(500).json({ error: 'Failed to fetch buildings/locations' });
   }
 });
 
