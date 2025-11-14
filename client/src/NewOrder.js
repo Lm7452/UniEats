@@ -269,7 +269,8 @@ function NewOrder() {
                       <label htmlFor="dorm_building">Residential College</label>
                       <Select
                         id="dorm_building"
-                        classNamePrefix="react-select"
+                          classNamePrefix="react-select"
+                          className="dorm-select"
                         options={buildingOptions}
                         value={buildingOptions.find(o => o.value === building) || null}
                         onChange={(option) => setBuilding(option ? option.value : '')}

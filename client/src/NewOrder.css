@@ -335,6 +335,19 @@
   border: 1px solid rgba(0,0,0,0.08) !important;
   background: #fff;
 }
+
+/* Make the dorm/residential college select match other text inputs' height */
+.dorm-select .react-select__control {
+  min-height: 42px !important;
+  height: 42px !important;
+  border-radius: 5px !important;
+}
+.dorm-select .react-select__value-container {
+  padding: 0 8px !important;
+}
+.dorm-select .react-select__single-value {
+  line-height: 42px;
+}
 .location-type-select .react-select__control--is-focused {
   box-shadow: 0 6px 20px rgba(231,117,0,0.12) !important;
   border-color: var(--princeton-orange) !important;
