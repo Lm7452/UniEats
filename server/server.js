@@ -209,8 +209,6 @@ app.get('/profile', isAuthenticated, (req, res) => {
 app.put('/profile', isAuthenticated, async (req, res) => {
   const {
     name,
-    dorm_building,
-    dorm_room,
     phone_number,
     notify_email_order_status,
     notify_email_promotions
@@ -220,17 +218,13 @@ app.put('/profile', isAuthenticated, async (req, res) => {
     const result = await db.query(
       `UPDATE users SET
         name = $1,
-        dorm_building = $2,
-        dorm_room = $3,
-        phone_number = $4,
-        notify_email_order_status = $5,
-        notify_email_promotions = $6,
+        phone_number = $2,
+        notify_email_order_status = $3,
+        notify_email_promotions = $4,
         updated_at = NOW()
-      WHERE id = $7 RETURNING *`,
+      WHERE id = $5 RETURNING *`,
       [
         name,
-        dorm_building,
-        dorm_room,
         phone_number,
         notify_email_order_status,
         notify_email_promotions,

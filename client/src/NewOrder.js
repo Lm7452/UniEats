@@ -190,7 +190,6 @@ function NewOrder() {
       location_type: locationType,
       delivery_building: locationType === 'residential' ? building : campusBuildingText,
       delivery_room: locationType === 'residential' ? room : campusRoomText,
-      residence_hall: locationType === 'residential' ? residenceHall : undefined,
       tip_amount: Number(tip) || 0
     };
 
