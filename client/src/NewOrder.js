@@ -73,24 +73,12 @@ function NewOrder() {
       })
       .then(([user, residentialNames, upperNames]) => {
         // We are online and all data is fetched
-        setBuilding(user.dorm_building || '');
-        setRoom(user.dorm_room || '');
-        // If profile has a dorm_building, preselect residential; otherwise leave empty
-        if (user.dorm_building) {
-          setLocationType('residential');
-        } else {
-          setLocationType('');
-        }
         const resOptions = residentialNames.map(name => ({ label: name, value: name }));
         const upOptions = upperNames.map(name => ({ label: name, value: name }));
         setResidentialOptionsCache(resOptions);
         setUpperclassOptionsCache(upOptions);
-        // Set initial building options based on preselected locationType (or residential by default)
-        if (user.dorm_building) {
-          setBuildingOptions(resOptions);
-        } else {
-          setBuildingOptions(resOptions);
-        }
+        // Default building options to residential list
+        setBuildingOptions(resOptions);
       })
       .catch(err => {
         if (err === 'offline') {

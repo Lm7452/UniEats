@@ -1,7 +1,6 @@
 // client/src/Settings.js
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom'; // 1. Import useLocation
-import Select from 'react-select'; 
 import './Settings.css';
 import Header from './Header';
 
@@ -9,18 +8,10 @@ function Settings() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    dorm_building: '',
-    dorm_room: '',
     phone_number: '',
     notify_email_order_status: true,
     notify_email_promotions: true,
   });
-  
-  const [buildingOptions, setBuildingOptions] = useState([]);
-  const [residentialOptionsCache, setResidentialOptionsCache] = useState([]);
-  const [upperclassOptionsCache, setUpperclassOptionsCache] = useState([]);
-  const [hallOptions, setHallOptions] = useState([]);
-  const [locationType, setLocationType] = useState(''); // 'residential' | 'upperclassmen' | 'campus'
   const [statusMessage, setStatusMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
@@ -30,12 +21,6 @@ function Settings() {
   const backUrl = location.state?.from || '/student-dashboard';
 
   useEffect(() => {
-    let profileLoaded = false;
-    let buildingsLoaded = false;
-    const checkAllLoaded = () => {
-      if (profileLoaded && buildingsLoaded) setIsLoading(false);
-    };
-
     fetch('/profile')
       .then(res => {
         if (!res.ok) throw new Error('Not authenticated');
@@ -45,110 +30,32 @@ function Settings() {
         setFormData({
           name: user.name || '',
           email: user.email || '', 
-          dorm_building: user.dorm_building || '',
-          dorm_room: user.dorm_room || '',
           phone_number: user.phone_number || '',
           notify_email_order_status: user.notify_email_order_status,
-          notify_email_promotions: user.notify_email_promotions,
-          residence_hall: user.residence_hall || ''
+          notify_email_promotions: user.notify_email_promotions
         });
-        profileLoaded = true;
-        checkAllLoaded();
       })
       .catch(error => {
         console.error("Error fetching profile:", error);
         navigate('/');
-      });
-
-    // Prefetch both Residential and Upperclassmen building lists for Settings
-    const fetchResidential = fetch('/api/buildings?type=' + encodeURIComponent('Residential College'));
-    const fetchUpper = fetch('/api/buildings?type=' + encodeURIComponent('Upperclassmen Hall'));
-    fetchResidential
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to fetch buildings');
-        return res.json();
       })
-      .then(buildingNames => {
-        const options = buildingNames.map(name => ({ label: name, value: name }));
-        setResidentialOptionsCache(options);
-        buildingsLoaded = true; 
-        checkAllLoaded();
-      })
-      .catch(error => {
-        console.error("Error fetching residential buildings:", error);
-        buildingsLoaded = true; checkAllLoaded();
-      });
-
-    fetchUpper
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to fetch upperclassmen buildings');
-        return res.json();
-      })
-      .then(buildingNames => {
-        const options = buildingNames.map(name => ({ label: name, value: name }));
-        setUpperclassOptionsCache(options);
-        // If user has a dorm_building already, infer type
-        buildingsLoaded = true; 
-        checkAllLoaded();
-      })
-      .catch(error => {
-        console.error("Error fetching upperclassmen buildings:", error);
-        buildingsLoaded = true; checkAllLoaded();
-      });
-    
+      .finally(() => setIsLoading(false));
 
   }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    let newValue = type === 'checkbox' ? checked : value;
-    if (name === 'dorm_room') {
-      newValue = String(newValue).replace(/\D/g, '');
-    }
+    const newValue = type === 'checkbox' ? checked : value;
     setFormData(prevData => ({
       ...prevData,
       [name]: newValue,
     }));
   };
 
-  const handleLocationTypeChange = (opt) => {
-    const val = opt ? opt.value : '';
-    setLocationType(val);
-    // set buildingOptions based on selection
-    if (val === 'residential') {
-      setBuildingOptions(residentialOptionsCache);
-    } else if (val === 'upperclassmen') {
-      setBuildingOptions(upperclassOptionsCache);
-    } else {
-      setBuildingOptions([]);
-    }
-    // clear building/hall/room when type changes
-    setFormData(prev => ({ ...prev, dorm_building: '', dorm_room: '', residence_hall: '' }));
-  };
-
-  const handleBuildingChange = (selectedOption) => {
-    const value = selectedOption ? selectedOption.value : '';
-    setFormData(prevData => ({ ...prevData, dorm_building: value, residence_hall: '' }));
-    // If residential, fetch halls for this building
-    if (locationType === 'residential' && value) {
-      fetch('/api/halls?location_name=' + encodeURIComponent(value))
-        .then(res => res.ok ? res.json() : Promise.reject('Failed'))
-        .then(names => setHallOptions(names.map(n => ({ label: n, value: n }))))
-        .catch(err => { console.error('Error fetching halls:', err); setHallOptions([]); });
-    } else {
-      setHallOptions([]);
-    }
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     setStatusMessage('Saving...');
-    // Include dorm_type and residence_hall where available. Server will ignore unknown fields if DB not migrated.
-    const payload = {
-      ...formData,
-      dorm_type: locationType || undefined,
-      residence_hall: formData.residence_hall || undefined
-    };
+    const payload = { ...formData };
     fetch('/profile', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -165,37 +72,7 @@ function Settings() {
       setStatusMessage('Error saving settings. Please try again.');
     });
   };
-  // Infer initial location type and populate buildingOptions once caches loaded
-  const selectedBuildingValue = buildingOptions.find(
-    option => option.value === formData.dorm_building
-  ) || null;
-
-  useEffect(() => {
-    if (!isLoading) {
-      const building = formData.dorm_building || '';
-      if (building) {
-        const isUpper = upperclassOptionsCache.some(o => o.value === building);
-        if (isUpper) {
-          setLocationType('upperclassmen');
-          setBuildingOptions(upperclassOptionsCache);
-        } else {
-          setLocationType('residential');
-          setBuildingOptions(residentialOptionsCache);
-        }
-      } else {
-        // default to residential options
-        setLocationType('residential');
-        setBuildingOptions(residentialOptionsCache);
-      }
-      // If we already have a building selected and locationType is residential, fetch halls
-      if (formData.dorm_building && (locationType === 'residential' || !locationType)) {
-        fetch('/api/halls?location_name=' + encodeURIComponent(formData.dorm_building))
-          .then(res => res.ok ? res.json() : Promise.reject('Failed'))
-          .then(names => setHallOptions(names.map(n => ({ label: n, value: n })) ))
-          .catch(() => setHallOptions([]));
-      }
-    }
-  }, [isLoading]);
+  
 
   if (isLoading) {
     return (
@@ -253,67 +130,7 @@ function Settings() {
           </div>
         </section>
 
-        <section className="settings-section">
-          <h2>Delivery Address</h2>
-          <div className="form-group">
-            <label htmlFor="locationType">Location Type</label>
-            <Select
-              id="locationType"
-              classNamePrefix="react-select"
-              options={[
-                { value: 'residential', label: 'Residential College' },
-                { value: 'upperclassmen', label: 'Upperclassmen' },
-                { value: 'campus', label: 'Campus Building' }
-              ]}
-              value={[{ value: locationType, label: locationType === 'upperclassmen' ? 'Upperclassmen' : locationType === 'campus' ? 'Campus Building' : 'Residential College' }].find(Boolean) || null}
-              onChange={handleLocationTypeChange}
-              isClearable={false}
-              isSearchable={false}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="dorm_building">Dorm Building</label>
-            <Select
-              id="dorm_building"
-              name="dorm_building"
-              classNamePrefix="react-select"
-              options={buildingOptions}
-              value={selectedBuildingValue}
-              onChange={handleBuildingChange}
-              placeholder="Select a building..."
-              isSearchable={false}
-              isClearable
-            />
-          </div>
-          {locationType === 'residential' && (
-            <div className="form-group">
-              <label htmlFor="residence_hall">Hall / Section</label>
-              <Select
-                id="residence_hall"
-                classNamePrefix="react-select"
-                options={hallOptions}
-                value={hallOptions.find(o => o.value === formData.residence_hall) || null}
-                onChange={(opt) => setFormData(prev => ({ ...prev, residence_hall: opt ? opt.value : '' }))}
-                placeholder="Choose your hall/section..."
-                isSearchable={false}
-                isClearable
-              />
-            </div>
-          )}
-          <div className="form-group">
-            <label htmlFor="dorm_room">Room Number</label>
-            <input
-              type="text"
-              id="dorm_room"
-              name="dorm_room"
-              value={formData.dorm_room}
-              inputMode="numeric"
-              pattern="\d*"
-              onChange={handleChange}
-              placeholder="e.g., 301"
-            />
-          </div>
-        </section>
+        {/* Delivery address removed — users will enter address on the order page */}
 
         <section className="settings-section">
           <h2>Email Notifications</h2>
