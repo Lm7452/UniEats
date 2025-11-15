@@ -17,6 +17,10 @@ function Settings() {
   });
   
   const [buildingOptions, setBuildingOptions] = useState([]);
+  const [residentialOptionsCache, setResidentialOptionsCache] = useState([]);
+  const [upperclassOptionsCache, setUpperclassOptionsCache] = useState([]);
+  const [hallOptions, setHallOptions] = useState([]);
+  const [locationType, setLocationType] = useState(''); // 'residential' | 'upperclassmen' | 'campus'
   const [statusMessage, setStatusMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
@@ -46,6 +50,7 @@ function Settings() {
           phone_number: user.phone_number || '',
           notify_email_order_status: user.notify_email_order_status,
           notify_email_promotions: user.notify_email_promotions,
+          residence_hall: user.residence_hall || ''
         });
         profileLoaded = true;
         checkAllLoaded();
@@ -55,22 +60,42 @@ function Settings() {
         navigate('/');
       });
 
-    fetch('/api/buildings?type=' + encodeURIComponent('Residential College'))
+    // Prefetch both Residential and Upperclassmen building lists for Settings
+    const fetchResidential = fetch('/api/buildings?type=' + encodeURIComponent('Residential College'));
+    const fetchUpper = fetch('/api/buildings?type=' + encodeURIComponent('Upperclassmen Hall'));
+    fetchResidential
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch buildings');
         return res.json();
       })
       .then(buildingNames => {
         const options = buildingNames.map(name => ({ label: name, value: name }));
-        setBuildingOptions(options);
-        buildingsLoaded = true;
+        setResidentialOptionsCache(options);
+        buildingsLoaded = true; 
         checkAllLoaded();
       })
       .catch(error => {
-        console.error("Error fetching buildings:", error);
+        console.error("Error fetching residential buildings:", error);
+        buildingsLoaded = true; checkAllLoaded();
+      });
+
+    fetchUpper
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch upperclassmen buildings');
+        return res.json();
+      })
+      .then(buildingNames => {
+        const options = buildingNames.map(name => ({ label: name, value: name }));
+        setUpperclassOptionsCache(options);
+        // If user has a dorm_building already, infer type
         buildingsLoaded = true; 
         checkAllLoaded();
+      })
+      .catch(error => {
+        console.error("Error fetching upperclassmen buildings:", error);
+        buildingsLoaded = true; checkAllLoaded();
       });
+    
 
   }, [navigate]);
 
@@ -86,20 +111,48 @@ function Settings() {
     }));
   };
 
+  const handleLocationTypeChange = (opt) => {
+    const val = opt ? opt.value : '';
+    setLocationType(val);
+    // set buildingOptions based on selection
+    if (val === 'residential') {
+      setBuildingOptions(residentialOptionsCache);
+    } else if (val === 'upperclassmen') {
+      setBuildingOptions(upperclassOptionsCache);
+    } else {
+      setBuildingOptions([]);
+    }
+    // clear building/hall/room when type changes
+    setFormData(prev => ({ ...prev, dorm_building: '', dorm_room: '', residence_hall: '' }));
+  };
+
   const handleBuildingChange = (selectedOption) => {
-    setFormData(prevData => ({
-      ...prevData,
-      dorm_building: selectedOption ? selectedOption.value : ''
-    }));
+    const value = selectedOption ? selectedOption.value : '';
+    setFormData(prevData => ({ ...prevData, dorm_building: value, residence_hall: '' }));
+    // If residential, fetch halls for this building
+    if (locationType === 'residential' && value) {
+      fetch('/api/halls?location_name=' + encodeURIComponent(value))
+        .then(res => res.ok ? res.json() : Promise.reject('Failed'))
+        .then(names => setHallOptions(names.map(n => ({ label: n, value: n }))))
+        .catch(err => { console.error('Error fetching halls:', err); setHallOptions([]); });
+    } else {
+      setHallOptions([]);
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setStatusMessage('Saving...');
+    // Include dorm_type and residence_hall where available. Server will ignore unknown fields if DB not migrated.
+    const payload = {
+      ...formData,
+      dorm_type: locationType || undefined,
+      residence_hall: formData.residence_hall || undefined
+    };
     fetch('/profile', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(payload),
     })
     .then(res => res.json())
     .then(data => {
@@ -125,6 +178,34 @@ function Settings() {
   const selectedBuildingValue = buildingOptions.find(
     option => option.value === formData.dorm_building
   ) || null;
+
+  // Infer initial location type and populate buildingOptions once caches loaded
+  useEffect(() => {
+    if (!isLoading) {
+      const building = formData.dorm_building || '';
+      if (building) {
+        const isUpper = upperclassOptionsCache.some(o => o.value === building);
+        if (isUpper) {
+          setLocationType('upperclassmen');
+          setBuildingOptions(upperclassOptionsCache);
+        } else {
+          setLocationType('residential');
+          setBuildingOptions(residentialOptionsCache);
+        }
+      } else {
+        // default to residential options
+        setLocationType('residential');
+        setBuildingOptions(residentialOptionsCache);
+      }
+      // If we already have a building selected and locationType is residential, fetch halls
+      if (formData.dorm_building && (locationType === 'residential' || !locationType)) {
+        fetch('/api/halls?location_name=' + encodeURIComponent(formData.dorm_building))
+          .then(res => res.ok ? res.json() : Promise.reject('Failed'))
+          .then(names => setHallOptions(names.map(n => ({ label: n, value: n })) ))
+          .catch(() => setHallOptions([]));
+      }
+    }
+  }, [isLoading]);
 
   return (
     <div className="page-container settings-page">
@@ -176,6 +257,22 @@ function Settings() {
         <section className="settings-section">
           <h2>Delivery Address</h2>
           <div className="form-group">
+            <label htmlFor="locationType">Location Type</label>
+            <Select
+              id="locationType"
+              classNamePrefix="react-select"
+              options={[
+                { value: 'residential', label: 'Residential College' },
+                { value: 'upperclassmen', label: 'Upperclassmen' },
+                { value: 'campus', label: 'Campus Building' }
+              ]}
+              value={[{ value: locationType, label: locationType === 'upperclassmen' ? 'Upperclassmen' : locationType === 'campus' ? 'Campus Building' : 'Residential College' }].find(Boolean) || null}
+              onChange={handleLocationTypeChange}
+              isClearable={false}
+              isSearchable={false}
+            />
+          </div>
+          <div className="form-group">
             <label htmlFor="dorm_building">Dorm Building</label>
             <Select
               id="dorm_building"
@@ -189,6 +286,21 @@ function Settings() {
               isClearable
             />
           </div>
+          {locationType === 'residential' && (
+            <div className="form-group">
+              <label htmlFor="residence_hall">Hall / Section</label>
+              <Select
+                id="residence_hall"
+                classNamePrefix="react-select"
+                options={hallOptions}
+                value={hallOptions.find(o => o.value === formData.residence_hall) || null}
+                onChange={(opt) => setFormData(prev => ({ ...prev, residence_hall: opt ? opt.value : '' }))}
+                placeholder="Choose your hall/section..."
+                isSearchable={false}
+                isClearable
+              />
+            </div>
+          )}
           <div className="form-group">
             <label htmlFor="dorm_room">Room Number</label>
             <input
