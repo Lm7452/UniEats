@@ -165,21 +165,11 @@ function Settings() {
       setStatusMessage('Error saving settings. Please try again.');
     });
   };
-
-  if (isLoading) {
-    return (
-      <div className="page-container settings-page">
-        <Header />
-        <main className="page-main">Loading...</main>
-      </div>
-    );
-  }
-
+  // Infer initial location type and populate buildingOptions once caches loaded
   const selectedBuildingValue = buildingOptions.find(
     option => option.value === formData.dorm_building
   ) || null;
 
-  // Infer initial location type and populate buildingOptions once caches loaded
   useEffect(() => {
     if (!isLoading) {
       const building = formData.dorm_building || '';
@@ -206,6 +196,15 @@ function Settings() {
       }
     }
   }, [isLoading]);
+
+  if (isLoading) {
+    return (
+      <div className="page-container settings-page">
+        <Header />
+        <main className="page-main">Loading...</main>
+      </div>
+    );
+  }
 
   return (
     <div className="page-container settings-page">
