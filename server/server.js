@@ -246,7 +246,7 @@ app.put('/profile', isAuthenticated, async (req, res) => {
 
 // POST a new order
 app.post('/api/orders', isAuthenticated, async (req, res) => {
-  const { princeton_order_number, delivery_building, delivery_room, tip_amount } = req.body;
+  const { princeton_order_number, delivery_building, delivery_room, tip_amount, customer_phone, customer_email } = req.body;
   const customer_id = req.user.id;
   
   // --- CHECK IF DRIVERS ARE AVAILABLE BEFORE CREATING ORDER ---
@@ -261,9 +261,20 @@ app.post('/api/orders', isAuthenticated, async (req, res) => {
      return res.status(500).json({ error: 'Failed to check driver status.' });
   }
   // --- END OF CHECK ---
-
   if (!princeton_order_number || !delivery_building || !delivery_room) {
     return res.status(400).json({ error: 'Missing required order details' });
+  }
+  // If the user supplied a phone number at checkout, save it to their profile
+  if (customer_phone) {
+    try {
+      await db.query(
+        'UPDATE users SET phone_number = $1, updated_at = NOW() WHERE id = $2',
+        [customer_phone, customer_id]
+      );
+    } catch (err) {
+      console.error('Error updating user phone number:', err);
+      // Don't block order creation if phone update fails; log and continue
+    }
   }
   try {
     const result = await db.query(

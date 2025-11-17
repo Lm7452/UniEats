@@ -34,6 +34,7 @@ function NewOrder() {
   // --- Payment State ---
   const [clientSecret, setClientSecret] = useState("");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -75,6 +76,7 @@ function NewOrder() {
         return Promise.all([profileRes.json(), buildingsRes.json(), upperRes.json()]);
       })
       .then(([user, residentialNames, upperNames]) => {
+        setUserProfile(user || null);
         const resOptions = residentialNames.map(name => ({ label: name, value: name }));
         const upOptions = upperNames.map(name => ({ label: name, value: name }));
         setResidentialOptionsCache(resOptions);
@@ -213,7 +215,7 @@ function NewOrder() {
   };
 
   // --- NEW: Called by CheckoutForm after Stripe confirms success ---
-  const handlePaymentSuccess = (paymentId) => {
+  const handlePaymentSuccess = (paymentId, contactInfo = {}) => {
     setShowPaymentModal(false);
     setStatusMessage('Payment successful! Saving order...');
     setIsSubmitting(true);
@@ -227,7 +229,10 @@ function NewOrder() {
       // include residence_hall when applicable (optional for server) for better record-keeping
       residence_hall: locationType === 'residential' ? residenceHall : undefined,
       tip_amount: Number(tip) || 0,
-      stripe_payment_id: paymentId // Optional: store payment ref
+      stripe_payment_id: paymentId, // Optional: store payment ref
+      // Pass contact info to server so it can be saved with the order or associated with the user
+      customer_phone: contactInfo.phone || userProfile?.phone_number || null,
+      customer_email: contactInfo.email || userProfile?.email || null
     };
 
     fetch('/api/orders', {
@@ -504,6 +509,7 @@ function NewOrder() {
             }}>
               <Elements options={{ clientSecret, appearance: { theme: 'stripe' } }} stripe={stripePromise}>
                 <CheckoutForm 
+                  initialContact={{ phone: userProfile?.phone_number || '', email: userProfile?.email || '' }}
                   onPaymentSuccess={handlePaymentSuccess} 
                   onCancel={() => {
                     setShowPaymentModal(false);
