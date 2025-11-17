@@ -8,10 +8,12 @@ const bodyParser = require('body-parser');
 const OIDCStrategy = require('passport-azure-ad').OIDCStrategy;
 const path = require('path');
 const db = require('./db'); 
+const Stripe = require('stripe'); // <--- IMPORT STRIPE
 
 // --- 1. INITIAL SETUP ---
 dotenv.config();
 const app = express();
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const PORT = process.env.PORT || 5000;
 
 // --- 2. MIDDLEWARE SETUP ---
@@ -570,6 +572,40 @@ app.put('/api/driver/orders/:orderId/status', isDriver, async (req, res) => {
   } catch (err) {
     console.error('Driver error updating order status:', err);
     res.status(500).json({ error: 'Failed to update order status' });
+  }
+});
+
+// --- NEW PAYMENT ROUTE ---
+// Create a PaymentIntent with the order amount and currency
+app.post('/api/create-payment-intent', isAuthenticated, async (req, res) => {
+  const { tipAmount } = req.body;
+
+  // Calculate total: Base Fee ($1.50) + Tip
+  // Stripe expects amounts in CENTS (e.g. $1.50 = 150)
+  const baseFee = 150; 
+  const tipInCents = Math.round((parseFloat(tipAmount) || 0) * 100);
+  const totalAmount = baseFee + tipInCents;
+
+  try {
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: totalAmount,
+      currency: 'usd',
+      // Optional: Verify automatic payment methods
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      metadata: {
+        userId: req.user.id,
+        userEmail: req.user.email
+      }
+    });
+
+    res.send({
+      clientSecret: paymentIntent.client_secret,
+    });
+  } catch (err) {
+    console.error('Stripe error:', err);
+    res.status(500).send({ error: err.message });
   }
 });
 

@@ -1,9 +1,15 @@
 // client/src/NewOrder.js
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom'; 
-import Header from './Header'; // <-- THIS IS THE FIX
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import Header from './Header';
 import Select from 'react-select';
-import './NewOrder.css'; 
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+import CheckoutForm from './CheckoutForm'; // Ensure you created this file as per previous instructions
+import './NewOrder.css';
+
+// Initialize Stripe outside of the component to avoid recreating the object on every render
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
 function NewOrder() {
   const [orderNumber, setOrderNumber] = useState('');
@@ -14,25 +20,25 @@ function NewOrder() {
   const [campusBuildingText, setCampusBuildingText] = useState('');
   const [campusRoomText, setCampusRoomText] = useState('');
   const [tip, setTip] = useState('');
+  
   const [buildingOptions, setBuildingOptions] = useState([]);
   const [hallOptions, setHallOptions] = useState([]);
   const [residentialOptionsCache, setResidentialOptionsCache] = useState([]);
   const [upperclassOptionsCache, setUpperclassOptionsCache] = useState([]);
+  
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false); 
-  const [availableDriverCount, setAvailableDriverCount] = useState(0); 
-  const navigate = useNavigate();
-  const location = useLocation(); 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availableDriverCount, setAvailableDriverCount] = useState(0);
+  
+  // --- Payment State ---
+  const [clientSecret, setClientSecret] = useState("");
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  const locationOptions = [
-    { value: 'residential', label: 'Residential College' },
-    { value: 'upperclassmen', label: 'Upperclassmen' },
-    { value: 'campus', label: 'Campus Building' }
-  ];
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const backUrl = location.state?.from || '/student-dashboard';
-
   const receiptEmail = 'UniEats.OrderReceipts@gmail.com';
   const princetonUrl = 'https://princeton.buy-ondemand.com/';
   const [copiedEmail, setCopiedEmail] = useState(false);
@@ -49,20 +55,17 @@ function NewOrder() {
   };
 
   useEffect(() => {
-    // 1. First, check if the app is "online" and fetch profile/buildings when available
     fetch('/api/app-status')
       .then(res => res.json())
       .then(data => {
         setAvailableDriverCount(data.availableDriverCount);
         if (data.availableDriverCount > 0) {
-          // If online, fetch profile and both building lists so switching types is instant
           return Promise.all([
             fetch('/profile'),
             fetch('/api/buildings?type=' + encodeURIComponent('Residential College')),
             fetch('/api/buildings?type=' + encodeURIComponent('Upperclassmen Hall'))
           ]);
         }
-        // If offline, stop here
         return Promise.reject('offline');
       })
       .then(([profileRes, buildingsRes, upperRes]) => {
@@ -72,31 +75,26 @@ function NewOrder() {
         return Promise.all([profileRes.json(), buildingsRes.json(), upperRes.json()]);
       })
       .then(([user, residentialNames, upperNames]) => {
-        // We are online and all data is fetched
         const resOptions = residentialNames.map(name => ({ label: name, value: name }));
         const upOptions = upperNames.map(name => ({ label: name, value: name }));
         setResidentialOptionsCache(resOptions);
         setUpperclassOptionsCache(upOptions);
-        // Default building options to residential list
         setBuildingOptions(resOptions);
       })
       .catch(err => {
         if (err === 'offline') {
           console.log('App is offline. No drivers available.');
         } else if (err.message && err.message.includes('authenticated')) {
-          navigate('/'); // Redirect home if not logged in
+          navigate('/'); 
         } else {
           console.error('Error fetching order page data:', err);
         }
       })
       .finally(() => setIsLoading(false));
-
   }, [navigate]);
 
-  // When the selected location type changes (residential vs upperclassmen), reload options
   useEffect(() => {
-    if (!locationType || locationType === 'campus') return; // campus uses free-text
-    // If we already prefetched the list, use it
+    if (!locationType || locationType === 'campus') return;
     if (locationType === 'residential' && residentialOptionsCache.length > 0) {
       setBuildingOptions(residentialOptionsCache);
       return;
@@ -120,9 +118,8 @@ function NewOrder() {
       .catch(err => {
         console.error('Error fetching buildings by type:', err);
       });
-  }, [locationType]);
+  }, [locationType, residentialOptionsCache, upperclassOptionsCache]);
 
-  // When a building is selected and the type is residential, fetch halls for that location
   useEffect(() => {
     if (!building || locationType !== 'residential') {
       setHallOptions([]);
@@ -144,24 +141,26 @@ function NewOrder() {
     fetchHalls();
   }, [building, locationType]);
 
-  const handleSubmit = (e) => {
+  // --- NEW: Validate form and Initialize Stripe Payment Intent ---
+  const handleInitiatePayment = (e) => {
     e.preventDefault();
-    if (isSubmitting) return; 
+    if (isSubmitting) return;
+    
+    setStatusMessage('Initializing payment...');
     setIsSubmitting(true);
-    setStatusMessage('Placing your order...');
+
+    // 1. Client-side Validation
     if (!locationType) {
       setStatusMessage('Please select a delivery location type.');
       setIsSubmitting(false);
       return;
     }
-    // Basic client-side validation for delivery address
     if (locationType !== 'campus') {
       if (!building) {
         setStatusMessage('Please select your residential college/building.');
         setIsSubmitting(false);
         return;
       }
-      // residenceHall is required only for residential (not upperclassmen)
       if (locationType === 'residential' && !residenceHall) {
         setStatusMessage('Please enter your hall/section.');
         setIsSubmitting(false);
@@ -185,12 +184,42 @@ function NewOrder() {
       }
     }
 
+    // 2. Create Payment Intent on Backend
+    fetch("/api/create-payment-intent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tipAmount: tip }),
+    })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      setClientSecret(data.clientSecret);
+      setShowPaymentModal(true);
+      setIsSubmitting(false);
+      setStatusMessage(''); // Clear init message
+    })
+    .catch((err) => {
+      console.error("Error init payment:", err);
+      setStatusMessage(`Payment Initialization Failed: ${err.message}`);
+      setIsSubmitting(false);
+    });
+  };
+
+  // --- NEW: Called by CheckoutForm after Stripe confirms success ---
+  const handlePaymentSuccess = (paymentId) => {
+    setShowPaymentModal(false);
+    setStatusMessage('Payment successful! Saving order...');
+    setIsSubmitting(true);
+
     const orderData = {
       princeton_order_number: orderNumber,
       location_type: locationType,
       delivery_building: locationType === 'residential' ? building : campusBuildingText,
       delivery_room: locationType === 'residential' ? room : campusRoomText,
-      tip_amount: Number(tip) || 0
+      tip_amount: Number(tip) || 0,
+      stripe_payment_id: paymentId // Optional: store payment ref
     };
 
     fetch('/api/orders', {
@@ -200,9 +229,8 @@ function NewOrder() {
     })
     .then(res => {
       if (!res.ok) {
-        // Handle 503 Service Unavailable (e.g., all drivers just went offline)
         if (res.status === 503) {
-          throw new Error('No drivers are available. Please try again later.');
+           throw new Error('No drivers are available. Please try again later.');
         }
         return res.json().then(err => { throw new Error(err.error || 'Server error') });
       }
@@ -217,20 +245,18 @@ function NewOrder() {
     })
     .catch(err => {
       console.error('Error placing order:', err);
-      setStatusMessage(`Error: ${err.message}.`);
+      setStatusMessage(`Error: ${err.message}. Please contact support if you were charged.`);
       setIsSubmitting(false);
-      // Re-check driver status if the order failed
+      // Refresh driver status just in case
       fetch('/api/app-status').then(res=>res.json()).then(data => setAvailableDriverCount(data.availableDriverCount));
     });
   };
-
 
   if (isLoading) {
     return (
       <div className="page-container order-form-page">
         <Header />
-        <main className="page-main">Loading...
-        </main>
+        <main className="page-main">Loading...</main>
       </div>
     );
   }
@@ -269,7 +295,7 @@ function NewOrder() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="new-order-form">
+            <form onSubmit={handleInitiatePayment} className="new-order-form">
               
               <section className="order-section">
                 <h2>1. Order Details</h2>
@@ -290,27 +316,24 @@ function NewOrder() {
                 <h2>2. Delivery Address</h2>
                 <div className="form-group">
                   <label htmlFor="locationType">Location Type</label>
-                    {/* Use react-select so the control matches the Residential College control and is not typable */}
-                    {(() => {
-                      const locOptions = [
-                        { value: 'residential', label: 'Residential College' },
-                        { value: 'upperclassmen', label: 'Upperclassmen' },
-                        { value: 'campus', label: 'Campus Building' }
-                      ];
-                      const selected = locOptions.find(o => o.value === locationType) || null;
-                      return (
-                        <Select
-                          id="locationType"
-                          classNamePrefix="react-select"
-                          options={locOptions}
-                          value={selected}
-                          onChange={(opt) => setLocationType(opt ? opt.value : '')}
-                          placeholder="-- Select location type --"
-                          isClearable={false}
-                          isSearchable={false}
-                        />
-                      );
-                    })()}
+                  <Select
+                    id="locationType"
+                    classNamePrefix="react-select"
+                    options={[
+                      { value: 'residential', label: 'Residential College' },
+                      { value: 'upperclassmen', label: 'Upperclassmen' },
+                      { value: 'campus', label: 'Campus Building' }
+                    ]}
+                    value={[
+                      { value: 'residential', label: 'Residential College' },
+                      { value: 'upperclassmen', label: 'Upperclassmen' },
+                      { value: 'campus', label: 'Campus Building' }
+                    ].find(o => o.value === locationType) || null}
+                    onChange={(opt) => setLocationType(opt ? opt.value : '')}
+                    placeholder="-- Select location type --"
+                    isClearable={false}
+                    isSearchable={false}
+                  />
                 </div>
 
                 {locationType ? (
@@ -330,7 +353,6 @@ function NewOrder() {
                         isSearchable={false}
                       />
                     </div>
-                    {/* Only show Hall / Section for residential (not upperclassmen) */}
                     {locationType === 'residential' && (
                       <div className="form-group">
                         <label htmlFor="residenceHall">Hall / Section</label>
@@ -418,7 +440,7 @@ function NewOrder() {
                 </div>
                 <div className="form-actions">
                   <button type="submit" className="save-button" disabled={isSubmitting}>
-                    {isSubmitting ? 'Placing Order...' : 'Place Delivery Order'}
+                    {isSubmitting ? 'Loading...' : 'Proceed to Payment'}
                   </button>
                   {statusMessage && <span className="status-message">{statusMessage}</span>}
                 </div>
@@ -431,6 +453,40 @@ function NewOrder() {
             <h2>Ordering is Currently Offline</h2>
             <p>We're sorry, but there are no drivers available at the moment.</p>
             <p>Please check back again soon!</p>
+          </div>
+        )}
+
+        {/* --- STRIPE MODAL OVERLAY --- */}
+        {showPaymentModal && clientSecret && (
+          <div className="modal-overlay" style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              position: 'fixed', 
+              top: 0, left: 0, right: 0, bottom: 0, 
+              background: 'rgba(0,0,0,0.5)', 
+              zIndex: 1000 
+          }}>
+            <div className="modal-content" style={{ 
+                background: '#fff', 
+                padding: '20px', 
+                borderRadius: '8px', 
+                width: '90%', 
+                maxWidth: '500px',
+                maxHeight: '90vh',
+                overflowY: 'auto'
+            }}>
+              <Elements options={{ clientSecret, appearance: { theme: 'stripe' } }} stripe={stripePromise}>
+                <CheckoutForm 
+                  onPaymentSuccess={handlePaymentSuccess} 
+                  onCancel={() => {
+                    setShowPaymentModal(false);
+                    setIsSubmitting(false);
+                    setStatusMessage('');
+                  }} 
+                />
+              </Elements>
+            </div>
           </div>
         )}
       </main>
