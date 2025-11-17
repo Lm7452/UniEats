@@ -150,6 +150,11 @@ function NewOrder() {
     setIsSubmitting(true);
 
     // 1. Client-side Validation
+    if (!orderNumber) {
+      setStatusMessage('Please paste your Princeton order number from the confirmation email.');
+      setIsSubmitting(false);
+      return;
+    }
     if (!locationType) {
       setStatusMessage('Please select a delivery location type.');
       setIsSubmitting(false);
@@ -216,8 +221,11 @@ function NewOrder() {
     const orderData = {
       princeton_order_number: orderNumber,
       location_type: locationType,
-      delivery_building: locationType === 'residential' ? building : campusBuildingText,
-      delivery_room: locationType === 'residential' ? room : campusRoomText,
+      // For both 'residential' and 'upperclassmen' use the selected `building` value.
+      delivery_building: locationType !== 'campus' ? building : campusBuildingText,
+      delivery_room: locationType !== 'campus' ? room : campusRoomText,
+      // include residence_hall when applicable (optional for server) for better record-keeping
+      residence_hall: locationType === 'residential' ? residenceHall : undefined,
       tip_amount: Number(tip) || 0,
       stripe_payment_id: paymentId // Optional: store payment ref
     };
