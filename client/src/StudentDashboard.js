@@ -5,6 +5,7 @@ import Header from './Header';
 import './Dashboard.css'; // Still used for section/button styles
 import { formatStatus, statusClass } from './utils/statusUtils';
 import { formatPhoneForDisplay, formatPhoneForTel } from './utils/phoneUtils';
+import socket, { register } from './utils/socket';
 
 function StudentDashboard() {
   const [recentOrders, setRecentOrders] = useState([]); 
@@ -25,6 +26,7 @@ function StudentDashboard() {
   // phone formatting helpers are imported from utils/phoneUtils
 
   useEffect(() => {
+    // Fetch order history and also register socket for real-time updates
     fetch('/api/orders/my-history')
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch order history');
@@ -53,10 +55,42 @@ function StudentDashboard() {
           active = recentlyDelivered || null;
         }
         setActiveOrder(active || null);
+        // register socket after we have orders (and then fetch profile to get user id)
+        fetch('/profile').then(r => r.ok ? r.json() : null).then(user => {
+          if (user) register({ userId: user.id, role: user.role });
+        }).catch(e => console.warn('Failed to register socket for student', e));
       })
       .catch(error => console.error("Error fetching dashboard data:", error))
       .finally(() => setIsLoading(false));
   }, []); 
+
+  // Subscribe to socket updates for this student's orders
+  useEffect(() => {
+    const onOrderUpdated = (order) => {
+      // Update the recent orders list
+      setRecentOrders(prev => {
+        const exists = prev.find(p => p.id === order.id);
+        if (exists) {
+          return prev.map(p => p.id === order.id ? order : p);
+        }
+        return [order, ...prev].slice(0,3);
+      });
+      // If active order is the same, update it; otherwise, set as active when status is not delivered/cancelled
+      setActiveOrder(prev => {
+        if (!prev) {
+          if (order.status !== 'delivered' && order.status !== 'cancelled') return order;
+          return prev;
+        }
+        if (prev.id === order.id) return order;
+        return prev;
+      });
+    };
+
+    socket.on('order_updated', onOrderUpdated);
+    return () => {
+      socket.off('order_updated', onOrderUpdated);
+    };
+  }, []);
 
   const renderStatus = (status) => {
     const cls = statusClass(status);

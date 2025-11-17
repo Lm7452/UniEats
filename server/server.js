@@ -9,12 +9,48 @@ const OIDCStrategy = require('passport-azure-ad').OIDCStrategy;
 const path = require('path');
 const db = require('./db'); 
 const Stripe = require('stripe'); // <--- IMPORT STRIPE
+const http = require('http');
+const { Server: IOServer } = require('socket.io');
 
 // --- 1. INITIAL SETUP ---
 dotenv.config();
 const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const PORT = process.env.PORT || 5000;
+
+// Create HTTP server and attach Socket.IO
+const httpServer = http.createServer(app);
+const io = new IOServer(httpServer, {
+  cors: {
+    origin: true,
+    credentials: true
+  }
+});
+
+// Simple socket room registration: clients should emit a `register` event with { userId, role }
+io.on('connection', (socket) => {
+  console.log('Socket connected:', socket.id);
+  socket.on('register', (payload) => {
+    try {
+      const { userId, role } = payload || {};
+      if (userId) {
+        socket.join(`user:${userId}`);
+      }
+      if (role === 'driver') {
+        socket.join('role:driver');
+      }
+      if (role === 'admin') {
+        socket.join('role:admin');
+      }
+      console.log(`Socket ${socket.id} registered user:${userId} role:${role}`);
+    } catch (err) {
+      console.error('Error in socket register handler', err);
+    }
+  });
+  socket.on('disconnect', () => {
+    console.log('Socket disconnected:', socket.id);
+  });
+});
 
 // --- 2. MIDDLEWARE SETUP ---
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -299,6 +335,12 @@ app.post('/api/orders', isAuthenticated, async (req, res) => {
     );
     const newOrder = result.rows[0];
     console.log(`New order created: ID ${newOrder.id} by user ${customer_id}`);
+    // Notify all drivers about the new available order
+    try {
+      io.to('role:driver').emit('order_created', newOrder);
+    } catch (err) {
+      console.error('Error emitting order_created socket event', err);
+    }
     res.status(201).json(newOrder); // 201 Created
   } catch (err) {
     console.error('Error creating new order:', err);
@@ -535,6 +577,13 @@ app.put('/api/driver/orders/:orderId/claim', isDriver, async (req, res) => {
     }
     const claimedOrder = result.rows[0];
     console.log(`Driver ${driverId} claimed order ${orderId}`);
+    // Notify the student whose order was claimed and all drivers to update available list
+    try {
+      io.to(`user:${claimedOrder.customer_id}`).emit('order_updated', claimedOrder);
+      io.to('role:driver').emit('order_claimed', { orderId: claimedOrder.id, claimedBy: driverId });
+    } catch (err) {
+      console.error('Error emitting socket events on claim', err);
+    }
     res.status(200).json(claimedOrder);
   } catch (err) {
     console.error('Driver error claiming order:', err);
@@ -561,6 +610,13 @@ app.put('/api/driver/orders/:orderId/complete', isDriver, async (req, res) => {
     }
     const completedOrder = result.rows[0];
     console.log(`Driver ${driverId} completed order ${orderId}`);
+    // Notify the customer that order was delivered and update drivers
+    try {
+      io.to(`user:${completedOrder.customer_id}`).emit('order_updated', completedOrder);
+      io.to('role:driver').emit('order_completed', { orderId: completedOrder.id });
+    } catch (err) {
+      console.error('Error emitting socket events on complete', err);
+    }
     res.status(200).json(completedOrder);
   } catch (err) {
     console.error('Driver error completing order:', err);
@@ -590,8 +646,16 @@ app.put('/api/driver/orders/:orderId/status', isDriver, async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Order not found or not assigned to you.' });
     }
+    const updated = result.rows[0];
     console.log(`Driver ${driverId} set order ${orderId} status to ${status}`);
-    res.status(200).json(result.rows[0]);
+    // Emit status update to the customer and drivers
+    try {
+      io.to(`user:${updated.customer_id}`).emit('order_updated', updated);
+      io.to('role:driver').emit('order_status_changed', { orderId: updated.id, status: updated.status });
+    } catch (err) {
+      console.error('Error emitting socket events on status update', err);
+    }
+    res.status(200).json(updated);
   } catch (err) {
     console.error('Driver error updating order status:', err);
     res.status(500).json({ error: 'Failed to update order status' });
@@ -660,6 +724,6 @@ app.get('*', (req, res) => {
 });
 
 // --- 8. SERVER START ---
-app.listen(PORT, () => {
-  console.log(`Server is listening on port ${PORT}`);
+httpServer.listen(PORT, () => {
+  console.log(`Server (with Socket.IO) is listening on port ${PORT}`);
 });

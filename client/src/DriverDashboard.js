@@ -5,6 +5,7 @@ import Header from './Header';
 import './DriverDashboard.css'; 
 import { formatStatus, statusClass } from './utils/statusUtils';
 import { formatPhoneForDisplay, formatPhoneForTel } from './utils/phoneUtils';
+import socket, { register } from './utils/socket';
 
 function DriverDashboard() {
   const [availableOrders, setAvailableOrders] = useState([]);
@@ -81,6 +82,51 @@ function DriverDashboard() {
     const intervalId = setInterval(() => fetchData(false), 30000); 
     return () => clearInterval(intervalId);
   }, [fetchData]); 
+
+  // Register socket and listen for real-time events
+  useEffect(() => {
+    if (!user) return;
+    try {
+      register({ userId: user.id, role: user.role });
+    } catch (err) {
+      console.error('Socket register failed', err);
+    }
+
+    const onOrderCreated = (order) => {
+      // Only show new available orders when driver is online
+      setAvailableOrders(prev => {
+        if (prev.some(o => o.id === order.id)) return prev;
+        return [...prev, order];
+      });
+    };
+
+    const onOrderClaimed = ({ orderId }) => {
+      setAvailableOrders(prev => prev.filter(o => o.id !== orderId));
+      // If the claimed order is one of our claimed orders (race conditions), remove it
+      setMyOrders(prev => prev.filter(o => o.id !== orderId));
+    };
+
+    const onOrderStatusChanged = ({ orderId, status }) => {
+      setMyOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
+      if (status === 'delivered') {
+        setMyOrders(prev => prev.filter(o => o.id !== orderId));
+      }
+    };
+
+    socket.on('order_created', onOrderCreated);
+    socket.on('order_claimed', onOrderClaimed);
+    socket.on('order_status_changed', onOrderStatusChanged);
+    socket.on('order_completed', ({ orderId }) => {
+      setMyOrders(prev => prev.filter(o => o.id !== orderId));
+    });
+
+    return () => {
+      socket.off('order_created', onOrderCreated);
+      socket.off('order_claimed', onOrderClaimed);
+      socket.off('order_status_changed', onOrderStatusChanged);
+      socket.off('order_completed');
+    };
+  }, [user, setAvailableOrders, setMyOrders]);
 
   const handleClaimOrder = (orderId) => {
     const orderToClaim = availableOrders.find(o => o.id === orderId);
