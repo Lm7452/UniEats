@@ -151,7 +151,7 @@ function NewOrder() {
 
     // 1. Client-side Validation
     if (!orderNumber) {
-      setStatusMessage('Please paste your Princeton order number from the confirmation email.');
+      setStatusMessage('Please enter your Princeton order number.');
       setIsSubmitting(false);
       return;
     }
@@ -282,6 +282,22 @@ function NewOrder() {
           <>
             <div className="instruction-box">
               <h3>How to Order:</h3>
+              <div
+                role="alert"
+                aria-live="polite"
+                className="delivery-warning"
+                style={{
+                  color: '#a94442',
+                  background: '#f2dede',
+                  border: '1px solid #ebccd1',
+                  padding: '8px 12px',
+                  borderRadius: '4px',
+                  marginBottom: '12px',
+                  fontWeight: 600
+                }}
+              >
+                Notice: We are currently not offering delivery to E-Quad, Eating Clubs, or Forbes.
+              </div>
               <p>
                 <strong>Step 1:</strong> Go to the official Frist Grill Ordering Form:{' '}
                 <span className="form-link-inline"> 
@@ -313,8 +329,10 @@ function NewOrder() {
                     type="text"
                     id="orderNumber"
                     value={orderNumber}
-                    onChange={(e) => setOrderNumber(e.target.value)}
-                    placeholder="e.g., #12345 or 98765"
+                    inputMode="numeric"
+                    pattern="\d*"
+                    onChange={(e) => setOrderNumber(e.target.value.replace(/\D/g, ''))}
+                    placeholder="e.g., 12345"
                     required
                   />
                 </div>
