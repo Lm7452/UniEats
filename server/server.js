@@ -246,7 +246,7 @@ app.put('/profile', isAuthenticated, async (req, res) => {
 
 // POST a new order
 app.post('/api/orders', isAuthenticated, async (req, res) => {
-  const { princeton_order_number, delivery_building, delivery_room, tip_amount, customer_phone, customer_email } = req.body;
+  const { princeton_order_number, delivery_building, delivery_room, tip_amount, customer_phone, customer_email, promoCode, stripe_payment_id } = req.body;
   const customer_id = req.user.id;
   
   // --- CHECK IF DRIVERS ARE AVAILABLE BEFORE CREATING ORDER ---
@@ -277,13 +277,25 @@ app.post('/api/orders', isAuthenticated, async (req, res) => {
     }
   }
   try {
+    // Determine whether promo should be marked as applied on this order.
+    let promoApplied = false;
+    let storedPromoCode = null;
+    if (promoCode && typeof promoCode === 'string' && promoCode.trim().toLowerCase() === 'welcomebite') {
+      const priorOrders = await db.query('SELECT COUNT(*) FROM orders WHERE customer_id = $1', [customer_id]);
+      const orderCount = parseInt(priorOrders.rows[0].count, 10);
+      if (orderCount === 0) {
+        promoApplied = true;
+        storedPromoCode = promoCode.trim();
+      }
+    }
+
     const result = await db.query(
       `INSERT INTO orders 
-        (princeton_order_number, customer_id, delivery_building, delivery_room, tip_amount, status)
+        (princeton_order_number, customer_id, delivery_building, delivery_room, tip_amount, stripe_payment_id, status, promo_applied, promo_code)
        VALUES 
-        ($1, $2, $3, $4, $5, 'pending')
+        ($1, $2, $3, $4, $5, $6, 'pending', $7, $8)
        RETURNING *`,
-      [princeton_order_number, customer_id, delivery_building, delivery_room, tip_amount || 0]
+      [princeton_order_number, customer_id, delivery_building, delivery_room, tip_amount || 0, stripe_payment_id || null, promoApplied, storedPromoCode]
     );
     const newOrder = result.rows[0];
     console.log(`New order created: ID ${newOrder.id} by user ${customer_id}`);
@@ -589,30 +601,50 @@ app.put('/api/driver/orders/:orderId/status', isDriver, async (req, res) => {
 // --- NEW PAYMENT ROUTE ---
 // Create a PaymentIntent with the order amount and currency
 app.post('/api/create-payment-intent', isAuthenticated, async (req, res) => {
-  const { tipAmount } = req.body;
+  const { tipAmount, promoCode } = req.body;
 
-  // Calculate total: Base Fee ($1.50) + Tip
   // Stripe expects amounts in CENTS (e.g. $1.50 = 150)
-  const baseFee = 150; 
   const tipInCents = Math.round((parseFloat(tipAmount) || 0) * 100);
-  const totalAmount = baseFee + tipInCents;
+
+  // Determine if promo applies: case-insensitive match to 'WelcomeBite'
+  const suppliedCode = typeof promoCode === 'string' ? promoCode.trim() : '';
+  const promoMatches = suppliedCode && suppliedCode.toLowerCase() === 'welcomebite';
 
   try {
+    // If promo matches, only waive fee for FIRST order on the account
+    let waiveServiceFee = false;
+    if (promoMatches) {
+      const priorOrders = await db.query('SELECT COUNT(*) FROM orders WHERE customer_id = $1', [req.user.id]);
+      const orderCount = parseInt(priorOrders.rows[0].count, 10);
+      if (orderCount === 0) {
+        waiveServiceFee = true;
+      }
+    }
+
+    const baseFee = waiveServiceFee ? 0 : 150; // cents
+    const totalAmount = baseFee + tipInCents;
+
+    // If totalAmount is 0 or less, don't create a Stripe PaymentIntent (Stripe can block zero amount payments)
+    if (totalAmount <= 0) {
+      return res.json({ zeroAmount: true, message: 'No payment required for this order (service fee waived and no tip).' });
+    }
+
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmount,
       currency: 'usd',
-      // Optional: Verify automatic payment methods
-      automatic_payment_methods: {
-        enabled: true,
-      },
+      automatic_payment_methods: { enabled: true },
       metadata: {
         userId: req.user.id,
-        userEmail: req.user.email
+        userEmail: req.user.email,
+        promoCode: suppliedCode || '',
+        promoApplied: waiveServiceFee ? 'true' : 'false'
       }
     });
 
     res.send({
       clientSecret: paymentIntent.client_secret,
+      // Inform client whether promo/waive was applied server-side (helps UI clarity)
+      promoApplied: waiveServiceFee
     });
   } catch (err) {
     console.error('Stripe error:', err);

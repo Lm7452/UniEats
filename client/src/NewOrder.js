@@ -20,6 +20,7 @@ function NewOrder() {
   const [campusBuildingText, setCampusBuildingText] = useState('');
   const [campusRoomText, setCampusRoomText] = useState('');
   const [tip, setTip] = useState('');
+  const [promoCode, setPromoCode] = useState('');
   
   const [buildingOptions, setBuildingOptions] = useState([]);
   const [hallOptions, setHallOptions] = useState([]);
@@ -44,6 +45,10 @@ function NewOrder() {
   const princetonUrl = 'https://princeton.buy-ondemand.com/';
   const [copiedEmail, setCopiedEmail] = useState(false);
   const displayDomain = 'princeton.buy-ondemand.com';
+
+  // Local UX helper: detect promo code text (case-insensitive) so we can show tentative fee
+  const promoAppliedLocally = promoCode && promoCode.trim().toLowerCase() === 'welcomebite';
+  const displayedServiceFee = promoAppliedLocally ? 0.0 : 1.5;
 
   const copyEmail = async () => {
     try {
@@ -195,13 +200,24 @@ function NewOrder() {
     fetch("/api/create-payment-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tipAmount: tip }),
+      body: JSON.stringify({ tipAmount: tip, promoCode }),
     })
     .then((res) => res.json())
     .then((data) => {
       if (data.error) {
         throw new Error(data.error);
       }
+      // If server indicates total is zero (promo waived + no tip), create order directly
+      if (data.zeroAmount) {
+        setStatusMessage('No payment required — placing your order...');
+        // Place order immediately without Stripe
+        placeOrder(null, {
+          phone: userProfile?.phone_number || null,
+          email: userProfile?.email || null
+        });
+        return;
+      }
+
       setClientSecret(data.clientSecret);
       setShowPaymentModal(true);
       setIsSubmitting(false);
@@ -219,18 +235,21 @@ function NewOrder() {
     setShowPaymentModal(false);
     setStatusMessage('Payment successful! Saving order...');
     setIsSubmitting(true);
+    placeOrder(paymentId, contactInfo);
+  };
 
+  // Helper to place the order on the backend (used for both paid and zero-amount flows)
+  const placeOrder = (stripePaymentId = null, contactInfo = {}) => {
     const orderData = {
       princeton_order_number: orderNumber,
       location_type: locationType,
-      // For both 'residential' and 'upperclassmen' use the selected `building` value.
       delivery_building: locationType !== 'campus' ? building : campusBuildingText,
       delivery_room: locationType !== 'campus' ? room : campusRoomText,
-      // include residence_hall when applicable (optional for server) for better record-keeping
       residence_hall: locationType === 'residential' ? residenceHall : undefined,
       tip_amount: Number(tip) || 0,
-      stripe_payment_id: paymentId, // Optional: store payment ref
-      // Pass contact info to server so it can be saved with the order or associated with the user
+      // Optionally include stripe reference if present
+      stripe_payment_id: stripePaymentId || undefined,
+      promoCode: promoCode || undefined,
       customer_phone: contactInfo.phone || userProfile?.phone_number || null,
       customer_email: contactInfo.email || userProfile?.email || null
     };
@@ -252,15 +271,15 @@ function NewOrder() {
     .then(newOrder => {
       console.log('Order created:', newOrder);
       setStatusMessage('Order placed successfully!');
+      setIsSubmitting(false);
       setTimeout(() => {
-        navigate(backUrl); 
+        navigate(backUrl);
       }, 1500);
     })
     .catch(err => {
       console.error('Error placing order:', err);
       setStatusMessage(`Error: ${err.message}. Please contact support if you were charged.`);
       setIsSubmitting(false);
-      // Refresh driver status just in case
       fetch('/api/app-status').then(res=>res.json()).then(data => setAvailableDriverCount(data.availableDriverCount));
     });
   };
@@ -460,13 +479,26 @@ function NewOrder() {
               
               <section className="order-section">
                 <h2>4. Payment</h2>
+                <div className="form-group">
+                  <label htmlFor="promoCode">Promo Code (optional)</label>
+                  <input
+                    id="promoCode"
+                    type="text"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value)}
+                    placeholder="Enter promo code (if any)"
+                  />
+                  {promoCode && promoAppliedLocally && (
+                    <small className="help-text">Promo looks like 'WelcomeBite' (applies only to first order).</small>
+                  )}
+                </div>
                 <div className="payment-summary">
-                  <p>Service Fee: <span>$1.50</span></p>
+                  <p>Service Fee: <span>${displayedServiceFee.toFixed(2)}</span></p>
                   <p>Tip: <span>${(Number(tip) || 0).toFixed(2)}</span></p>
                   <hr/>
                   <p className="total">
                     <strong>Total:</strong>
-                    <span>${(1.5 + (Number(tip) || 0)).toFixed(2)}</span>
+                    <span>${(displayedServiceFee + (Number(tip) || 0)).toFixed(2)}</span>
                   </p>
                 </div>
                 <div className="form-actions">
