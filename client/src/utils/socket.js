@@ -4,12 +4,26 @@ import { io } from 'socket.io-client';
 const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || '';
 
 // Create a single shared socket instance
-const socket = io(SOCKET_URL, { withCredentials: true });
+const socket = io(SOCKET_URL, { withCredentials: true, autoConnect: true });
 
 // Helper to register a user/role with the server (joins rooms)
+// Waits for socket connection if necessary so the register event is not lost.
 function register({ userId, role }) {
   if (!userId && !role) return;
-  socket.emit('register', { userId, role });
+  const payload = { userId, role };
+  if (socket.connected) {
+    socket.emit('register', payload);
+    return;
+  }
+  const onConnect = () => {
+    try {
+      socket.emit('register', payload);
+    } catch (err) {
+      console.error('Error emitting register after connect', err);
+    }
+    socket.off('connect', onConnect);
+  };
+  socket.on('connect', onConnect);
 }
 
 export default socket;
