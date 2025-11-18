@@ -351,6 +351,9 @@ function NewOrder() {
                 {' '}This redirects the confirmation to our system.
               </p>
               <p>
+                <strong>Also:</strong> In the Frist Grill order form's <em>Name</em> field, please enter <strong>UniEats</strong>.
+              </p>
+              <p>
                 <strong>Step 3:</strong> After paying, copy your Order Number (e.g., #12345) and paste it below.
               </p>
             </div>
