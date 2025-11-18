@@ -24,11 +24,6 @@
   display: flex;
   align-items: center;
 }
-
-.logo-container {
-  /* No flex property needed */
-}
-
 .logo-link {
   font-size: 1.6em;
   font-weight: bold;

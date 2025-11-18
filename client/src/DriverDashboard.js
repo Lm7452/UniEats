@@ -1,4 +1,7 @@
 // client/src/DriverDashboard.js
+// Driver dashboard component for managing and viewing delivery orders
+// Includes real-time updates via WebSocket and driver availability status
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from './Header'; 
@@ -8,14 +11,16 @@ import { formatPhoneForDisplay, formatPhoneForTel } from './utils/phoneUtils';
 import socket, { register } from './utils/socket';
 
 function DriverDashboard() {
+  // State variables
   const [availableOrders, setAvailableOrders] = useState([]);
   const [myOrders, setMyOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isAvailable, setIsAvailable] = useState(false); // <-- NEW STATE
+  const [isAvailable, setIsAvailable] = useState(false);
   const [user, setUser] = useState(null); 
   const navigate = useNavigate();
 
+  // Format ISO date string to readable format
   const formatTime = (isoString) => {
     return new Date(isoString).toLocaleString('en-US', {
       month: 'short',
@@ -25,6 +30,7 @@ function DriverDashboard() {
     });
   };
 
+  // Render delivery address based on location type
   const renderDeliveryAddress = (order) => {
     const lt = (order.location_type || '').toLowerCase();
     const building = order.delivery_building || '';
@@ -32,7 +38,7 @@ function DriverDashboard() {
     const room = order.delivery_room || '';
 
     if (lt === 'residential' || lt === 'residential college') {
-      // Residential College: show building, hall (if any), and room
+      // Residential College: show building, hall, and room
       const parts = [];
       if (building) parts.push(building);
       if (hall) parts.push(`Hall: ${hall}`);
@@ -40,20 +46,22 @@ function DriverDashboard() {
       return parts.length > 0 ? parts.join(' — ') : 'N/A';
     }
 
+    // Upperclassmen Hall: show building and room
     if (lt === 'upperclassmen' || lt === 'upperclassmen hall') {
       return building ? `${building}${room ? ' — Room ' + room : ''}` : 'N/A';
     }
 
+    // Campus Building or Free-text Location
     if (lt === 'campus' || lt === 'campus building') {
-      // For campus, delivery_building holds the building name and delivery_room holds the free-text location
       return building ? `${building}${room ? ' — ' + room : ''}` : (room || 'N/A');
     }
 
-    // Fallback to the historical format
+    // Fallback: show building and room if available
     if (building || room) return `${building}${room ? ' - Room ' + room : ''}`;
     return 'N/A';
   };
 
+  // Fetch driver profile and orders
   const fetchData = useCallback((isInitialLoad = false) => {
     if(isInitialLoad) setIsLoading(true);
     setError('');
@@ -64,7 +72,6 @@ function DriverDashboard() {
       fetch('/api/driver/orders/mine')
     ])
     .then(async ([profileRes, availableRes, mineRes]) => {
-      // Prefer showing server-provided error messages when available
       if (!profileRes.ok) {
         const errBody = await safeParseJson(profileRes);
         throw new Error(errBody?.error || `Profile fetch failed (${profileRes.status})`);
@@ -78,18 +85,18 @@ function DriverDashboard() {
         throw new Error(errBody?.error || `My orders fetch failed (${mineRes.status})`);
       }
 
+      // Parse JSON responses
       const userData = await profileRes.json();
       const available = await availableRes.json();
       const mine = await mineRes.json();
       
       setUser(userData);
-      setIsAvailable(userData.is_available); // <-- SET AVAILABILITY
+      setIsAvailable(userData.is_available);
       setAvailableOrders(available);
       setMyOrders(mine);
     })
     .catch(err => {
       console.error("Error fetching driver data:", err);
-      // Show the error to the driver and don't forcibly redirect; let them see why access failed.
       setError(err.message || 'Failed to fetch driver data');
     })
     .finally(() => {
@@ -106,13 +113,14 @@ function DriverDashboard() {
     }
   };
 
+  // Initial data fetch and setup periodic refresh
   useEffect(() => {
     fetchData(true); 
     const intervalId = setInterval(() => fetchData(false), 30000); 
     return () => clearInterval(intervalId);
   }, [fetchData]); 
 
-  // Register socket and listen for real-time events
+  // Setup WebSocket event listeners
   useEffect(() => {
     if (!user) return;
     try {
@@ -129,12 +137,14 @@ function DriverDashboard() {
       });
     };
 
+    // Remove claimed order from available and add to my orders
     const onOrderClaimed = ({ orderId }) => {
       setAvailableOrders(prev => prev.filter(o => o.id !== orderId));
-      // If the claimed order is one of our claimed orders (race conditions), remove it
+      // If the claimed order is one of our claimed orders, remove it
       setMyOrders(prev => prev.filter(o => o.id !== orderId));
     };
 
+    // Update order status in my orders
     const onOrderStatusChanged = ({ orderId, status }) => {
       setMyOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
       if (status === 'delivered') {
@@ -142,6 +152,7 @@ function DriverDashboard() {
       }
     };
 
+    // Register event listeners
     socket.on('order_created', onOrderCreated);
     socket.on('order_claimed', onOrderClaimed);
     socket.on('order_status_changed', onOrderStatusChanged);
@@ -149,6 +160,7 @@ function DriverDashboard() {
       setMyOrders(prev => prev.filter(o => o.id !== orderId));
     });
 
+    // Cleanup on unmount
     return () => {
       socket.off('order_created', onOrderCreated);
       socket.off('order_claimed', onOrderClaimed);
@@ -157,6 +169,7 @@ function DriverDashboard() {
     };
   }, [user, setAvailableOrders, setMyOrders]);
 
+  // Handle claiming an available order
   const handleClaimOrder = (orderId) => {
     const orderToClaim = availableOrders.find(o => o.id === orderId);
     if (!orderToClaim) return;
@@ -179,6 +192,7 @@ function DriverDashboard() {
     });
   };
   
+  // Handle completing an order
   const handleCompleteOrder = (orderId) => {
     setMyOrders(prev => prev.filter(o => o.id !== orderId));
     fetch(`/api/driver/orders/${orderId}/complete`, { method: 'PUT' })
@@ -197,9 +211,8 @@ function DriverDashboard() {
     });
   };
 
-  // Generic status updater for driver's orders (picked_up -> en_route -> delivered)
+  // Update order status
   const updateOrderStatus = (orderId, newStatus) => {
-    // optimistic UI: update local copy
     setMyOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
     fetch(`/api/driver/orders/${orderId}/status`, {
       method: 'PUT',
@@ -225,7 +238,7 @@ function DriverDashboard() {
     });
   };
 
-  // --- NEW HANDLER FOR DRIVER'S OWN AVAILABILITY ---
+  // Handle driver availability toggle
   const handleAvailabilityToggle = () => {
     const newStatus = !isAvailable;
     setError('');
@@ -248,6 +261,7 @@ function DriverDashboard() {
     });
   };
 
+  // Render loading state
   if (isLoading) {
     return (
       <div className="page-container">
@@ -257,13 +271,15 @@ function DriverDashboard() {
     );
   }
 
+  // Outline of the following frontend components generated by AI:
+  // Render driver dashboard
   return (
     <div className="page-container">
       <Header />
       <main className="page-main">
         {error && <div className="driver-error-message">{error}</div>}
 
-        {/* --- NEW DRIVER STATUS SECTION --- */}
+        {/* --- DRIVER STATUS SECTION --- */}
         <section className={`driver-section driver-status-section ${isAvailable ? 'status-online' : 'status-offline'}`}>
           <div className="status-text">
             <h2>You are currently {isAvailable ? 'Online' : 'Offline'}</h2>
@@ -283,6 +299,7 @@ function DriverDashboard() {
         </section>
         {/* --- END OF NEW SECTION --- */}
 
+        {/* --- ORDERS SECTIONS --- */}
         <section className="driver-section">
           <h2>My Claimed Orders ({myOrders.length})</h2>
           <div className="order-list">
@@ -314,7 +331,6 @@ function DriverDashboard() {
                   <p className="order-tip">Tip: ${parseFloat(order.tip_amount).toFixed(2)}</p>
                   <p className="order-time">Placed at: {formatTime(order.created_at)}</p>
                   <div className="order-actions">
-                        {/* Status flow: Claimed -> Picked Up -> En Route -> Delivered */}
                         {order.status === 'claimed' && (
                           <button className="action-button" onClick={() => updateOrderStatus(order.id, 'picked_up')}>Mark as Picked Up</button>
                         )}
@@ -334,6 +350,7 @@ function DriverDashboard() {
           </div>
         </section>
 
+        {/* --- AVAILABLE ORDERS SECTION --- */}
         <section className="driver-section">
           <h2>Available Orders ({availableOrders.length})</h2>
           <div className="order-list">

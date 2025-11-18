@@ -1,4 +1,6 @@
-// frontend/src/App.js
+// client/src/App.js
+// Main application component defining routes for the UniEats app
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './Home';
@@ -8,7 +10,7 @@ import DriverDashboard from './DriverDashboard';
 import Settings from './Settings';
 import NewOrder from './NewOrder';
 import AdminCenter from './AdminCenter';
-import OrderHistory from './OrderHistory'; // <-- 1. IMPORT NEW COMPONENT
+import OrderHistory from './OrderHistory'; 
 
 function App() {
   return (

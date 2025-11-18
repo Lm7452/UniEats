@@ -1,9 +1,11 @@
-import { io } from 'socket.io-client';
+// client/src/utils/socket.js
+// Socket.io client setup and utility functions for UniEats app
 
-// If you need to set an explicit URL for sockets in development, set REACT_APP_SOCKET_URL
+import { io } from 'socket.io-client';
+// Determine socket URL from environment or auto-detect
 const ENV_SOCKET = process.env.REACT_APP_SOCKET_URL || '';
 
-// Auto-detect common dev setup: when CRA runs on :3000 and backend on :5000
+// Auto-detect socket URL based on current location if not set in env
 let SOCKET_URL = ENV_SOCKET;
 if (!SOCKET_URL && typeof window !== 'undefined') {
   const proto = window.location.protocol;
@@ -16,9 +18,11 @@ if (!SOCKET_URL && typeof window !== 'undefined') {
   }
 }
 
+// Socket.io client options
 const opts = { withCredentials: true, autoConnect: true };
 const socket = io(SOCKET_URL, opts);
 
+// Socket event handlers
 socket.on('connect', () => {
   try {
     console.info('[socket] connected id=', socket.id, 'to', SOCKET_URL || window.location.origin);
@@ -35,8 +39,7 @@ socket.on('connect_error', (err) => {
   console.error('[socket] connect_error', err && err.message ? err.message : err);
 });
 
-// Helper to register a user/role with the server (joins rooms)
-// Waits for socket connection if necessary so the register event is not lost.
+// Register user with socket server
 function register({ userId, role }) {
   if (!userId && !role) return;
   const payload = { userId, role };

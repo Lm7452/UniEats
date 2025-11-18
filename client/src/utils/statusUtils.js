@@ -1,12 +1,15 @@
 // client/src/utils/statusUtils.js
+// Utility functions for normalizing and formatting order statuses
+
+// Normalize status to lowercase string
 export function normalizeStatus(status) {
   if (!status) return 'pending';
   return String(status).toLowerCase();
 }
 
+// Format status for display
 export function formatStatus(status) {
   const s = normalizeStatus(status);
-  // Map known tokens to nicer display text
   const map = {
     'pending': 'Pending',
     'claimed': 'Claimed',
@@ -18,7 +21,7 @@ export function formatStatus(status) {
   return map[s] || s.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
+// Get CSS class based on status
 export function statusClass(status) {
-  // classes in CSS use the raw token (e.g., 'picked_up', 'en_route')
   return normalizeStatus(status);
 }

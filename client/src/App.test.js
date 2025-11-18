@@ -1,15 +1,18 @@
+// client/src/App.test.js
+// Test file for the main App component
+
 import { render, screen } from '@testing-library/react';
 import App from './App';
-import { BrowserRouter } from 'react-router-dom'; // Import BrowserRouter
+import { BrowserRouter } from 'react-router-dom'; 
 
-// Wrap App in BrowserRouter for tests since it uses <Routes>
+// Helper function to render with router context
 const renderWithRouter = (ui, { route = '/' } = {}) => {
   window.history.pushState({}, 'Test page', route);
   return render(ui, { wrapper: BrowserRouter });
 };
 
+// Basic test to ensure the App component renders without crashing
 test('renders home page by default', () => {
   renderWithRouter(<App />);
-  // Check for text from your Home.js component
   expect(screen.getByText(/Your Campus. Your Cravings. Delivered./i)).toBeInTheDocument();
 });
