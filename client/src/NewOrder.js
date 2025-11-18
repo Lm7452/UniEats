@@ -1,46 +1,59 @@
 // client/src/NewOrder.js
+// Main component for placing a new order with Stripe payment integration
+// Includes form handling, validation, and dynamic back navigation
+// Also includes clipboard copy functionality for support contact info
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Header from './Header';
 import Select from 'react-select';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
-import CheckoutForm from './CheckoutForm'; // Ensure you created this file as per previous instructions
+import CheckoutForm from './CheckoutForm';
 import './NewOrder.css';
 
-// Initialize Stripe outside of the component to avoid recreating the object on every render
+// Initialize Stripe outside of component to avoid recreating
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
+// Main component for placing a new order
+// Includes form handling, validation, and payment integration with Stripe
 function NewOrder() {
+  // Form state variables
   const [orderNumber, setOrderNumber] = useState('');
   const [building, setBuilding] = useState('');
   const [room, setRoom] = useState('');
-  const [locationType, setLocationType] = useState(''); // '', 'residential', 'upperclassmen' or 'campus'
+  const [locationType, setLocationType] = useState('');
   const [residenceHall, setResidenceHall] = useState('');
   const [campusBuildingText, setCampusBuildingText] = useState('');
   const [campusRoomText, setCampusRoomText] = useState('');
   const [tip, setTip] = useState('');
   const [promoCode, setPromoCode] = useState('');
   
+  // Options for building and hall selects
   const [buildingOptions, setBuildingOptions] = useState([]);
   const [hallOptions, setHallOptions] = useState([]);
   const [residentialOptionsCache, setResidentialOptionsCache] = useState([]);
   const [upperclassOptionsCache, setUpperclassOptionsCache] = useState([]);
   
+  // Loading and status states
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availableDriverCount, setAvailableDriverCount] = useState(0);
   
-  // --- Payment State ---
+  // Payment state
   const [clientSecret, setClientSecret] = useState("");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
 
+  // Navigation and routing
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Determine back URL after order completion
   const backUrl = location.state?.from || '/student-dashboard';
+  
+  // Constants
   const receiptEmail = 'UniEats.OrderReceipts@gmail.com';
   const supportNumber = '4344093218';
   const princetonUrl = 'https://princeton.buy-ondemand.com/';
@@ -48,10 +61,11 @@ function NewOrder() {
   const [copiedNumber, setCopiedNumber] = useState(false);
   const displayDomain = 'princeton.buy-ondemand.com';
 
-  // Local UX helper: detect promo code text (case-insensitive) so we can show tentative fee
+  // Calculate service fee based on promo code
   const promoAppliedLocally = promoCode && promoCode.trim().toLowerCase() === 'welcomebite';
   const displayedServiceFee = promoAppliedLocally ? 0.0 : 1.5;
 
+  // Clipboard copy handlers
   const copyEmail = async () => {
     try {
       await navigator.clipboard.writeText(receiptEmail);
@@ -72,11 +86,14 @@ function NewOrder() {
     }
   };
 
+  // Initial data fetch on component mount
   useEffect(() => {
+    // Fetch app status and user profile
     fetch('/api/app-status')
       .then(res => res.json())
       .then(data => {
         setAvailableDriverCount(data.availableDriverCount);
+        // If drivers are available, fetch profile and building data
         if (data.availableDriverCount > 0) {
           return Promise.all([
             fetch('/profile'),
@@ -100,6 +117,7 @@ function NewOrder() {
         setUpperclassOptionsCache(upOptions);
         setBuildingOptions(resOptions);
       })
+      // Handle errors
       .catch(err => {
         if (err === 'offline') {
           console.log('App is offline. No drivers available.');
@@ -112,7 +130,9 @@ function NewOrder() {
       .finally(() => setIsLoading(false));
   }, [navigate]);
 
+  // Update building options when location type changes
   useEffect(() => {
+    // Reset building and hall selections
     if (!locationType || locationType === 'campus') return;
     if (locationType === 'residential' && residentialOptionsCache.length > 0) {
       setBuildingOptions(residentialOptionsCache);
@@ -122,6 +142,7 @@ function NewOrder() {
       setBuildingOptions(upperclassOptionsCache);
       return;
     }
+    // Fetch building names for selected type
     const typeName = locationType === 'residential' ? 'Residential College' : 'Upperclassmen Hall';
     fetch('/api/buildings?type=' + encodeURIComponent(typeName))
       .then(res => {
@@ -139,6 +160,7 @@ function NewOrder() {
       });
   }, [locationType, residentialOptionsCache, upperclassOptionsCache]);
 
+  // Update hall options when building changes (for residential colleges)
   useEffect(() => {
     if (!building || locationType !== 'residential') {
       setHallOptions([]);
@@ -160,7 +182,7 @@ function NewOrder() {
     fetchHalls();
   }, [building, locationType]);
 
-  // --- NEW: Validate form and Initialize Stripe Payment Intent ---
+  // Handle form submission to initiate payment
   const handleInitiatePayment = (e) => {
     e.preventDefault();
     if (isSubmitting) return;
@@ -168,7 +190,7 @@ function NewOrder() {
     setStatusMessage('Initializing payment...');
     setIsSubmitting(true);
 
-    // 1. Client-side Validation
+    // Validate form inputs
     if (!orderNumber) {
       setStatusMessage('Please enter your Princeton order number.');
       setIsSubmitting(false);
@@ -208,7 +230,7 @@ function NewOrder() {
       }
     }
 
-    // 2. Create Payment Intent on Backend
+    // Create Payment Intent on the server
     fetch("/api/create-payment-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -219,7 +241,7 @@ function NewOrder() {
       if (data.error) {
         throw new Error(data.error);
       }
-      // If server indicates total is zero (promo waived + no tip), create order directly
+      // Handle zero-amount orders
       if (data.zeroAmount) {
         setStatusMessage('No payment required — placing your order...');
         // Place order immediately without Stripe
@@ -230,10 +252,11 @@ function NewOrder() {
         return;
       }
 
+      // Proceed to Stripe payment flow
       setClientSecret(data.clientSecret);
       setShowPaymentModal(true);
       setIsSubmitting(false);
-      setStatusMessage(''); // Clear init message
+      setStatusMessage('');
     })
     .catch((err) => {
       console.error("Error init payment:", err);
@@ -242,7 +265,7 @@ function NewOrder() {
     });
   };
 
-  // --- NEW: Called by CheckoutForm after Stripe confirms success ---
+  // Handle successful payment from CheckoutForm
   const handlePaymentSuccess = (paymentId, contactInfo = {}) => {
     setShowPaymentModal(false);
     setStatusMessage('Payment successful! Saving order...');
@@ -250,7 +273,7 @@ function NewOrder() {
     placeOrder(paymentId, contactInfo);
   };
 
-  // Helper to place the order on the backend (used for both paid and zero-amount flows)
+  // Function to place order on the server
   const placeOrder = (stripePaymentId = null, contactInfo = {}) => {
     const orderData = {
       princeton_order_number: orderNumber,
@@ -259,13 +282,13 @@ function NewOrder() {
       delivery_room: locationType !== 'campus' ? room : campusRoomText,
       residence_hall: locationType === 'residential' ? residenceHall : undefined,
       tip_amount: Number(tip) || 0,
-      // Optionally include stripe reference if present
       stripe_payment_id: stripePaymentId || undefined,
       promoCode: promoCode || undefined,
       customer_phone: contactInfo.phone || userProfile?.phone_number || null,
       customer_email: contactInfo.email || userProfile?.email || null
     };
 
+    // Send order data to server
     fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -296,6 +319,7 @@ function NewOrder() {
     });
   };
 
+  // Render loading state
   if (isLoading) {
     return (
       <div className="page-container order-form-page">
@@ -304,7 +328,9 @@ function NewOrder() {
       </div>
     );
   }
-
+  
+  // Outline of the following frontend components generated by AI:
+  // Render main form
   return (
     <div className="page-container order-form-page">
       <Header />

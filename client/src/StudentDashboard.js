@@ -1,19 +1,24 @@
 // client/src/StudentDashboard.js
+// Student dashboard showing current order status, recent orders, and quick actions
+// with real-time updates via WebSocket and responsive design for order tracker
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from './Header'; 
-import './Dashboard.css'; // Still used for section/button styles
+import './Dashboard.css'; 
 import { formatStatus, statusClass } from './utils/statusUtils';
 import { formatPhoneForDisplay, formatPhoneForTel } from './utils/phoneUtils';
 import socket, { register } from './utils/socket';
 
 function StudentDashboard() {
+  // State variables
   const [recentOrders, setRecentOrders] = useState([]); 
   const [activeOrder, setActiveOrder] = useState(null);
   const [isLoading, setIsLoading] = useState(true); 
-  const [graceSeconds, setGraceSeconds] = useState(300); // 5 minutes default
+  const [graceSeconds, setGraceSeconds] = useState(300); 
   const [remainingSeconds, setRemainingSeconds] = useState(null);
 
+  // Format ISO date string to readable format
   const formatTime = (isoString) => {
     return new Date(isoString).toLocaleString('en-US', {
       month: 'short',
@@ -23,8 +28,7 @@ function StudentDashboard() {
     });
   };
 
-  // phone formatting helpers are imported from utils/phoneUtils
-
+  // Fetch dashboard data on component mount
   useEffect(() => {
     // Fetch order history and also register socket for real-time updates
     fetch('/api/orders/my-history')
@@ -34,16 +38,16 @@ function StudentDashboard() {
       })
       .then(orderData => {
         setRecentOrders(orderData.slice(0, 3)); 
-        // determine an active order:
-        // - prefer the newest order that is not delivered/cancelled
-        // - if the newest delivered order was delivered within graceSeconds, show it as active for that window
+        // Determine active order
+        // Find the most recent order that is not delivered or cancelled
+        // If none, check for recently delivered within grace period
+        // If still none, activeOrder remains null
         const sorted = orderData.slice().sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
         let active = sorted.find(o => {
           const s = (o.status || 'pending');
           return s !== 'delivered' && s !== 'cancelled';
         });
         if (!active) {
-          // check for recently delivered
           const recentlyDelivered = sorted.find(o => {
             const s = (o.status || 'pending');
             if (s !== 'delivered') return false;
@@ -55,7 +59,7 @@ function StudentDashboard() {
           active = recentlyDelivered || null;
         }
         setActiveOrder(active || null);
-        // register socket after we have orders (and then fetch profile to get user id)
+        // Register socket for real-time updates
         fetch('/profile').then(r => r.ok ? r.json() : null).then(user => {
           if (user) register({ userId: user.id, role: user.role });
         }).catch(e => console.warn('Failed to register socket for student', e));
@@ -64,7 +68,7 @@ function StudentDashboard() {
       .finally(() => setIsLoading(false));
   }, []); 
 
-  // Subscribe to socket updates for this student's orders
+  // Handle real-time order updates via WebSocket
   useEffect(() => {
     const onOrderUpdated = (order) => {
       // Update the recent orders list
@@ -75,7 +79,7 @@ function StudentDashboard() {
         }
         return [order, ...prev].slice(0,3);
       });
-      // If active order is the same, update it; otherwise, set as active when status is not delivered/cancelled
+      // Update active order if it matches
       setActiveOrder(prev => {
         if (!prev) {
           if (order.status !== 'delivered' && order.status !== 'cancelled') return order;
@@ -86,17 +90,20 @@ function StudentDashboard() {
       });
     };
 
+    // Register event listener
     socket.on('order_updated', onOrderUpdated);
     return () => {
       socket.off('order_updated', onOrderUpdated);
     };
   }, []);
 
+  // Render status with appropriate styling
   const renderStatus = (status) => {
     const cls = statusClass(status);
     return <span className={`status-tag status-${cls}`}>{formatStatus(status)}</span>;
   };
 
+  // Steps for order tracker
   const steps = [
     { key: 'pending', label: 'Pending' },
     { key: 'claimed', label: 'Claimed' },
@@ -105,30 +112,34 @@ function StudentDashboard() {
     { key: 'delivered', label: 'Delivered' },
   ];
 
+  // Responsive design: detect small screens
   const [isSmallScreen, setIsSmallScreen] = useState(typeof window !== 'undefined' ? window.innerWidth <= 600 : false);
 
+  // Update isSmallScreen on window resize
   useEffect(() => {
     const onResize = () => setIsSmallScreen(window.innerWidth <= 600);
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  // Outline of the following frontend components generated by AI:
+  // Render order tracker
   const renderTracker = (order) => {
     if (!order) return null;
     const cur = (order.status || 'pending');
     const curIndex = steps.findIndex(s => s.key === cur);
-    // compute remainingSeconds if delivered recently
     let deliveredAgo = null;
     if (cur === 'delivered') {
       const deliveredAt = order.updated_at || order.delivered_at || order.created_at;
       if (deliveredAt) deliveredAgo = Math.floor((Date.now() - new Date(deliveredAt).getTime()) / 1000);
     }
 
-    // On small screens, show only the current step and the next step (if any)
+    // Determine visible steps based on screen size
     const visibleSteps = isSmallScreen
       ? steps.slice(Math.max(0, curIndex), Math.min(steps.length, curIndex + 2))
       : steps;
 
+    // Driver info block
     const driverInfo = (order.driver_name || order.driver_phone) ? (
       <div className="tracker-driver">
         <div className="driver-avatar">{(order.driver_name || 'D').split(' ').map(n=>n[0]).slice(0,2).join('')}</div>
@@ -149,7 +160,6 @@ function StudentDashboard() {
         <>
           <div className="order-tracker circle-tracker" aria-hidden={false}>
             {visibleSteps.map((s, i) => {
-              // compute real index in full steps list for numbering and done-state checks
               const realIdx = steps.findIndex(x => x.key === s.key);
               const state = realIdx < curIndex ? 'done' : (realIdx === curIndex ? 'active' : 'pending');
               return (
@@ -160,7 +170,6 @@ function StudentDashboard() {
                     </div>
                     <div className="step-label">{s.label}</div>
                   </div>
-                  {/* show arrow only between visible items */}
                   {i < visibleSteps.length - 1 && (
                     <div className={`tracker-arrow ${realIdx < curIndex ? 'done' : ''}`} aria-hidden>
                       <svg className="chev" width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -185,7 +194,6 @@ function StudentDashboard() {
     return (
       <div className="order-tracker circle-tracker" aria-hidden={false}>
         {visibleSteps.map((s, i) => {
-          // compute real index in full steps list for numbering and done-state checks
           const realIdx = steps.findIndex(x => x.key === s.key);
           const state = realIdx < curIndex ? 'done' : (realIdx === curIndex ? 'active' : 'pending');
           return (
@@ -196,7 +204,6 @@ function StudentDashboard() {
                 </div>
                 <div className="step-label">{s.label}</div>
               </div>
-              {/* show arrow only between visible items */}
               {i < visibleSteps.length - 1 && (
                 <div className={`tracker-arrow ${realIdx < curIndex ? 'done' : ''}`} aria-hidden>
                   <svg className="chev" width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -217,13 +224,14 @@ function StudentDashboard() {
     );
   };
 
+  // Format remaining seconds as M:SS
   const formatRemaining = (secs) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return `${m}:${String(s).padStart(2, '0')}`;
   };
 
-  // Tick remainingSeconds when there is an active delivered order
+  // Countdown for recently delivered orders
   useEffect(() => {
     if (!activeOrder) {
       setRemainingSeconds(null);
@@ -248,12 +256,12 @@ function StudentDashboard() {
     return () => clearInterval(id);
   }, [activeOrder, graceSeconds]);
 
+  // Outline of the following frontend components generated by AI:
+  // Render main dashboard
   return (
-    // --- UPDATED CLASSES ---
     <div className="page-container">
       <Header />
       <main className="page-main">
-    {/* --- END OF UPDATE --- */}
         {activeOrder && (
           <section className="dashboard-section">
             <h2>Current Order Status</h2>
@@ -305,7 +313,6 @@ function StudentDashboard() {
         </section>
       </main>
 
-      {/* --- UPDATED CLASS --- */}
       <footer className="page-footer">
         UniEats &copy; 2025
       </footer>

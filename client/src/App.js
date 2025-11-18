@@ -5,7 +5,6 @@ import Home from './Home';
 import DashboardLanding from './DashboardLanding';
 import StudentDashboard from './StudentDashboard';
 import DriverDashboard from './DriverDashboard';
-import LoginPage from './LoginPage';
 import Settings from './Settings';
 import NewOrder from './NewOrder';
 import AdminCenter from './AdminCenter';
@@ -19,8 +18,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardLanding />} />
         <Route path="/student-dashboard" element={<StudentDashboard />} />
         <Route path="/driver-dashboard" element={<DriverDashboard />} />
-        <Route path="/order-history" element={<OrderHistory />} /> {/* <-- 2. ADD NEW ROUTE */}
-        <Route path="/loginpage" element={<LoginPage />} /> 
+        <Route path="/order-history" element={<OrderHistory />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/new-order" element={<NewOrder />} />
         <Route path="/admin" element={<AdminCenter />} />
