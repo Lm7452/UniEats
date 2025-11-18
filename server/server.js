@@ -282,7 +282,7 @@ app.put('/profile', isAuthenticated, async (req, res) => {
 
 // POST a new order
 app.post('/api/orders', isAuthenticated, async (req, res) => {
-  const { princeton_order_number, delivery_building, delivery_room, tip_amount, customer_phone, customer_email, promoCode, stripe_payment_id } = req.body;
+  const { princeton_order_number, location_type, delivery_building, delivery_room, residence_hall, tip_amount, customer_phone, customer_email, promoCode, stripe_payment_id } = req.body;
   const customer_id = req.user.id;
   
   // --- CHECK IF DRIVERS ARE AVAILABLE BEFORE CREATING ORDER ---
@@ -297,7 +297,7 @@ app.post('/api/orders', isAuthenticated, async (req, res) => {
      return res.status(500).json({ error: 'Failed to check driver status.' });
   }
   // --- END OF CHECK ---
-  if (!princeton_order_number || !delivery_building || !delivery_room) {
+  if (!princeton_order_number || !location_type || !delivery_building || !delivery_room) {
     return res.status(400).json({ error: 'Missing required order details' });
   }
   // If the user supplied a phone number at checkout, save it to their profile
@@ -327,11 +327,11 @@ app.post('/api/orders', isAuthenticated, async (req, res) => {
 
     const result = await db.query(
       `INSERT INTO orders 
-        (princeton_order_number, customer_id, delivery_building, delivery_room, tip_amount, stripe_payment_id, status, promo_applied, promo_code)
+        (princeton_order_number, customer_id, location_type, delivery_building, delivery_room, residence_hall, tip_amount, stripe_payment_id, status, promo_applied, promo_code)
        VALUES 
-        ($1, $2, $3, $4, $5, $6, 'pending', $7, $8)
+        ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', $9, $10)
        RETURNING *`,
-      [princeton_order_number, customer_id, delivery_building, delivery_room, tip_amount || 0, stripe_payment_id || null, promoApplied, storedPromoCode]
+      [princeton_order_number, customer_id, location_type, delivery_building, delivery_room, residence_hall || null, tip_amount || 0, stripe_payment_id || null, promoApplied, storedPromoCode]
     );
     const newOrder = result.rows[0];
     console.log(`New order created: ID ${newOrder.id} by user ${customer_id}`);
@@ -354,7 +354,7 @@ app.get('/api/orders/my-history', isAuthenticated, async (req, res) => {
   try {
     const result = await db.query(
       `SELECT 
-         o.id, o.princeton_order_number, o.delivery_building, o.delivery_room, o.tip_amount, o.status, o.created_at,
+         o.id, o.princeton_order_number, o.location_type, o.delivery_building, o.residence_hall, o.delivery_room, o.tip_amount, o.status, o.created_at,
          u.name AS driver_name,
          u.phone_number AS driver_phone
        FROM orders o
@@ -402,7 +402,7 @@ app.get('/api/admin/users', isAdmin, async (req, res) => {
 app.get('/api/admin/orders', isAdmin, async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT o.id, o.princeton_order_number, o.delivery_building, o.delivery_room, o.tip_amount, o.status, o.created_at, o.customer_id,
+      `SELECT o.id, o.princeton_order_number, o.location_type, o.delivery_building, o.residence_hall, o.delivery_room, o.tip_amount, o.status, o.created_at, o.customer_id,
               u.name AS customer_name, u.email AS customer_email
        FROM orders o
        JOIN users u ON o.customer_id = u.id
@@ -520,7 +520,7 @@ app.get('/api/driver/orders/available', isDriver, async (req, res) => {
   try {
     const result = await db.query(
       `SELECT 
-         o.id, o.princeton_order_number, o.delivery_building, o.delivery_room, o.tip_amount, o.created_at,
+         o.id, o.princeton_order_number, o.location_type, o.delivery_building, o.residence_hall, o.delivery_room, o.tip_amount, o.created_at,
          u.name AS customer_name,
          u.phone_number AS customer_phone
        FROM orders o
@@ -541,7 +541,7 @@ app.get('/api/driver/orders/mine', isDriver, async (req, res) => {
   try {
     const result = await db.query(
       `SELECT 
-         o.id, o.princeton_order_number, o.delivery_building, o.delivery_room, o.tip_amount, o.status, o.created_at,
+         o.id, o.princeton_order_number, o.location_type, o.delivery_building, o.residence_hall, o.delivery_room, o.tip_amount, o.status, o.created_at,
          u.name AS customer_name,
          u.phone_number AS customer_phone
        FROM orders o

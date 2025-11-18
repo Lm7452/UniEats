@@ -25,6 +25,35 @@ function DriverDashboard() {
     });
   };
 
+  const renderDeliveryAddress = (order) => {
+    const lt = (order.location_type || '').toLowerCase();
+    const building = order.delivery_building || '';
+    const hall = order.residence_hall || '';
+    const room = order.delivery_room || '';
+
+    if (lt === 'residential' || lt === 'residential college') {
+      // Residential College: show building, hall (if any), and room
+      const parts = [];
+      if (building) parts.push(building);
+      if (hall) parts.push(`Hall: ${hall}`);
+      if (room) parts.push(`Room ${room}`);
+      return parts.length > 0 ? parts.join(' — ') : 'N/A';
+    }
+
+    if (lt === 'upperclassmen' || lt === 'upperclassmen hall') {
+      return building ? `${building}${room ? ' — Room ' + room : ''}` : 'N/A';
+    }
+
+    if (lt === 'campus' || lt === 'campus building') {
+      // For campus, delivery_building holds the building name and delivery_room holds the free-text location
+      return building ? `${building}${room ? ' — ' + room : ''}` : (room || 'N/A');
+    }
+
+    // Fallback to the historical format
+    if (building || room) return `${building}${room ? ' - Room ' + room : ''}`;
+    return 'N/A';
+  };
+
   const fetchData = useCallback((isInitialLoad = false) => {
     if(isInitialLoad) setIsLoading(true);
     setError('');
@@ -274,7 +303,7 @@ function DriverDashboard() {
                     })()}
                   </h3>
                   <p><strong>Order #:</strong> {order.princeton_order_number}</p>
-                  <p><strong>Deliver To:</strong> {order.delivery_building} - Room {order.delivery_room}</p>
+                  <p><strong>Deliver To:</strong> {renderDeliveryAddress(order)}</p>
                   <p><strong>Contact:</strong> 
                     {order.customer_phone ? (
                       <a href={formatPhoneForTel(order.customer_phone)}>{formatPhoneForDisplay(order.customer_phone)}</a>
@@ -325,7 +354,7 @@ function DriverDashboard() {
                     })()}
                   </h3>
                   <p><strong>Order #:</strong> {order.princeton_order_number}</p>
-                  <p><strong>Deliver To:</strong> {order.delivery_building} - Room {order.delivery_room}</p>
+                  <p><strong>Deliver To:</strong> {renderDeliveryAddress(order)}</p>
                   <p><strong>Contact:</strong> {order.customer_phone ? (
                       <a href={formatPhoneForTel(order.customer_phone)}>{formatPhoneForDisplay(order.customer_phone)}</a>
                     ) : (
