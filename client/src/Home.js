@@ -156,7 +156,6 @@ function Home() {
         {/* Example placeholder cards can be added here later */}
       </section>
 
-      {/* Footer (This stays the same) */}
       <footer className="footer">
         <p>UniEats &copy; 2025</p>
       </footer>
