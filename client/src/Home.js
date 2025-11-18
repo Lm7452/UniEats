@@ -152,10 +152,6 @@ function Home() {
         </div>
       )}
 
-      <section className="value-props-section">
-        {/* Example placeholder cards can be added here later */}
-      </section>
-
       <footer className="footer">
         <p>UniEats &copy; 2025</p>
       </footer>
