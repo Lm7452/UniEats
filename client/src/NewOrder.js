@@ -42,8 +42,10 @@ function NewOrder() {
 
   const backUrl = location.state?.from || '/student-dashboard';
   const receiptEmail = 'UniEats.OrderReceipts@gmail.com';
+  const supportNumber = '4344093218';
   const princetonUrl = 'https://princeton.buy-ondemand.com/';
   const [copiedEmail, setCopiedEmail] = useState(false);
+  const [copiedNumber, setCopiedNumber] = useState(false);
   const displayDomain = 'princeton.buy-ondemand.com';
 
   // Local UX helper: detect promo code text (case-insensitive) so we can show tentative fee
@@ -55,6 +57,16 @@ function NewOrder() {
       await navigator.clipboard.writeText(receiptEmail);
       setCopiedEmail(true);
       setTimeout(() => setCopiedEmail(false), 1800);
+    } catch (err) {
+      console.error('Copy failed', err);
+    }
+  };
+
+  const copyNumber = async () => {
+    try {
+      await navigator.clipboard.writeText(supportNumber);
+      setCopiedNumber(true);
+      setTimeout(() => setCopiedNumber(false), 1800);
     } catch (err) {
       console.error('Copy failed', err);
     }
@@ -329,12 +341,12 @@ function NewOrder() {
                 </span>
               </p>
               <p>
-                <strong>Step 2:</strong> In the email field, please enter{' '}
+                <strong>Step 2:</strong> In the email field, please put in the following number:{' '}
                 <span className="email-inline">
                   <strong>
-                    <button type="button" className="copy-email" onClick={copyEmail}>{receiptEmail}</button>
+                    <button type="button" className="copy-email" onClick={copyNumber}>{supportNumber}</button>
                   </strong>
-                  {copiedEmail && <span className="copied-badge">Copied!</span>}
+                  {copiedNumber && <span className="copied-badge">Copied!</span>}
                 </span>
                 {' '}This redirects the confirmation to our system.
               </p>
