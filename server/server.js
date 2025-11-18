@@ -1,5 +1,8 @@
-// server.js (Now with Availability logic)
+// server/server.js
+// Main server file for UniEats application
+// Sets up Express server, Passport authentication, API routes, and Socket.IO integration
 
+// --- 0. IMPORTS ---
 const express = require('express');
 const dotenv = require('dotenv');
 const passport = require('passport');
@@ -27,7 +30,7 @@ const io = new IOServer(httpServer, {
   }
 });
 
-// Simple socket room registration: clients should emit a `register` event with { userId, role }
+// Socket.IO connection handler
 io.on('connection', (socket) => {
   console.log('Socket connected:', socket.id);
   socket.on('register', (payload) => {
@@ -54,7 +57,7 @@ io.on('connection', (socket) => {
 
 // --- 2. MIDDLEWARE SETUP ---
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.json()); // Parse JSON bodies
+app.use(express.json());
 app.use(session({
   secret: process.env.SESSION_SECRET || 'a-default-secret-for-dev', 
   resave: false,
@@ -64,6 +67,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // --- 3. PASSPORT STRATEGY CONFIGURATION ---
+// Implemented with the assistance of AI:
 const oidcConfig = {
     identityMetadata: `https://login.microsoftonline.com/${process.env.TENANT_ID}/v2.0/.well-known/openid-configuration`,
     clientID: process.env.CLIENT_ID,
@@ -140,7 +144,7 @@ function isAuthenticated(req, res, next) {
   res.redirect('/');
 }
 
-// *** NEW PUBLIC ENDPOINT FOR APP STATUS ***
+// API endpoint to get app status (number of available drivers)
 app.get('/api/app-status', async (req, res) => {
   try {
     const result = await db.query(
@@ -154,13 +158,10 @@ app.get('/api/app-status', async (req, res) => {
   }
 });
 
-// GET buildings/locations filtered by location type
-// Accepts optional query param `type` which should match a value in `location_types.name`.
-// If no `type` is provided, defaults to 'Residential College' to preserve previous behavior.
+// GET buildings/locations by type
 app.get('/api/buildings', async (req, res) => {
   try {
     const rawType = req.query.type;
-    // Allow short aliases from the client (e.g., 'residential', 'upperclassmen')
     let typeName = rawType;
     if (!typeName) {
       typeName = 'Residential College';
@@ -170,8 +171,8 @@ app.get('/api/buildings', async (req, res) => {
       typeName = 'Upperclassmen Hall';
     }
 
-    // Join locations -> location_types to get only locations of the requested type
-    // Note: DB columns are `location_types.type_name` and `locations.type_id` (per schema)
+    // Query database for locations of the specified type
+    // Implemented with the assistance of AI:
     const query = `
       SELECT l.name
       FROM locations l
@@ -189,10 +190,7 @@ app.get('/api/buildings', async (req, res) => {
   }
 });
 
-// GET halls for a given location (by id or name)
-// Examples:
-//  - /api/halls?location_id=1
-//  - /api/halls?location_name=Mathey%20College
+// GET halls by location_id or location_name
 app.get('/api/halls', async (req, res) => {
   try {
     const { location_id, location_name } = req.query;
@@ -220,6 +218,7 @@ app.get('/api/halls', async (req, res) => {
   }
 });
 
+// AUTH ROUTES
 app.get('/login',
   passport.authenticate('azuread-openidconnect', { failureRedirect: '/login-failed' })
 );
@@ -239,11 +238,12 @@ app.get('/logout', (req, res, next) => {
   });
 });
 
-// GET profile route (sends ALL user data, including role and availability)
+// GET user profile
 app.get('/profile', isAuthenticated, (req, res) => {
-  res.json(req.user); // req.user is refreshed on login, will have is_available
+  res.json(req.user);
 });
 
+// PUT to update user profile
 app.put('/profile', isAuthenticated, async (req, res) => {
   const {
     name,
@@ -280,12 +280,12 @@ app.put('/profile', isAuthenticated, async (req, res) => {
   }
 });
 
-// POST a new order
+// POST to create a new order
 app.post('/api/orders', isAuthenticated, async (req, res) => {
   const { princeton_order_number, location_type, delivery_building, delivery_room, residence_hall, tip_amount, customer_phone, customer_email, promoCode, stripe_payment_id } = req.body;
   const customer_id = req.user.id;
   
-  // --- CHECK IF DRIVERS ARE AVAILABLE BEFORE CREATING ORDER ---
+  // Check for available drivers before creating order
   try {
     const statusResult = await db.query(
       "SELECT COUNT(*) FROM users WHERE role = 'driver' AND is_available = true"
@@ -296,11 +296,11 @@ app.post('/api/orders', isAuthenticated, async (req, res) => {
   } catch (err) {
      return res.status(500).json({ error: 'Failed to check driver status.' });
   }
-  // --- END OF CHECK ---
+  // End of checks
   if (!princeton_order_number || !location_type || !delivery_building || !delivery_room) {
     return res.status(400).json({ error: 'Missing required order details' });
   }
-  // If the user supplied a phone number at checkout, save it to their profile
+  // Update user's phone number if provided
   if (customer_phone) {
     try {
       await db.query(
@@ -309,7 +309,6 @@ app.post('/api/orders', isAuthenticated, async (req, res) => {
       );
     } catch (err) {
       console.error('Error updating user phone number:', err);
-      // Don't block order creation if phone update fails; log and continue
     }
   }
   try {
@@ -325,6 +324,7 @@ app.post('/api/orders', isAuthenticated, async (req, res) => {
       }
     }
 
+    // Insert new order into database
     const result = await db.query(
       `INSERT INTO orders 
         (princeton_order_number, customer_id, location_type, delivery_building, delivery_room, residence_hall, tip_amount, stripe_payment_id, status, promo_applied, promo_code)
@@ -341,7 +341,7 @@ app.post('/api/orders', isAuthenticated, async (req, res) => {
     } catch (err) {
       console.error('Error emitting order_created socket event', err);
     }
-    res.status(201).json(newOrder); // 201 Created
+    res.status(201).json(newOrder); 
   } catch (err) {
     console.error('Error creating new order:', err);
     res.status(500).json({ error: 'Failed to create order' });
@@ -370,7 +370,7 @@ app.get('/api/orders/my-history', isAuthenticated, async (req, res) => {
   }
 });
 
-
+// GET login failed page
 app.get('/login-failed', (req, res) => {
   res.status(401).send('<h1>Login Failed</h1><p>There was an error authenticating.</p><a href="/">Home</a>');
 });
@@ -389,7 +389,6 @@ function isAdmin(req, res, next) {
 // GET all users (Admin only)
 app.get('/api/admin/users', isAdmin, async (req, res) => {
   try {
-    // --- ADDED is_available TO THE QUERY ---
     const result = await db.query('SELECT id, name, email, role, is_available, created_at FROM users ORDER BY name ASC');
     res.json(result.rows);
   } catch (err) {
@@ -398,7 +397,7 @@ app.get('/api/admin/users', isAdmin, async (req, res) => {
   }
 });
 
-// GET all orders (Admin only) - list orders with brief details
+// GET all orders (Admin only)
 app.get('/api/admin/orders', isAdmin, async (req, res) => {
   try {
     const result = await db.query(
@@ -457,10 +456,10 @@ app.put('/api/admin/users/:userId/role', isAdmin, async (req, res) => {
   }
 });
 
-// *** NEW ADMIN ENDPOINT FOR DRIVER AVAILABILITY ***
+// PUT to update a driver's availability (Admin only)
 app.put('/api/admin/users/:userId/availability', isAdmin, async (req, res) => {
   const { userId } = req.params;
-  const { is_available } = req.body; // Expects true or false
+  const { is_available } = req.body; 
 
   if (typeof is_available !== 'boolean') {
     return res.status(400).json({ error: 'Invalid availability status specified' });
@@ -485,7 +484,7 @@ app.put('/api/admin/users/:userId/availability', isAdmin, async (req, res) => {
 
 // --- 6. DRIVER ROUTES ---
 
-// Middleware to check if user is a Driver (or Admin)
+// Middleware to check if user is a Driver (or Admin) 
 function isDriver(req, res, next) {
   if (req.isAuthenticated() && (req.user.role === 'driver' || req.user.role === 'admin')) {
     return next();
@@ -493,10 +492,10 @@ function isDriver(req, res, next) {
   res.status(403).json({ error: 'Forbidden: Requires driver privileges' });
 }
 
-// *** NEW DRIVER ENDPOINT FOR AVAILABILITY ***
+// PUT to update current driver's availability
 app.put('/api/driver/availability', isDriver, async (req, res) => {
   const driverId = req.user.id;
-  const { is_available } = req.body; // Expects true or false
+  const { is_available } = req.body;
 
   if (typeof is_available !== 'boolean') {
     return res.status(400).json({ error: 'Invalid availability status' });
@@ -662,12 +661,11 @@ app.put('/api/driver/orders/:orderId/status', isDriver, async (req, res) => {
   }
 });
 
-// --- NEW PAYMENT ROUTE ---
-// Create a PaymentIntent with the order amount and currency
+// --- 7. STRIPE PAYMENT INTENT ENDPOINT ---
+// Implemented with the assistance of AI:
+// POST to create a Stripe PaymentIntent
 app.post('/api/create-payment-intent', isAuthenticated, async (req, res) => {
   const { tipAmount, promoCode } = req.body;
-
-  // Stripe expects amounts in CENTS (e.g. $1.50 = 150)
   const tipInCents = Math.round((parseFloat(tipAmount) || 0) * 100);
 
   // Determine if promo applies: case-insensitive match to 'WelcomeBite'
@@ -685,10 +683,11 @@ app.post('/api/create-payment-intent', isAuthenticated, async (req, res) => {
       }
     }
 
-    const baseFee = waiveServiceFee ? 0 : 150; // cents
+    // Calculate total amount: $1.50 service fee + tip (in cents)
+    const baseFee = waiveServiceFee ? 0 : 150; 
     const totalAmount = baseFee + tipInCents;
 
-    // If totalAmount is 0 or less, don't create a Stripe PaymentIntent (Stripe can block zero amount payments)
+    // If totalAmount is 0 or less, don't create a Stripe PaymentIntent
     if (totalAmount <= 0) {
       return res.json({ zeroAmount: true, message: 'No payment required for this order (service fee waived and no tip).' });
     }
@@ -717,13 +716,13 @@ app.post('/api/create-payment-intent', isAuthenticated, async (req, res) => {
 });
 
 
-// --- 7. SERVE REACT APP ---
+// --- 8. SERVE REACT APP ---
 app.use(express.static(path.join(__dirname, '../client/build')));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build/index.html'));
 });
 
-// --- 8. SERVER START ---
+// --- 9. SERVER START ---
 httpServer.listen(PORT, () => {
   console.log(`Server (with Socket.IO) is listening on port ${PORT}`);
 });
